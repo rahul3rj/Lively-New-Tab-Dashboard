@@ -1,108 +1,250 @@
-# Lively New Tab Dashboard
+# 🚀 Lively New Tab Dashboard
 
-A Chrome New Tab extension (Manifest V3) that replaces the default New Tab with a customizable dashboard: search, clock, workspace shortcuts, focus timer, todo list, plus a Settings drawer for personalization.
+> Turn every new tab into your **personal productivity HQ** ⚡
+> Clean. Custom. Focused. No distractions.
 
-## Features
+**Lively New Tab Dashboard** is a Chrome New Tab extension (Manifest V3) that replaces boring blank tabs with a **customizable workspace** featuring search, clock, focus timer, todo list, shortcuts, and aesthetic wallpapers.
 
-- Search bar
-  - Selectable search engine
-  - Editable welcome name (saved)
-- Clock + date widget
-- Workspace shortcuts
-  - Add/edit/remove
-  - Max 7 shortcuts (keeps the UI clean)
-  - Optional custom icon upload
-- Focus timer
-  - Editable duration
-  - Tracks “Today” focus time
-  - Saves duration + today totals
-- Todo list (saved)
-- Settings drawer
-  - Wallpaper upload (image/video)
-  - Widget toggles (Timer / Todo)
-  - Theme color picker
+Built for students, devs, and productivity nerds who want their browser to actually *work for them* 💻✨
 
-## Tech Stack
+---
 
-- React + Vite
-- Tailwind CSS
-- Chrome Extension (Manifest V3)
-- chrome.storage.local for persistence
+## 🌟 Why Lively?
 
-## Chrome Permissions
+Because your new tab should be:
 
-- storage — saves settings, wallpaper, shortcuts, todo items, and timer data
+✅ Useful
+✅ Aesthetic
+✅ Fast
+✅ Minimal
+✅ Yours
 
-## Run Locally
+Not just… empty.
+
+---
+
+## ✨ Features
+
+### 🔍 Smart Search
+
+* Choose your favorite search engine
+* Personalized welcome name (auto-saved)
+
+### ⏰ Time & Date
+
+* Live clock + date widget
+* Keeps you grounded in reality 😄
+
+### 🧭 Workspace Shortcuts
+
+* Add / Edit / Remove shortcuts
+* Max 7 (clean UI = clear mind)
+* Upload custom icons
+
+### 🎯 Focus Timer
+
+* Custom focus duration
+* Tracks **Today’s Focus Time**
+* Auto-saves progress
+
+### ✅ Todo Manager
+
+* Lightweight task list
+* Persistent storage
+* Zero clutter
+
+### ⚙️ Settings Drawer
+
+* Upload wallpaper (image / video)
+* Toggle widgets (Timer / Todo)
+* Theme color picker
+* Personalize everything
+
+---
+
+## 🛠️ Tech Stack
+
+Built with modern tools only 🔥
+
+* ⚛️ React + Vite
+* 🎨 Tailwind CSS
+* 🧩 Chrome Extension (Manifest V3)
+* 💾 chrome.storage.local
+
+---
+
+## 🔐 Chrome Permissions
+
+```
+storage
+```
+
+Used for:
+
+* Settings
+* Wallpapers
+* Shortcuts
+* Todos
+* Focus stats
+
+No shady stuff. Your data stays local 💯
+
+---
+
+## 🚀 Run Locally (Dev Mode)
 
 From the `Frontend` folder:
 
-```bat
+```bash
 npm install
 npm run dev
 ```
 
-Notes:
-- Local dev is useful for UI changes, but the real “New Tab override” behavior only works when loaded as an extension.
+⚠️ Note:
+Local dev is for UI/testing only.
+New Tab override works **only when loaded as extension**.
 
-## Build & Load In Chrome
+---
 
-1) Build:
+## 📦 Build & Load in Chrome
 
-```bat
+### 1️⃣ Build Project
+
+```bash
 cd Frontend
 npm install
 npm run build
 ```
 
-2) Load unpacked:
-- Open `chrome://extensions`
-- Enable Developer mode
-- Click “Load unpacked”
-- Select the folder: `Frontend\dist`
+### 2️⃣ Load Extension
 
-3) Open a new tab.
+1. Open `chrome://extensions`
+2. Enable **Developer Mode**
+3. Click **Load unpacked**
+4. Select: `Frontend/dist`
 
-When you change code later:
-- Rebuild (`npm run build`)
-- Go back to `chrome://extensions` and click Reload on the extension
+### 3️⃣ Open New Tab 🎉
 
-## Settings & Limits
+You’re live.
 
-- Wallpaper: image/video, max 7MB
-- Workspace: max 7 shortcuts
-- Shortcut icons: keep icons lightweight (recommended <= 512KB)
+---
 
-## Data Persistence
+### 🔄 After Making Changes
 
-The extension stores data in `chrome.storage.local` so it persists across tab refresh and browser restarts:
-- Settings: wallpaper, widget toggles, theme color
-- Workspace: shortcuts list (title/url/icon)
-- Timer: duration and today total focus time
-- Todo: todo items
+Whenever you update code:
 
-## Project Structure (Key Files)
+```bash
+npm run build
+```
 
-- `src/App.jsx` — main layout + Settings drawer + global persistence wiring
-- `src/components/SearchBar.jsx` — search engine + welcome name
-- `src/components/Taskbar.jsx` — workspace shortcuts
-- `src/components/Clock.jsx` — clock/date
-- `src/components/Timmer.jsx` — focus timer + “today” tracking
-- `src/components/Todo.jsx` — todo list
-- `dist/manifest.json` — MV3 config (newtab override + CSP)
+Then:
 
-## Troubleshooting
+* Go to `chrome://extensions`
+* Hit **Reload**
 
-- Fonts/sizes look different from localhost:
-  - Reset zoom on the New Tab page: Ctrl + 0 (zoom is stored per-site, and `chrome-extension://` is separate from localhost)
-  - Rebuild and reload the extension from `chrome://extensions`
-- New changes not showing:
-  - Make sure you rebuilt (`npm run build`) and reloaded the extension
+Boom. Updated.
 
-## Credits
+---
 
-Developed by Rahul Jha 👌🏼.
+## ⚠️ Settings & Limits
 
-## License
+| Feature   | Limit                 |
+| --------- | --------------------- |
+| Wallpaper | Max 7MB               |
+| Shortcuts | Max 7                 |
+| Icons     | ≤ 512KB (Recommended) |
 
-Choose and add a license (MIT / Apache-2.0 / etc.).
+Keeping it fast + smooth 🚀
+
+---
+
+## 💾 Data Persistence
+
+All data is stored using `chrome.storage.local`:
+
+### Stored Items:
+
+* 🎨 Theme + Wallpaper
+* ⚙️ Widget Toggles
+* 🧭 Shortcuts
+* 🎯 Focus Stats
+* ✅ Todos
+
+Your setup stays safe even after restart.
+
+---
+
+## 📁 Project Structure
+
+Key Files:
+
+```txt
+src/App.jsx                 → Main layout + Settings logic
+src/components/SearchBar    → Search + Welcome
+src/components/Taskbar      → Shortcuts
+src/components/Clock        → Time + Date
+src/components/Timmer       → Focus Timer
+src/components/Todo         → Task Manager
+dist/manifest.json          → MV3 Config
+```
+
+---
+
+## 🧯 Troubleshooting
+
+### Fonts / Zoom Issues
+
+If UI looks weird:
+
+```txt
+Ctrl + 0
+```
+
+Reset zoom on extension page.
+
+---
+
+### Changes Not Showing?
+
+Checklist:
+
+✅ Did you run `npm run build`?
+✅ Did you reload extension?
+✅ Did you select correct `dist` folder?
+
+If yes, you’re good.
+
+---
+
+## 👨‍💻 Author
+
+Built with ❤️ by **Rahul Jha**
+Student • Developer • Builder • Hustler 🚀
+
+If you like it, drop a ⭐
+
+---
+
+## 📜 License
+
+Choose one:
+
+* MIT (Recommended)
+* Apache-2.0
+* GPL
+
+Then add it here.
+
+---
+
+## 🤝 Contribute
+
+PRs are welcome 💪
+Ideas? Issues? Improvements?
+Open a ticket and let’s build together.
+
+---
+
+## 📸 Preview (Coming Soon)
+
+Add screenshots here to flex the UI 😎
