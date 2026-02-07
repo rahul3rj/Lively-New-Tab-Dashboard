@@ -336,7 +336,7 @@ const App = () => {
                 <div className='flex items-center gap-2'>
                   <button
                     type="button"
-                    onClick={() => window.open('https://github.com/rahul3rj', '_blank')}
+                    onClick={() => window.open('https://github.com/rahul3rj/Lively-New-Tab-Dashboard', '_blank')}
                     className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)] rounded-lg px-2 py-1 transition-colors cursor-pointer"
                     aria-label="Open GitHub"
                   >
@@ -345,7 +345,7 @@ const App = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.open('https://chromewebstore.google.com/?hl=en', '_blank')}
+                    onClick={() => window.open('https://forms.gle/teCwi4Nmm39Lq1i37', '_blank')}
                     className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)] rounded-lg px-2 py-1 transition-colors cursor-pointer"
                     aria-label="Open Chrome Extension Page"
                   >
@@ -354,8 +354,8 @@ const App = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.open('https://github.com', '_blank')}
-                    className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)] rounded-lg px-2 py-1 transition-colors cursor-pointer"
+                    // onClick={() => window.open('https://github.com', '_blank')}
+                    className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)]/50 rounded-lg px-2 py-1 transition-colors cursor-pointer cursor-not-allowed"
                     aria-label="Buy me a Coffee"
                   >
                     <i class="ri-drinks-fill text-white text-base"></i>
