@@ -244,7 +244,3 @@ Ideas? Issues? Improvements?
 Open a ticket and let’s build together.
 
 ---
-
-## 📸 Preview (Coming Soon)
-
-Add screenshots here to flex the UI 😎
