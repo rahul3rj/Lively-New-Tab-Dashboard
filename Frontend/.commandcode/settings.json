@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(npm:*)",
+      "Shell(npx eslint src/components/SongPlayer.jsx)",
+      "Shell(Select-String:*)",
+      "Shell(node -e \"const m = require('./public/manifest.json'); console.log('manifest OK, CSP:', m.content_security_policy.extension_pages.slice(0, 60) + '...')\")",
+      "Shell(agent-browser:*)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

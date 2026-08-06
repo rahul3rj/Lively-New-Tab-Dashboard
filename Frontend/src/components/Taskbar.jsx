@@ -17,22 +17,22 @@ const DEFAULT_SHORTCUTS = [
 
 const Taskbar = ({ shortcuts = DEFAULT_SHORTCUTS }) => {
   return (
-    <div className='h-12 w-full flex items-center justify-center gap-10 px-4'>
+    <div className='flex items-center justify-center gap-2.5 pointer-events-auto z-20'>
       {shortcuts
         .filter((s) => s && typeof s.url === 'string' && s.url.trim())
         .map((s) => (
           <a
             key={s.id || s.url}
             href={s.url}
-            className='h-12 w-12 rounded-xl cursor-pointer bg-[color:var(--theme)]/36 backdrop-blur-md flex items-center justify-center hover:bg-[#4C4C5C] transition-all duration-200 hover:scale-110'
+            className='figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all'
             title={s.title || s.url}
           >
             {s.iconDataUrl || s.iconUrl ? (
-              <img src={s.iconDataUrl || s.iconUrl} alt={s.title || ''} className='h-6 w-6 object-contain' />
+              <img src={s.iconDataUrl || s.iconUrl} alt={s.title || ''} className='h-[3vh] w-[3vh] min-h-[20px] min-w-[20px] object-contain relative z-10' />
             ) : s.iconClass ? (
-              <i className={`${s.iconClass} text-2xl text-white`}></i>
+              <i className={`${s.iconClass} text-[2.8vh] text-white relative z-10`}></i>
             ) : (
-              <i className='ri-link text-2xl text-white'></i>
+              <i className='ri-link text-[2.8vh] text-white relative z-10'></i>
             )}
           </a>
         ))}

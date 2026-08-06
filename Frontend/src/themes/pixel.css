@@ -1,0 +1,213 @@
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CLI TERMINAL THEME  |  data-theme="pixel"
+ *
+ * eDEX-UI Sci-Fi Terminal Aesthetic (matching reference images):
+ * - Double border frames (1px outer outline + 1px inner border)
+ * - All-uppercase monospace headers & Share Tech Mono font
+ * - ASCII brackets, key boxes [ EXECUTE ], and dashed dividers
+ * - High-contrast phosphor glow using --theme-1
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+
+
+/* ── Wallpaper: Keep wallpaper visible ── */
+[data-theme="pixel"] .theme-wallpaper {
+  display: block !important;
+  filter: contrast(1.15) brightness(0.65) grayscale(0.3) !important;
+}
+
+/* CRT Scanlines + Matrix Grid Overlay over wallpaper */
+[data-theme="pixel"] .theme-bg {
+  background-color: transparent !important;
+}
+
+[data-theme="pixel"] .theme-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 0, 0, 0.35) 3px,
+      rgba(0, 0, 0, 0.35) 4px
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-1, #00FF66) 4%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 100% 4px, 20px 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Font: Monospace Share Tech Mono ── */
+[data-theme="pixel"],
+[data-theme="pixel"] body,
+[data-theme="pixel"] html {
+  font-family: var(--font-base-custom, "Share Tech Mono", "Space Mono", monospace) !important;
+  letter-spacing: 0.05em;
+}
+
+/* ── Sharp 2px Corners (like eDEX-UI panels) ── */
+[data-theme="pixel"] .figma-glass-card,
+[data-theme="pixel"] .figma-glass-static,
+[data-theme="pixel"] .figma-glass-clean,
+[data-theme="pixel"] .figma-glass-border-slide,
+[data-theme="pixel"] .card-glass-bg,
+[data-theme="pixel"] .grid-widget {
+  border-radius: 2px !important;
+}
+
+/* ── eDEX-UI Double-Border Terminal Panels ── */
+[data-theme="pixel"] .figma-glass-card,
+[data-theme="pixel"] .figma-glass-static,
+[data-theme="pixel"] .figma-glass-clean,
+[data-theme="pixel"] .figma-glass-border-slide,
+[data-theme="pixel"] .card-glass-bg {
+  background: color-mix(in srgb, var(--theme-4, #04080c) 80%, rgba(5, 9, 14, 0.94)) !important;
+  /* Inner border line */
+  border: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 55%, transparent) !important;
+  /* Outer border line with 3px spacing gap (eDEX-UI double border!) */
+  outline: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 40%, transparent) !important;
+  outline-offset: -5px !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  box-shadow:
+    0 0 14px color-mix(in srgb, var(--theme-1, #00FF66) 18%, transparent),
+    inset 0 0 25px rgba(0, 0, 0, 0.8) !important;
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 88%, #ffffff) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Remove default noise pseudo */
+[data-theme="pixel"] .figma-glass-card::before,
+[data-theme="pixel"] .figma-glass-static::before,
+[data-theme="pixel"] .figma-glass-clean::before,
+[data-theme="pixel"] .figma-glass-border-slide::before,
+[data-theme="pixel"] .card-glass-bg::before {
+  display: none !important;
+}
+
+/* Hover: Terminal window glow */
+[data-theme="pixel"] .figma-glass-card:hover,
+[data-theme="pixel"] .card-glass-bg:hover {
+  border-color: color-mix(in srgb, var(--theme-1, #00FF66) 90%, transparent) !important;
+  outline-color: color-mix(in srgb, var(--theme-1, #00FF66) 70%, transparent) !important;
+  box-shadow:
+    0 0 22px color-mix(in srgb, var(--theme-1, #00FF66) 32%, transparent),
+    inset 0 0 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* ── Typography & Headers: Uppercase Monospace ── */
+[data-theme="pixel"] h1:not(.font-heathergreen),
+[data-theme="pixel"] h2:not(.font-heathergreen),
+[data-theme="pixel"] h3:not(.font-heathergreen),
+[data-theme="pixel"] h4:not(.font-heathergreen) {
+  font-family: var(--font-base-custom, "Share Tech Mono", monospace) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+[data-theme="pixel"] .grid-widget,
+[data-theme="pixel"] .figma-glass-card,
+[data-theme="pixel"] .card-glass-bg,
+[data-theme="pixel"] .figma-glass-clean,
+[data-theme="pixel"] .figma-glass-static {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 88%, #ffffff) !important;
+}
+
+[data-theme="pixel"] .grid-widget .text-white,
+[data-theme="pixel"] .figma-glass-card .text-white,
+[data-theme="pixel"] .card-glass-bg .text-white,
+[data-theme="pixel"] .figma-glass-clean .text-white,
+[data-theme="pixel"] .figma-glass-static .text-white {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 92%, #ffffff) !important;
+}
+
+[data-theme="pixel"] .grid-widget .text-white\/90,
+[data-theme="pixel"] .figma-glass-static .text-white\/90 {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 82%, #ffffff) !important;
+}
+[data-theme="pixel"] .grid-widget .text-white\/80,
+[data-theme="pixel"] .figma-glass-static .text-white\/80 {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 72%, #ffffff) !important;
+}
+[data-theme="pixel"] .grid-widget .text-white\/70,
+[data-theme="pixel"] .figma-glass-static .text-white\/70 {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 62%, rgba(255,255,255,0.7)) !important;
+}
+[data-theme="pixel"] .grid-widget .text-white\/60,
+[data-theme="pixel"] .figma-glass-static .text-white\/60 {
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 52%, rgba(255,255,255,0.5)) !important;
+}
+
+/* ── Buttons styled as eDEX Key Buttons [ CMD ] ── */
+/* ── Buttons styled as eDEX Key Buttons [ CMD ] ── */
+[data-theme="pixel"] button:not(.font-heathergreen):not(.timebox-subtask-check) {
+  font-family: var(--font-base-custom, "Share Tech Mono", monospace) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+
+[data-theme="pixel"] .figma-glass-card button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="pixel"] .card-glass-bg button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="pixel"] .grid-widget button:not(.font-heathergreen):not(.timebox-subtask-check) {
+  background: color-mix(in srgb, var(--theme-1, #00FF66) 10%, rgba(0,0,0,0.75)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 50%, transparent) !important;
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 92%, #ffffff) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--theme-1, #00FF66) 12%, transparent) !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="pixel"] .figma-glass-card button:not(.font-heathergreen):hover,
+[data-theme="pixel"] .card-glass-bg button:not(.font-heathergreen):hover,
+[data-theme="pixel"] .grid-widget button:not(.font-heathergreen):hover {
+  background: color-mix(in srgb, var(--theme-1, #00FF66) 28%, rgba(0,0,0,0.85)) !important;
+  border-color: color-mix(in srgb, var(--theme-1, #00FF66) 90%, transparent) !important;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--theme-1, #00FF66) 30%, transparent) !important;
+}
+
+/* ── Inputs styled as CLI Shell Prompts ── */
+[data-theme="pixel"] input {
+  font-family: var(--font-base-custom, "Share Tech Mono", monospace) !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 40%, transparent) !important;
+  color: color-mix(in srgb, var(--theme-1, #00FF66) 95%, #ffffff) !important;
+  border-radius: 2px !important;
+}
+
+[data-theme="pixel"] input:focus {
+  border-color: color-mix(in srgb, var(--theme-1, #00FF66) 95%, transparent) !important;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--theme-1, #00FF66) 35%, transparent) !important;
+}
+
+/* ── Drag Ghost: Terminal double border frame ── */
+[data-theme="pixel"] .grid-ghost {
+  border: 1px dashed color-mix(in srgb, var(--theme-1, #00FF66) 70%, transparent) !important;
+  border-radius: 2px !important;
+  background: color-mix(in srgb, var(--theme-1, #00FF66) 8%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--theme-1, #00FF66) 25%, transparent) !important;
+}
+
+/* ── Dragging drop shadow ── */
+[data-theme="pixel"] .grid-widget--dragging {
+  filter:
+    drop-shadow(0 0 16px color-mix(in srgb, var(--theme-1, #00FF66) 80%, transparent))
+    drop-shadow(0 8px 25px rgba(0,0,0,0.95)) !important;
+}
+
+/* ── Time Boxing CLI Overrides ── */
+[data-theme="pixel"] .timebox-task-card {
+  border-radius: 2px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 50%, transparent) !important;
+  outline: 1px solid color-mix(in srgb, var(--theme-1, #00FF66) 35%, transparent) !important;
+  outline-offset: -4px !important;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--theme-1, #00FF66) 18%, transparent) !important;
+  font-family: var(--font-base-custom, "Share Tech Mono", monospace) !important;
+}

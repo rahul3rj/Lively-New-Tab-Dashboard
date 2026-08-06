@@ -1,0 +1,332 @@
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CYBERPUNK THEME  |  data-theme="cyberpunk"
+ *
+ * Visual reference: Cyberpunk 2077 dark desktop — very dark red-black bg,
+ * neon accent from --theme-1 (default: hot magenta/red), corner-bracket panels,
+ * scanline overlay, Rajdhani angular font.
+ *
+ * All neon colours are driven by --theme-* CSS variables so the user's
+ * accent palette picker in Settings controls the glow colour.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+
+
+/* ── Wallpaper: Keep wallpaper visible ── */
+[data-theme="cyberpunk"] .theme-wallpaper {
+  display: block !important;
+  filter: contrast(1.1) brightness(0.7) !important;
+}
+
+/* ── Background: transparent so wallpaper shows through ── */
+[data-theme="cyberpunk"] .theme-bg {
+  background-color: transparent !important;
+}
+
+/* Outer scanline + grid overlay rendered as a pseudo on the bg div */
+[data-theme="cyberpunk"] .theme-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* Fine grid lines using --theme-1 colour */
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--theme-1, #FF0055) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-1, #FF0055) 7%, transparent) 1px, transparent 1px),
+    /* coarser grid */
+    linear-gradient(color-mix(in srgb, var(--theme-1, #FF0055) 3%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-1, #FF0055) 3%, transparent) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
+
+/* Horizontal scanlines */
+[data-theme="cyberpunk"] .theme-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.18) 3px,
+    rgba(0,0,0,0.18) 4px
+  );
+}
+
+/* ── Font: Rajdhani — angular, military, sharp ── */
+[data-theme="cyberpunk"],
+[data-theme="cyberpunk"] body,
+[data-theme="cyberpunk"] html {
+  font-family: var(--font-base-custom, "Rajdhani", "Gilroy", sans-serif) !important;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* ── Glass cards → dark panels with neon accent border + corner brackets ── */
+[data-theme="cyberpunk"] .figma-glass-card,
+[data-theme="cyberpunk"] .figma-glass-static,
+[data-theme="cyberpunk"] .figma-glass-clean,
+[data-theme="cyberpunk"] .figma-glass-border-slide,
+[data-theme="cyberpunk"] .card-glass-bg {
+  /* Near-black with faint theme tint */
+  background: color-mix(in srgb, var(--theme-4, #1a0010) 60%, rgba(0,0,0,0.85)) !important;
+  /* Single-pixel neon border on all sides */
+  border: 1px solid color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent) !important;
+  border-top-color: color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent) !important;
+  border-bottom-color: color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 4px !important;
+  /* Neon outer glow */
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-1, #FF0055) 15%, transparent),
+    0 0 12px color-mix(in srgb, var(--theme-1, #FF0055) 20%, transparent),
+    0 0 30px color-mix(in srgb, var(--theme-1, #FF0055) 8%, transparent),
+    inset 0 0 20px rgba(0,0,0,0.6) !important;
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 80%, #ffffff) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Hover: brighter glow */
+[data-theme="cyberpunk"] .figma-glass-card:hover,
+[data-theme="cyberpunk"] .card-glass-bg:hover {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--theme-1, #FF0055) 35%, transparent),
+    0 0 18px color-mix(in srgb, var(--theme-1, #FF0055) 40%, transparent),
+    0 0 50px color-mix(in srgb, var(--theme-1, #FF0055) 15%, transparent),
+    inset 0 0 20px rgba(0,0,0,0.5) !important;
+  border-color: color-mix(in srgb, var(--theme-1, #FF0055) 90%, transparent) !important;
+}
+
+/* ── Corner-bracket decoration using the ::before pseudo ──
+   The noise SVG background is replaced by 4-corner bracket marks
+   drawn with CSS linear-gradient backgrounds. ── */
+[data-theme="cyberpunk"] .figma-glass-card::before,
+[data-theme="cyberpunk"] .figma-glass-static::before,
+[data-theme="cyberpunk"] .figma-glass-clean::before,
+[data-theme="cyberpunk"] .figma-glass-border-slide::before,
+[data-theme="cyberpunk"] .card-glass-bg::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 4px !important;
+  border-radius: 0 !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+  opacity: 1 !important;
+  /* 8 rectangles = 2 per corner (one horizontal, one vertical line) */
+  background:
+    /* top-left — vertical bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top left,
+    /* top-left — horizontal bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top left,
+    /* top-right — vertical bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top right,
+    /* top-right — horizontal bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top right,
+    /* bottom-left — vertical bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom left,
+    /* bottom-left — horizontal bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom left,
+    /* bottom-right — vertical bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom right,
+    /* bottom-right — horizontal bar */
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom right !important;
+  background-size:
+    1px 10px, 10px 1px,
+    1px 10px, 10px 1px,
+    1px 10px, 10px 1px,
+    1px 10px, 10px 1px !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Border slide animation: use theme-1 colour */
+[data-theme="cyberpunk"] .figma-glass-border-slide::after {
+  background-color: var(--theme-1, #FF0055) !important;
+  background-image: none !important;
+  height: 1px !important;
+  opacity: 0.8 !important;
+}
+
+/* ── Widget grid items: sharp corners ── */
+[data-theme="cyberpunk"] .grid-widget {
+  border-radius: 4px !important;
+}
+
+/* ── Text colour — use brightest theme shade ── */
+[data-theme="cyberpunk"] .grid-widget,
+[data-theme="cyberpunk"] .figma-glass-card,
+[data-theme="cyberpunk"] .card-glass-bg,
+[data-theme="cyberpunk"] .figma-glass-clean,
+[data-theme="cyberpunk"] .figma-glass-static {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 85%, #ffffff) !important;
+}
+
+[data-theme="cyberpunk"] .grid-widget .text-white,
+[data-theme="cyberpunk"] .figma-glass-card .text-white,
+[data-theme="cyberpunk"] .card-glass-bg .text-white,
+[data-theme="cyberpunk"] .figma-glass-clean .text-white,
+[data-theme="cyberpunk"] .figma-glass-static .text-white {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 85%, #ffffff) !important;
+}
+
+[data-theme="cyberpunk"] .grid-widget .text-white\/90,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/90 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 75%, #ffffff) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/80,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/80 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 65%, #ffffff) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/70,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/70 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 55%, #ffffff) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/60,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/60 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 50%, rgba(255,255,255,0.5)) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/50,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/50 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 45%, rgba(255,255,255,0.4)) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/40,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/40 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 35%, rgba(255,255,255,0.3)) !important;
+}
+[data-theme="cyberpunk"] .grid-widget .text-white\/30,
+[data-theme="cyberpunk"] .figma-glass-static .text-white\/30 {
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 25%, rgba(255,255,255,0.2)) !important;
+}
+
+/* ── Drag ghost: neon dashed box ── */
+[data-theme="cyberpunk"] .grid-ghost {
+  border: 2px dashed color-mix(in srgb, var(--theme-1, #FF0055) 60%, transparent) !important;
+  border-radius: 4px !important;
+  background: color-mix(in srgb, var(--theme-1, #FF0055) 5%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--theme-1, #FF0055) 20%, transparent) !important;
+}
+
+[data-theme="cyberpunk"] .grid-ghost--invalid {
+  border-color: rgba(255, 220, 0, 0.5) !important;
+  background: rgba(255, 220, 0, 0.04) !important;
+  box-shadow: none !important;
+}
+
+/* ── Dragging drop-shadow ── */
+[data-theme="cyberpunk"] .grid-widget--dragging {
+  filter:
+    drop-shadow(0 0 12px color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent))
+    drop-shadow(0 8px 25px rgba(0,0,0,0.9)) !important;
+}
+
+/* ── Resize handle ── */
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle] {
+  background: color-mix(in srgb, var(--theme-1, #FF0055) 35%, transparent) !important;
+  border-radius: 0 !important;
+}
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle]:hover {
+  background: color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent) !important;
+}
+
+/* ── Button bg tint to stay consistent with theme-1 colour ── */
+[data-theme="cyberpunk"] .figma-glass-card button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="cyberpunk"] .figma-glass-static button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="cyberpunk"] .grid-widget button:not(.font-heathergreen):not(.timebox-subtask-check) {
+  border-color: color-mix(in srgb, var(--theme-1, #FF0055) 30%, transparent) !important;
+}
+
+/* Inputs inside widgets */
+[data-theme="cyberpunk"] .grid-widget input,
+[data-theme="cyberpunk"] .figma-glass-static input {
+  border-color: color-mix(in srgb, var(--theme-1, #FF0055) 25%, transparent) !important;
+  background: rgba(0,0,0,0.5) !important;
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 80%, #ffffff) !important;
+}
+
+/* ── Make all rounded-* classes use slightly sharp corners ── */
+[data-theme="cyberpunk"] .rounded-full {
+  border-radius: 4px !important;
+}
+[data-theme="cyberpunk"] .rounded-2xl,
+[data-theme="cyberpunk"] .rounded-xl,
+[data-theme="cyberpunk"] .rounded-lg,
+[data-theme="cyberpunk"] .rounded-md {
+  border-radius: 2px !important;
+}
+
+/* ── Settings Page Cyberpunk Overrides ── */
+[data-theme="cyberpunk"] .card-glass-bg {
+  background: color-mix(in srgb, var(--theme-4, #1a0010) 65%, rgba(0,0,0,0.85)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #FF0055) 45%, transparent) !important;
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--theme-1, #FF0055) 15%, transparent),
+    inset 0 0 20px rgba(0,0,0,0.7) !important;
+}
+
+[data-theme="cyberpunk"] .card-glass-bg button {
+  background: color-mix(in srgb, var(--theme-1, #FF0055) 18%, rgba(0,0,0,0.6)) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #FF0055) 40%, transparent) !important;
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 85%, #ffffff) !important;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-1, #FF0055) 10%, transparent) !important;
+}
+
+[data-theme="cyberpunk"] .card-glass-bg button:hover {
+  background: color-mix(in srgb, var(--theme-1, #FF0055) 35%, rgba(0,0,0,0.7)) !important;
+  border-color: color-mix(in srgb, var(--theme-1, #FF0055) 80%, transparent) !important;
+  box-shadow: 0 0 14px color-mix(in srgb, var(--theme-1, #FF0055) 30%, transparent) !important;
+}
+
+[data-theme="cyberpunk"] .card-glass-bg input {
+  background: rgba(0,0,0,0.65) !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #FF0055) 35%, transparent) !important;
+  color: color-mix(in srgb, var(--theme-1, #FF0055) 90%, #ffffff) !important;
+}
+
+[data-theme="cyberpunk"] .card-glass-bg input:focus {
+  border-color: color-mix(in srgb, var(--theme-1, #FF0055) 85%, transparent) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--theme-1, #FF0055) 30%, transparent) !important;
+}
+
+/* Sidebar tab navigation */
+[data-theme="cyberpunk"] aside nav button {
+  font-family: var(--font-base-custom, "Rajdhani", sans-serif) !important;
+  letter-spacing: 0.05em !important;
+}
+
+[data-theme="cyberpunk"] aside nav button span.bg-white {
+  background-color: var(--theme-1, #FF0055) !important;
+  box-shadow: 0 0 10px var(--theme-1, #FF0055) !important;
+}
+
+/* ── Time Boxing Cyberpunk Overrides ── */
+[data-theme="cyberpunk"] .timebox-task-card {
+  border-radius: 4px !important;
+  border: 1px solid color-mix(in srgb, var(--theme-1, #FF0055) 45%, transparent) !important;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--theme-1, #FF0055) 15%, transparent) !important;
+  font-family: var(--font-base-custom, "Rajdhani", sans-serif) !important;
+}
+
+[data-theme="cyberpunk"] .timebox-task-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 2px !important;
+  pointer-events: none !important;
+  z-index: 5 !important;
+  background:
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top left,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top left,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top right,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) top right,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom left,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom left,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom right,
+    linear-gradient(var(--theme-1, #FF0055), var(--theme-1, #FF0055)) bottom right !important;
+  background-size: 1px 8px, 8px 1px, 1px 8px, 8px 1px, 1px 8px, 8px 1px, 1px 8px, 8px 1px !important;
+  background-repeat: no-repeat !important;
+}
+
+

@@ -1,583 +1,714 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import SearchBar from './components/SearchBar.jsx'
-import Taskbar from './components/Taskbar.jsx'
-import Clock from './components/Clock.jsx'
-import Timmer from './components/Timmer.jsx'
-import Todo from './components/Todo.jsx'
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Taskbar from "./components/Taskbar.jsx";
+import Clock from "./components/Clock.jsx";
+import DashboardGrid from "./components/DashboardGrid.jsx";
+import HeroView from "./components/HeroView.jsx";
+import SettingsPage from "./components/SettingsPage.jsx";
+import { storageGet, storageGetMultiple, storageSet } from "./utils/storage.js";
+import { STORAGE_KEY_UI_THEME } from "./themes/index.js";
 
 const STORAGE = {
-  wallpaper: 'settings_wallpaper_v1',
-  showTimer: 'settings_show_timer_v1',
-  showTodo: 'settings_show_todo_v1',
-  themeColor: 'settings_theme_color_v1',
-  shortcuts: 'settings_shortcuts_v1',
-}
+  wallpaper: "settings_wallpaper_v1",
+  showTimer: "settings_show_timer_v1",
+  showTodo: "settings_show_todo_v1",
+  showStreakGrid: "settings_show_streak_grid_v1",
+  showSongPlayer: "settings_show_song_player_v1",
+  themeColor: "settings_theme_color_v1",
+  shortcuts: "settings_shortcuts_v1",
+  activeStep: "settings_active_step_v1",
+  // new
+  showWaterReminder: "settings_show_water_v1",
+  showImportantTabs: "settings_show_imp_tabs_v1",
+  showTimeBoxing: "settings_show_timebox_v1",
+  focusNotifEnabled: "settings_focus_notif_v1",
+  focusEndRingtone: "settings_focus_ringtone_v1",
+  restEndRingtone: "settings_rest_ringtone_v1",
+  waterGoalMl: "settings_water_goal_v1",
+  waterNotifEnabled: "settings_water_notif_v1",
+  waterRingtone: "settings_water_ringtone_v1",
+  songPlaylistUrl: "settings_song_playlist_v1",
+  songAutoPlay: "settings_song_autoplay_v1",
+  songCustomVideo: "settings_song_custom_video_v1",
+  lofiStations: "settings_lofi_stations_v1",
+  importantTabsConfig: "settings_imp_tabs_config_v1",
+  timeBoxingGroups: "settings_timebox_groups_v2",
+  themeTextColorIndex: "settings_theme_text_color_idx_v1",
+  timeboxingLastResetDate: "settings_timebox_last_reset_utc_v1",
+  uiTheme: STORAGE_KEY_UI_THEME,
+  baseFont: "settings_base_font_v1",
+  baseFontSize: "settings_base_font_size_v1",
+  themeColorsMap: "settings_theme_colors_map_v1",
+};
 
-const chromeApi = typeof globalThis !== 'undefined' ? globalThis.chrome : undefined
-
-const isExtensionPage =
-  typeof globalThis !== 'undefined' &&
-  typeof globalThis.location?.protocol === 'string' &&
-  globalThis.location.protocol === 'chrome-extension:'
-
-const hasChromeStorage =
-  isExtensionPage &&
-  !!chromeApi?.storage?.local &&
-  typeof chromeApi.storage.local.get === 'function' &&
-  typeof chromeApi.storage.local.set === 'function'
-
-const storageGet = (key) => {
-  if (!hasChromeStorage) return Promise.resolve(undefined)
-
-  return new Promise((resolve) => {
-    chromeApi.storage.local.get([key], (result) => {
-      if (chromeApi.runtime?.lastError) {
-        resolve(undefined)
-        return
-      }
-      resolve(result?.[key])
-    })
-  })
-}
-
-const storageSet = (key, value) => {
-  if (!hasChromeStorage) return Promise.resolve()
-
-  return new Promise((resolve) => {
-    chromeApi.storage.local.set({ [key]: value }, () => resolve())
-  })
-}
+const getTodayUtcDate = () => new Date().toISOString().slice(0, 10);
 
 const makeId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return String(Date.now() + Math.random())
-}
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
+  return String(Date.now() + Math.random());
+};
 
 const DEFAULT_SHORTCUTS = [
-  { id: 'gemini', title: 'Gemini', url: 'https://gemini.google.com', iconClass: 'ri-gemini-fill' },
-  { id: 'claude', title: 'Claude', url: 'https://claude.ai', iconClass: 'ri-claude-fill' },
-  { id: 'copilot', title: 'Copilot', url: 'https://copilot.microsoft.com', iconClass: 'ri-copilot-fill' },
-  { id: 'openai', title: 'OpenAI', url: 'https://chat.openai.com', iconClass: 'ri-openai-fill' },
-  { id: 'perplexity', title: 'Perplexity', url: 'https://perplexity.ai', iconClass: 'ri-perplexity-fill' },
-  { id: 'deepseek', title: 'DeepSeek', url: 'https://chat.deepseek.com/', iconClass: 'ri-deepseek-fill' },
+  { id: "gemini", title: "Gemini", url: "https://gemini.google.com", iconClass: "ri-gemini-fill" },
+  { id: "claude", title: "Claude", url: "https://claude.ai", iconClass: "ri-claude-fill" },
+  { id: "copilot", title: "Copilot", url: "https://copilot.microsoft.com", iconClass: "ri-copilot-fill" },
+  { id: "openai", title: "OpenAI", url: "https://chat.openai.com", iconClass: "ri-openai-fill" },
+  { id: "perplexity", title: "Perplexity", url: "https://perplexity.ai", iconClass: "ri-perplexity-fill" },
+  { id: "deepseek", title: "DeepSeek", url: "https://chat.deepseek.com/", iconClass: "ri-deepseek-fill" },
+  { id: "higgsfield", title: "Higgsfield AI", url: "https://higgsfield.ai", iconUrl: "https://higgsfield.ai/favicon.ico" },
+];
+
+const DEFAULT_IMPORTANT_TABS = [
+  { id: "tab-1", title: "Study", iconClass: "ri-book-open-line", links: [] },
+  { id: "tab-2", title: "AI Engineering", iconClass: "ri-gemini-fill", links: [] },
+  { id: "tab-3", title: "DSA (LeetCode & CP)", iconClass: "ri-code-s-slash-line", links: [] },
+  { id: "tab-4", title: "News", iconClass: "ri-newspaper-line", links: [] },
+];
+
+const DEFAULT_TIMEBOX_GROUPS = [
   {
-    id: 'higgsfield',
-    title: 'Higgsfield AI',
-    url: 'https://higgsfield.ai',
-    iconUrl: 'https://higgsfield.ai/favicon.ico',
+    id: "brain-stretching",
+    title: "Brain Stretching",
+    iconClass: "ri-brain-line",
+    time: "8:00 am",
+    streak: 0,
+    subtasks: [
+      { id: "bs-1", text: "Morning Meditation", done: false },
+      { id: "bs-2", text: "Read 10 Pages", done: false },
+      { id: "bs-3", text: "Solve A Puzzle", done: false },
+      { id: "bs-4", text: "Plan The Day", done: false },
+    ],
   },
-]
+  {
+    id: "exercise",
+    title: "Exercise",
+    iconClass: "ri-run-line",
+    time: "8:45 am",
+    streak: 0,
+    subtasks: [
+      { id: "ex-1", text: "Warm Up & Stretch", done: false },
+      { id: "ex-2", text: "Push Ups 3 Sets", done: false },
+      { id: "ex-3", text: "30 Min Cardio", done: false },
+    ],
+  },
+  {
+    id: "leetcode",
+    title: "LeetCode Problem",
+    iconClass: "ri-code-s-slash-line",
+    time: "9:00 am",
+    streak: 0,
+    subtasks: [
+      { id: "lc-1", text: "Solve Problem", done: false },
+      { id: "lc-2", text: "Push Code To Github", done: false },
+      { id: "lc-3", text: "Analyse Optimal Solution", done: false },
+    ],
+  },
+  {
+    id: "project",
+    title: "Project",
+    iconClass: "ri-briefcase-line",
+    time: "11:00 am",
+    streak: 0,
+    subtasks: [
+      { id: "pj-1", text: "Design New Component", done: false },
+      { id: "pj-2", text: "Fix Pending Bugs", done: false },
+      { id: "pj-3", text: "Deploy Latest Build", done: false },
+    ],
+  },
+];
 
-const Toggle = ({ checked, onChange, label }) => {
-  return (
-    <button
-      type='button'
-      onClick={() => onChange(!checked)}
-      className='w-full flex items-center justify-between gap-3 py-2'
-      aria-pressed={checked}
-    >
-      <span className='text-white/90 text-sm font-semibold'>{label}</span>
-      <span
-        className={`h-6 w-12 rounded-full transition-colors duration-200 flex items-center px-1 ${
-          checked ? 'bg-white/70' : 'bg-white/20'
-        }`}
-        aria-hidden='true'
-      >
-        <span
-          className={`h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
-            checked ? 'translate-x-6' : 'translate-x-0'
-          }`}
-        />
-      </span>
-    </button>
-  )
-}
+export const DEFAULT_LOFI_STATIONS = [
+  {
+    id: "lofi-zeno-lounge",
+    name: "Lofi Study Lounge 24/7",
+    provider: "Zeno Live Stream",
+    streamUrl: "https://stream.zeno.fm/f3wvbbqmdg8uv",
+    badge: "Lofi Study Lounge",
+    gradient: "from-blue-900/60 via-cyan-950/50 to-slate-900/70",
+  },
+  {
+    id: "lofi-laut-fm",
+    name: "Lofi Hip Hop Radio 24/7",
+    provider: "Laut FM Stream",
+    streamUrl: "https://lofi.stream.laut.fm/lofi",
+    badge: "24/7 Lofi Hip Hop",
+    gradient: "from-purple-900/60 via-indigo-900/50 to-slate-900/70",
+  },
+  {
+    id: "chillhop-beats",
+    name: "Chillhop Radio — Jazzy & Lofi Beats",
+    provider: "Flux FM Stream",
+    streamUrl: "https://streams.fluxfm.de/chillhop/mp3-320/stream.fluxfm.de/",
+    badge: "Chillhop Beats",
+    gradient: "from-amber-900/60 via-orange-950/50 to-slate-950/70",
+  },
+  {
+    id: "ambient-sleep-lofi",
+    name: "Cozy Ambient Rain Lofi",
+    provider: "Zeno Live Stream",
+    streamUrl: "https://stream.zeno.fm/0r0xa792kwzuv",
+    badge: "Ambient Rain Lofi",
+    gradient: "from-emerald-950/60 via-slate-900/60 to-purple-950/70",
+  },
+  {
+    id: "coffee-jazz-lofi",
+    name: "Coffee Shop & Jazz Lofi Radio",
+    provider: "Zeno Live Stream",
+    streamUrl: "https://stream.zeno.fm/7c8bh802kwzuv",
+    badge: "Coffee & Jazz Lofi",
+    gradient: "from-yellow-950/60 via-amber-900/50 to-stone-900/70",
+  },
+];
 
-const MAX_SHORTCUTS = 7
+const MAX_SHORTCUTS = 7;
 
-const THEME_PRESETS = ['#5C5C5C', '#0EA5E9', '#22C55E', '#EAB308', '#F97316', '#EF4444', '#A855F7', '#111827']
+const DEFAULT_THEME_PALETTE = ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
 
-const ColorSwatch = ({ color, selected, onSelect }) => {
-  return (
-    <button
-      type='button'
-      onClick={() => onSelect(color)}
-      className={`h-9 w-9 rounded-xl border transition-all duration-200 ${
-        selected ? 'border-white/80 scale-105' : 'border-white/20 hover:border-white/40'
-      }`}
-      style={{ backgroundColor: color }}
-      aria-label={`Select theme color ${color}`}
-    />
-  )
-}
+export const DEFAULT_THEME_PALETTES = {
+  default: ["#CBD5E1", "#64748B", "#334155", "#0F172A"],
+  manga: ["#CBD5E1", "#64748B", "#334155", "#0F172A"],
+  cyberpunk: ["#FF0055", "#00F0FF", "#FFE600", "#120024"],
+  pixel: ["#00FF66", "#009933", "#003311", "#051A0A"],
+};
 
 const App = () => {
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeStep, setActiveStep] = useState("hero");
 
-  const [wallpaper, setWallpaper] = useState(null)
-  const [showTimer, setShowTimer] = useState(true)
-  const [showTodo, setShowTodo] = useState(true)
-  const [themeColor, setThemeColor] = useState('#5C5C5C')
-  const [shortcuts, setShortcuts] = useState(DEFAULT_SHORTCUTS)
+  // existing state
+  const [wallpaper, setWallpaper] = useState(null);
+  const [showTimer, setShowTimer] = useState(true);
+  const [showTodo, setShowTodo] = useState(true);
+  const [showStreakGrid, setShowStreakGrid] = useState(true);
+  const [showSongPlayer, setShowSongPlayer] = useState(true);
+  const [themeColor, setThemeColor] = useState(DEFAULT_THEME_PALETTE);
+  const [themeColorsMap, setThemeColorsMap] = useState(DEFAULT_THEME_PALETTES);
+  const [themeTextColorIndex, setThemeTextColorIndex] = useState(0);
+  const [shortcuts, setShortcuts] = useState(DEFAULT_SHORTCUTS);
 
-  const wallpaperInputRef = useRef(null)
-  const hydratedRef = useRef(false)
+  // new state
+  const [showWaterReminder, setShowWaterReminder] = useState(true);
+  const [showImportantTabs, setShowImportantTabs] = useState(true);
+  const [showTimeBoxing, setShowTimeBoxing] = useState(true);
 
+  const [focusNotifEnabled, setFocusNotifEnabled] = useState(false);
+  const [focusEndRingtone, setFocusEndRingtone] = useState("beep");
+  const [restEndRingtone, setRestEndRingtone] = useState("beep");
+
+  const [waterGoalMl, setWaterGoalMl] = useState(4500);
+  const [waterNotifEnabled, setWaterNotifEnabled] = useState(false);
+  const [waterRingtone, setWaterRingtone] = useState("beep");
+
+  const [songPlaylistUrl, setSongPlaylistUrl] = useState("");
+  const [songAutoPlay, setSongAutoPlay] = useState(false);
+  const [songCustomVideo, setSongCustomVideo] = useState(null);
+  const [lofiStations, setLofiStations] = useState(DEFAULT_LOFI_STATIONS);
+
+  const [importantTabsConfig, setImportantTabsConfig] = useState(DEFAULT_IMPORTANT_TABS);
+  const [timeBoxingGroups, setTimeBoxingGroups] = useState(DEFAULT_TIMEBOX_GROUPS);
+  const [timeboxingLastResetDate, setTimeboxingLastResetDate] = useState(null);
+  const [uiTheme, setUiTheme] = useState("default");
+  const [baseFont, setBaseFont] = useState("Gilroy");
+  const [baseFontSize, setBaseFontSize] = useState(16);
+
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isThemeChanging, setIsThemeChanging] = useState(false);
+
+  const hydratedRef = useRef(false);
+
+  /* ── Hydration ── */
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
-    ;(async () => {
-      const storedWallpaper = await storageGet(STORAGE.wallpaper)
-      const storedShowTimer = await storageGet(STORAGE.showTimer)
-      const storedShowTodo = await storageGet(STORAGE.showTodo)
-      const storedThemeColor = await storageGet(STORAGE.themeColor)
-      const storedShortcuts = await storageGet(STORAGE.shortcuts)
+    (async () => {
+      try {
+        const keys = Object.values(STORAGE);
+        const data = await storageGetMultiple(keys);
 
-      if (cancelled) return
+        if (cancelled) return;
 
-      if (storedWallpaper && typeof storedWallpaper === 'object') setWallpaper(storedWallpaper)
-      if (typeof storedShowTimer === 'boolean') setShowTimer(storedShowTimer)
-      if (typeof storedShowTodo === 'boolean') setShowTodo(storedShowTodo)
-      if (typeof storedThemeColor === 'string' && storedThemeColor.trim().startsWith('#')) {
-        setThemeColor(storedThemeColor.trim())
+        const storedWallpaper = data[STORAGE.wallpaper];
+        const storedShowTimer = data[STORAGE.showTimer];
+        const storedShowTodo = data[STORAGE.showTodo];
+        const storedShowStreakGrid = data[STORAGE.showStreakGrid];
+        const storedShowSongPlayer = data[STORAGE.showSongPlayer];
+        const storedThemeColor = data[STORAGE.themeColor];
+        const storedShortcuts = data[STORAGE.shortcuts];
+        const storedActiveStepObj = data[STORAGE.activeStep];
+        const storedShowWater = data[STORAGE.showWaterReminder];
+        const storedShowImpTabs = data[STORAGE.showImportantTabs];
+        const storedShowTimeBox = data[STORAGE.showTimeBoxing];
+        const storedFocusNotif = data[STORAGE.focusNotifEnabled];
+        const storedFocusRing = data[STORAGE.focusEndRingtone];
+        const storedRestRing = data[STORAGE.restEndRingtone];
+        const storedWaterGoal = data[STORAGE.waterGoalMl];
+        const storedWaterNotif = data[STORAGE.waterNotifEnabled];
+        const storedWaterRing = data[STORAGE.waterRingtone];
+        const storedPlaylist = data[STORAGE.songPlaylistUrl];
+        const storedAutoPlay = data[STORAGE.songAutoPlay];
+        const storedCustomVideo = data[STORAGE.songCustomVideo];
+        const storedLofiStations = data[STORAGE.lofiStations];
+        const storedImpTabsCfg = data[STORAGE.importantTabsConfig];
+        let storedTimeboxGroups = data[STORAGE.timeBoxingGroups];
+        const storedThemeTextIdx = data[STORAGE.themeTextColorIndex];
+        const storedResetDate = data[STORAGE.timeboxingLastResetDate];
+        const storedUiTheme = data[STORAGE.uiTheme];
+        const storedBaseFont = data[STORAGE.baseFont];
+        const storedBaseFontSize = data[STORAGE.baseFontSize];
+
+        const todayUtc = getTodayUtcDate();
+
+        // Check if a new UTC 00 day has arrived since last reset
+        if (storedResetDate && storedResetDate !== todayUtc && Array.isArray(storedTimeboxGroups)) {
+          storedTimeboxGroups = storedTimeboxGroups.map((group) => {
+            const isCompleted =
+              group.subtasks?.length > 0 && group.subtasks.every((s) => s.done);
+            return {
+              ...group,
+              streak: isCompleted ? (group.streak || 0) + 1 : 0,
+              subtasks: (group.subtasks || []).map((s) => ({ ...s, done: false })),
+            };
+          });
+          storageSet(STORAGE.timeBoxingGroups, storedTimeboxGroups);
+          storageSet(STORAGE.timeboxingLastResetDate, todayUtc);
+        }
+
+        setTimeboxingLastResetDate(todayUtc);
+
+        if (storedWallpaper && typeof storedWallpaper === "object") setWallpaper(storedWallpaper);
+        if (typeof storedShowTimer === "boolean") setShowTimer(storedShowTimer);
+        if (typeof storedShowTodo === "boolean") setShowTodo(storedShowTodo);
+        if (typeof storedShowStreakGrid === "boolean") setShowStreakGrid(storedShowStreakGrid);
+        if (typeof storedShowSongPlayer === "boolean") setShowSongPlayer(storedShowSongPlayer);
+        const storedThemeColorsMap = data[STORAGE.themeColorsMap];
+        let activeThemeMap = { ...DEFAULT_THEME_PALETTES };
+        if (storedThemeColorsMap && typeof storedThemeColorsMap === "object") {
+          activeThemeMap = { ...DEFAULT_THEME_PALETTES, ...storedThemeColorsMap };
+        } else if (storedThemeColor) {
+          if (Array.isArray(storedThemeColor) && storedThemeColor.length === 4) {
+            activeThemeMap.default = storedThemeColor;
+          } else if (typeof storedThemeColor === "string" && storedThemeColor.trim().startsWith("#")) {
+            const c = storedThemeColor.trim();
+            activeThemeMap.default = [c, c, c, c];
+          }
+        }
+        setThemeColorsMap(activeThemeMap);
+
+        const currentUiTheme = (typeof storedUiTheme === "string" && ["default","manga","cyberpunk","pixel"].includes(storedUiTheme)) ? storedUiTheme : "default";
+        const activePalette = activeThemeMap[currentUiTheme] || DEFAULT_THEME_PALETTES[currentUiTheme] || DEFAULT_THEME_PALETTES.default;
+        setThemeColor(activePalette);
+
+        if (typeof storedThemeTextIdx === "number" && storedThemeTextIdx >= 0 && storedThemeTextIdx <= 3) {
+          setThemeTextColorIndex(storedThemeTextIdx);
+        }
+        if (Array.isArray(storedShortcuts) && storedShortcuts.length > 0) setShortcuts(storedShortcuts);
+
+        if (storedActiveStepObj &&
+          typeof storedActiveStepObj === "object" &&
+          storedActiveStepObj.dateUtc === getTodayUtcDate() &&
+          (storedActiveStepObj.step === "dashboard" || storedActiveStepObj.step === "hero")
+        ) {
+          setActiveStep(storedActiveStepObj.step);
+        } else {
+          setActiveStep("hero");
+        }
+
+        if (typeof storedShowWater === "boolean") setShowWaterReminder(storedShowWater);
+        if (typeof storedShowImpTabs === "boolean") setShowImportantTabs(storedShowImpTabs);
+        if (typeof storedShowTimeBox === "boolean") setShowTimeBoxing(storedShowTimeBox);
+        if (typeof storedFocusNotif === "boolean") setFocusNotifEnabled(storedFocusNotif);
+        if (typeof storedFocusRing === "string") setFocusEndRingtone(storedFocusRing);
+        if (typeof storedRestRing === "string") setRestEndRingtone(storedRestRing);
+        if (typeof storedWaterGoal === "number" && storedWaterGoal > 0) setWaterGoalMl(storedWaterGoal);
+        if (typeof storedWaterNotif === "boolean") setWaterNotifEnabled(storedWaterNotif);
+        if (typeof storedWaterRing === "string") setWaterRingtone(storedWaterRing);
+        if (typeof storedPlaylist === "string") setSongPlaylistUrl(storedPlaylist);
+        if (typeof storedAutoPlay === "boolean") setSongAutoPlay(storedAutoPlay);
+        if (storedCustomVideo) setSongCustomVideo(storedCustomVideo);
+        if (Array.isArray(storedLofiStations) && storedLofiStations.length > 0) setLofiStations(storedLofiStations);
+        if (Array.isArray(storedTimeboxGroups) && storedTimeboxGroups.length > 0) setTimeBoxingGroups(storedTimeboxGroups);
+        if (typeof storedUiTheme === "string" && ["default","manga","cyberpunk","pixel"].includes(storedUiTheme)) setUiTheme(storedUiTheme);
+        if (typeof storedBaseFont === "string" && storedBaseFont.trim()) setBaseFont(storedBaseFont);
+        if (typeof storedBaseFontSize === "number" && storedBaseFontSize >= 12 && storedBaseFontSize <= 24) setBaseFontSize(storedBaseFontSize);
+
+        // Mark hydrated BEFORE React flushes the batch above, so persistence
+        // effects that fire from these state updates are correctly allowed.
+        if (!cancelled) {
+          hydratedRef.current = true;
+          setIsHydrated(true);
+        }
+      } catch (err) {
+        console.error("App hydration error:", err);
       }
-      if (Array.isArray(storedShortcuts) && storedShortcuts.length > 0) setShortcuts(storedShortcuts)
+    })();
 
-      hydratedRef.current = true
-    })()
+    return () => { cancelled = true; };
+  }, []);
 
-    return () => {
-      cancelled = true
+  /* ── Persistence effects ── */
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.wallpaper, wallpaper); }, [wallpaper]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTimer, showTimer); }, [showTimer]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTodo, showTodo); }, [showTodo]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showStreakGrid, showStreakGrid); }, [showStreakGrid]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showSongPlayer, showSongPlayer); }, [showSongPlayer]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColor, themeColor); }, [themeColor]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColorsMap, themeColorsMap); }, [themeColorsMap]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.shortcuts, shortcuts); }, [shortcuts]);
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    storageSet(STORAGE.activeStep, { step: activeStep, dateUtc: getTodayUtcDate() });
+  }, [activeStep]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showWaterReminder, showWaterReminder); }, [showWaterReminder]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showImportantTabs, showImportantTabs); }, [showImportantTabs]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTimeBoxing, showTimeBoxing); }, [showTimeBoxing]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.focusNotifEnabled, focusNotifEnabled); }, [focusNotifEnabled]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.focusEndRingtone, focusEndRingtone); }, [focusEndRingtone]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.restEndRingtone, restEndRingtone); }, [restEndRingtone]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.waterGoalMl, waterGoalMl); }, [waterGoalMl]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.waterNotifEnabled, waterNotifEnabled); }, [waterNotifEnabled]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.waterRingtone, waterRingtone); }, [waterRingtone]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.songPlaylistUrl, songPlaylistUrl); }, [songPlaylistUrl]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.songAutoPlay, songAutoPlay); }, [songAutoPlay]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.songCustomVideo, songCustomVideo); }, [songCustomVideo]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.lofiStations, lofiStations); }, [lofiStations]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.importantTabsConfig, importantTabsConfig); }, [importantTabsConfig]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.timeBoxingGroups, timeBoxingGroups); }, [timeBoxingGroups]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeTextColorIndex, themeTextColorIndex); }, [themeTextColorIndex]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.uiTheme, uiTheme); }, [uiTheme]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.baseFont, baseFont); }, [baseFont]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.baseFontSize, baseFontSize); }, [baseFontSize]);
+
+  /* ── Dynamic Google Font Loader for Base Font ── */
+  useEffect(() => {
+    if (!baseFont || baseFont === "Gilroy" || baseFont === "Default") {
+      document.documentElement.style.setProperty("--font-base-custom", `"Gilroy", sans-serif`);
+      return;
     }
-  }, [])
+    const fontId = `google-font-${baseFont.replace(/\s+/g, "-").toLowerCase()}`;
+    if (!document.getElementById(fontId)) {
+      const link = document.createElement("link");
+      link.id = fontId;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(baseFont)}:wght@300;400;500;600;700;800&display=swap`;
+      document.head.appendChild(link);
+    }
+    document.documentElement.style.setProperty("--font-base-custom", `"${baseFont}", sans-serif`);
+  }, [baseFont]);
 
+  /* ── Dynamic Base Font Size Property ── */
   useEffect(() => {
-    if (!hydratedRef.current) return
-    storageSet(STORAGE.wallpaper, wallpaper)
-  }, [wallpaper])
+    document.documentElement.style.setProperty("--base-font-size", `${baseFontSize}px`);
+  }, [baseFontSize]);
 
+  /* ── Apply UI theme to <html> data attribute ── */
   useEffect(() => {
-    if (!hydratedRef.current) return
-    storageSet(STORAGE.showTimer, showTimer)
-  }, [showTimer])
+    document.documentElement.setAttribute("data-theme", uiTheme);
+    return () => { document.documentElement.removeAttribute("data-theme"); };
+  }, [uiTheme]);
 
+  /* ── Theme CSS variables ── */
   useEffect(() => {
-    if (!hydratedRef.current) return
-    storageSet(STORAGE.showTodo, showTodo)
-  }, [showTodo])
+    const colors = Array.isArray(themeColor) && themeColor.length === 4
+      ? themeColor
+      : ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
 
-  useEffect(() => {
-    if (!hydratedRef.current) return
-    storageSet(STORAGE.themeColor, themeColor)
-  }, [themeColor])
+    const activeTextColor = colors[themeTextColorIndex] ?? colors[0];
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--theme', themeColor)
-  }, [themeColor])
+    document.documentElement.style.setProperty("--theme-1", colors[0]);
+    document.documentElement.style.setProperty("--theme-2", colors[1]);
+    document.documentElement.style.setProperty("--theme-3", colors[2]);
+    document.documentElement.style.setProperty("--theme-4", colors[3]);
+    document.documentElement.style.setProperty("--theme", colors[2]);
+    document.documentElement.style.setProperty("--theme-text", activeTextColor);
+  }, [themeColor, themeTextColorIndex]);
 
-  useEffect(() => {
-    if (!hydratedRef.current) return
-    storageSet(STORAGE.shortcuts, shortcuts)
-  }, [shortcuts])
-
+  /* ── Background ── */
   const background = useMemo(() => {
-    if (wallpaper?.type === 'video' && typeof wallpaper?.dataUrl === 'string') {
+    if (wallpaper?.type === "video" && typeof wallpaper?.dataUrl === "string") {
       return (
         <video
           src={wallpaper.dataUrl}
-          className='h-full w-full object-cover select-none'
-          autoPlay
-          muted
-          loop
-          playsInline
+          className="theme-wallpaper h-full w-full object-cover select-none"
+          autoPlay muted loop playsInline
         />
-      )
+      );
     }
-
-    if (wallpaper?.type === 'image' && typeof wallpaper?.dataUrl === 'string') {
-      return <img src={wallpaper.dataUrl} alt='' className='h-full w-full object-cover select-none' />
+    if (wallpaper?.type === "image" && typeof wallpaper?.dataUrl === "string") {
+      return <img src={wallpaper.dataUrl} alt="" className="theme-wallpaper h-full w-full object-cover select-none" />;
     }
+    const defaultWallpaperForTheme = {
+      manga: "/manga-wallpaper.jpg",
+      cyberpunk: "/cyberpunk-wallpaper.png",
+      pixel: "/cli-wallpaper.jpg",
+      default: "/default-wallpaper.jpg",
+    }[uiTheme] || "/default-wallpaper.jpg";
 
-    return <img src='/wallpaper.jpg' alt='' className='h-full w-full object-cover select-none' />
-  }, [wallpaper])
+    return <img src={defaultWallpaperForTheme} alt="" className="theme-wallpaper h-full w-full object-cover select-none object-top" />;
+  }, [wallpaper, uiTheme]);
 
-  const updateShortcut = (id, patch) => {
-    setShortcuts((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)))
-  }
+  /* ── Shortcut helpers ── */
+  const updateShortcut = (id, patch) =>
+    setShortcuts((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
 
-  const removeShortcut = (id) => {
-    setShortcuts((prev) => prev.filter((s) => s.id !== id))
-  }
+  const removeShortcut = (id) =>
+    setShortcuts((prev) => prev.filter((s) => s.id !== id));
 
   const addShortcut = () => {
     setShortcuts((prev) => {
-      if (prev.length >= MAX_SHORTCUTS) return prev
-      return [
-        ...prev,
-        {
-          id: makeId(),
-          title: 'New',
-          url: 'https://',
-        },
-      ]
-    })
-  }
+      if (prev.length >= MAX_SHORTCUTS) return prev;
+      return [...prev, { id: makeId(), title: "New", url: "https://" }];
+    });
+  };
 
-  const readFileAsDataUrl = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(String(reader.result || ''))
-      reader.onerror = () => reject(new Error('read_error'))
-      reader.readAsDataURL(file)
-    })
-  }
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("read_error"));
+      reader.readAsDataURL(file);
+    });
 
-  const handleWallpaperPick = async (file) => {
-    if (!file) return
-
-    const maxBytes = 7 * 1024 * 1024
-    if (file.size > maxBytes) return
-
-    const dataUrl = await readFileAsDataUrl(file)
-    const type = file.type.startsWith('video/') ? 'video' : 'image'
-    setWallpaper({ type, dataUrl, name: file.name })
-  }
+  const handleWallpaperPick = async (fileOrWallpaper) => {
+    if (!fileOrWallpaper) return;
+    if (fileOrWallpaper.dataUrl && fileOrWallpaper.type) {
+      setWallpaper(fileOrWallpaper);
+      return;
+    }
+    const file = fileOrWallpaper;
+    const maxBytes = 20 * 1024 * 1024;
+    if (file.size > maxBytes) return;
+    const dataUrl = await readFileAsDataUrl(file);
+    const type = file.type.startsWith("video/") ? "video" : "image";
+    setWallpaper({ type, dataUrl, name: file.name });
+  };
 
   const handleShortcutIconPick = async (id, file) => {
-    if (!file) return
+    if (!file) return;
+    const maxBytes = 512 * 1024;
+    if (file.size > maxBytes) return;
+    const dataUrl = await readFileAsDataUrl(file);
+    updateShortcut(id, { iconDataUrl: dataUrl });
+  };
 
-    const maxBytes = 512 * 1024
-    if (file.size > maxBytes) return
+  /* ── Smooth Theme & Wallpaper Transition Handlers ── */
+  const handleUiThemeChange = (newTheme) => {
+    if (newTheme === uiTheme) return;
+    setIsThemeChanging(true);
+    setUiTheme(newTheme);
 
-    const dataUrl = await readFileAsDataUrl(file)
-    updateShortcut(id, { iconDataUrl: dataUrl })
-  }
+    const targetPalette =
+      themeColorsMap[newTheme] ||
+      DEFAULT_THEME_PALETTES[newTheme] ||
+      DEFAULT_THEME_PALETTES.default;
+    setThemeColor(targetPalette);
 
-  const showRightPanel = showTimer || showTodo
+    setTimeout(() => {
+      setIsThemeChanging(false);
+    }, 280);
+  };
+
+  const handleThemeColorChange = (newColors) => {
+    setThemeColor(newColors);
+    setThemeColorsMap((prev) => ({
+      ...prev,
+      [uiTheme]: newColors,
+    }));
+  };
+
+  const handleWallpaperChange = async (fileOrWallpaper) => {
+    setIsThemeChanging(true);
+    await handleWallpaperPick(fileOrWallpaper);
+    setTimeout(() => {
+      setIsThemeChanging(false);
+    }, 280);
+  };
+
+  const handleWallpaperResetChange = () => {
+    setIsThemeChanging(true);
+    setWallpaper(null);
+    setTimeout(() => {
+      setIsThemeChanging(false);
+    }, 280);
+  };
+
+  const showLoader = !isHydrated || isThemeChanging;
 
   return (
-    <div className="h-screen w-full bg-black relative overflow-hidden font-poppins">
+    <div className="theme-bg h-screen w-full bg-black relative overflow-hidden">
+      {/* Minimalist Linear/Vercel Aesthetic Loader Overlay */}
+      <div
+        className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#08080a] transition-opacity duration-300 pointer-events-none ${
+          showLoader ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="flex flex-col items-center gap-4">
+          {/* Minimal Monospace Brand Mark */}
+          <span className="text-[11px] font-medium tracking-[0.4em] text-white/80 font-mono uppercase">
+            L I V E L Y
+          </span>
+
+          {/* 2px Micro Shimmer Bar */}
+          <div className="w-24 h-[2px] bg-white/10 rounded-full overflow-hidden relative">
+            <div className="absolute inset-y-0 bg-white rounded-full animate-loader-bar" />
+          </div>
+        </div>
+      </div>
+
       <div className="h-full w-full flex items-center justify-center relative">
         {background}
 
-        <div className="absolute top-10 left-20 w-[65vw]">
-          <SearchBar />
-        </div>
+        {/* Hero View */}
+        <HeroView
+          shortcuts={shortcuts}
+          onStart={() => setActiveStep("dashboard")}
+          onOpenSettings={() => setSettingsOpen(true)}
+          isVisible={activeStep === "hero"}
+        />
 
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[50vw]">
+        {/* Clock */}
+        <Clock isDashboard={activeStep === "dashboard"} />
+
+        {/* Taskbar */}
+        <div
+          className={`absolute top-2.5 left-1/2 -translate-x-1/2 awwwards-motion z-30 ${
+            activeStep === "dashboard"
+              ? "translate-y-0 opacity-100 scale-100 pointer-events-auto"
+              : "-translate-y-12 opacity-0 scale-95 pointer-events-none"
+          }`}
+        >
           <Taskbar shortcuts={shortcuts} />
         </div>
 
-        <div className="absolute bottom-10 left-20 w-[20vw]">
-          <Clock />
+        {/* Dashboard Grid */}
+        <div
+          className={`absolute inset-0 z-20 awwwards-motion pointer-events-none ${
+            activeStep === "dashboard" ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
+        >
+          <DashboardGrid
+            showTimer={showTimer}
+            showTodo={showTodo}
+            showStreakGrid={showStreakGrid}
+            showSongPlayer={showSongPlayer}
+            showWaterReminder={showWaterReminder}
+            showImportantTabs={showImportantTabs}
+            showTimeBoxing={showTimeBoxing}
+            importantTabsConfig={importantTabsConfig}
+            timeBoxingGroups={timeBoxingGroups}
+            onTimeBoxingGroupsChange={setTimeBoxingGroups}
+            songPlaylistUrl={songPlaylistUrl}
+            songAutoPlay={songAutoPlay}
+            songCustomVideo={songCustomVideo}
+            lofiStations={lofiStations}
+            waterGoalMl={waterGoalMl}
+          />
         </div>
 
-        {showRightPanel && (
-          <div className="absolute top-10 right-10 h-[81vh] w-[25vw] flex flex-col gap-4">
-            {showTimer && (
-              <div className="flex-1">
-                <Timmer />
-              </div>
-            )}
-            {showTodo && (
-              <div className="flex-1">
-                <Todo />
-              </div>
-            )}
+        {/* Top Right Controls */}
+        <div className="absolute top-2.5 right-5 flex items-center gap-3 pointer-events-auto z-30">
+          <div
+            className={`awwwards-motion ${
+              activeStep === "dashboard"
+                ? "opacity-100 scale-100 pointer-events-auto"
+                : "opacity-0 scale-50 pointer-events-none w-0 overflow-hidden"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveStep("hero")}
+              className="figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all"
+              aria-label="Back to Hero screen"
+            >
+              <i className="ri-close-line text-[2.8vh] relative z-10" />
+            </button>
           </div>
-        )}
 
-        <button
-          type="button"
-          onClick={() => setSettingsOpen(true)}
-          className="absolute bottom-10 right-10 h-10 w-10 rounded-xl hover:scale-110 transition-all duration-200 hover:bg-[color:var(--theme)]/70 bg-[color:var(--theme)]/36 flex items-center justify-center cursor-pointer"
-          aria-label="Open settings"
-        >
-          <i className="ri-settings-3-fill text-white text-2xl"></i>
-        </button>
-
-        <div
-          className={`fixed inset-0 z-40 transition-opacity duration-200 ${
-            settingsOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          aria-hidden={!settingsOpen}
-        >
           <button
             type="button"
-            className="absolute inset-0 bg-black/35 backdrop-blur-md"
-            onClick={() => setSettingsOpen(false)}
-            aria-label="Close settings"
-          />
-
-          <aside
-            className={`absolute top-0 right-0 h-full w-[420px] max-w-[95vw] bg-[color:var(--theme)]/36 backdrop-blur-md border-l border-white/15 shadow-2xl transition-transform duration-300 ease-out ${
-              settingsOpen ? "translate-x-0" : "translate-x-full"
-            }`}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Settings"
+            onClick={() => setSettingsOpen(true)}
+            className="figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all"
+            aria-label="Open settings"
           >
-            <div className="h-full w-full p-6 flex flex-col gap-6 overflow-auto scrollbar-hide">
-              <div className="flex items-center justify-between">
-                <h2 className="text-white text-xl font-semibold">Settings</h2>
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(false)}
-                  className="h-10 w-10 rounded-xl bg-[#4C4C4C]/30 hover:bg-[#4C4C4C]/45 transition-all duration-200 flex items-center justify-center cursor-pointer"
-                  aria-label="Close settings"
-                >
-                  <i className="ri-close-line text-2xl text-white"></i>
-                </button>
-              </div>
-
-              <div className="text-xs text-white/80 rounded-xl bg-black/20 border border-white/10 p-3">
-                <div className='flex items-center gap-2'>
-                  <button
-                    type="button"
-                    onClick={() => window.open('https://github.com/rahul3rj/Lively-New-Tab-Dashboard', '_blank')}
-                    className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)] rounded-lg px-2 py-1 transition-colors cursor-pointer"
-                    aria-label="Open GitHub"
-                  >
-                    <i className="ri-github-fill text-white text-base"></i>
-                    <h1 className='text-white font-semibold'>GitHub</h1>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.open('https://forms.gle/teCwi4Nmm39Lq1i37', '_blank')}
-                    className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)] rounded-lg px-2 py-1 transition-colors cursor-pointer"
-                    aria-label="Open Chrome Extension Page"
-                  >
-                    <i className="ri-chrome-line text-white text-base"></i>
-                    <h1 className='text-white font-semibold'>Feedback</h1>
-                  </button>
-                  <button
-                    type="button"
-                    // onClick={() => window.open('https://github.com', '_blank')}
-                    className="flex items-center gap-2 hover:bg-white/10 bg-[color:var(--theme)]/50 rounded-lg px-2 py-1 transition-colors cursor-pointer cursor-not-allowed"
-                    aria-label="Buy me a Coffee"
-                  >
-                    <i class="ri-drinks-fill text-white text-base"></i>
-                    <h1 className='text-white font-semibold'>Buy me a Coffee</h1>
-                  </button>
-                </div>
-              </div>
-
-              <section className="rounded-2xl bg-black/20 border border-white/10 p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white text-base font-semibold">Wallpaper</h3>
-                  <div className="flex items-center gap-2 text-white">
-                    <input
-                      ref={wallpaperInputRef}
-                      type="file"
-                      accept="image/*,video/*"
-                      className="hidden"
-                      onChange={(e) => handleWallpaperPick(e.target.files?.[0])}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => wallpaperInputRef.current?.click()}
-                      className="h-9 px-3 rounded-xl bg-white/15 hover:bg-white/20 transition-all duration-200 text-sm font-semibold cursor-pointer"
-                    >
-                      Upload
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setWallpaper(null)}
-                      className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 text-sm font-semibold cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-3 text-xs text-white/75">
-                  Max 7MB for wallpaper.
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-black/20 border border-white/10 p-4">
-                <h3 className="text-white text-base font-semibold">Widgets</h3>
-                <div className="mt-2 flex flex-col">
-                  <Toggle
-                    checked={showTimer}
-                    onChange={setShowTimer}
-                    label="Focus Timer"
-                  />
-                  <Toggle
-                    checked={showTodo}
-                    onChange={setShowTodo}
-                    label="To Do List"
-                  />
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-black/20 border border-white/10 p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white text-sm font-semibold">Theme</h3>
-                  <div className="text-xs text-white/75">
-                    {themeColor.toUpperCase()}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  {THEME_PRESETS.map((c) => (
-                    <ColorSwatch
-                      key={c}
-                      color={c}
-                      selected={c.toLowerCase() === themeColor.toLowerCase()}
-                      onSelect={setThemeColor}
-                    />
-                  ))}
-
-                  <label className="ml-auto h-9 px-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 text-sm font-semibold flex items-center gap-2 cursor-pointer text-white">
-                    <span>Custom</span>
-                    <input
-                      type="color"
-                      value={themeColor}
-                      onChange={(e) => setThemeColor(e.target.value)}
-                      className="h-6 w-6 bg-transparent border-0 p-0"
-                      aria-label="Pick custom theme color"
-                    />
-                  </label>
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-black/20 border border-white/10 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-white text-base font-semibold">Workspace</h3>
-                    <div className="text-xs text-white/70">
-                      ({shortcuts.length}/{MAX_SHORTCUTS})
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={addShortcut}
-                    disabled={shortcuts.length >= MAX_SHORTCUTS}
-                    className={`h-9 w-9 rounded-xl transition-all duration-200 flex items-center justify-center ${
-                      shortcuts.length >= MAX_SHORTCUTS
-                        ? "bg-white/5 opacity-60 cursor-not-allowed"
-                        : "bg-white/15 hover:bg-white/20 cursor-pointer"
-                    }`}
-                    aria-label="Add shortcut"
-                  >
-                    <i className="ri-add-line text-xl text-white"></i>
-                  </button>
-                </div>
-
-                <div className="mt-3 flex flex-col gap-3">
-                  {shortcuts.map((s) => (
-                    <div
-                      key={s.id}
-                      className="rounded-2xl bg-white/5 border border-white/10 p-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <label className="block text-xs text-white/70">
-                            Title
-                          </label>
-                          <input
-                            value={s.title ?? ""}
-                            onChange={(e) =>
-                              updateShortcut(s.id, { title: e.target.value })
-                            }
-                            className="mt-1 h-9 w-full rounded-xl bg-black/20 border border-white/10 px-3 text-sm text-white outline-none"
-                            placeholder="Name"
-                          />
-
-                          <label className="block mt-3 text-xs text-white/70">
-                            URL
-                          </label>
-                          <input
-                            value={s.url ?? ""}
-                            onChange={(e) =>
-                              updateShortcut(s.id, { url: e.target.value })
-                            }
-                            className="mt-1 h-9 w-full rounded-xl bg-black/20 border border-white/10 px-3 text-sm text-white outline-none"
-                            placeholder="https://..."
-                          />
-
-                          <div className="mt-3 flex items-center gap-2">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              id={`icon-${s.id}`}
-                              onChange={(e) =>
-                                handleShortcutIconPick(
-                                  s.id,
-                                  e.target.files?.[0],
-                                )
-                              }
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                document.getElementById(`icon-${s.id}`)?.click()
-                              }
-                              className="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 text-xs cursor-pointer font-semibold text-white"
-                            >
-                              Upload Icon
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateShortcut(s.id, {
-                                  iconDataUrl: undefined,
-                                  iconUrl: undefined,
-                                  iconClass: undefined,
-                                })
-                              }
-                              className="h-9 px-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all duration-200 text-xs cursor-pointer font-semibold text-white/70"
-                            >
-                              Clear
-                            </button>
-                            <div className="ml-auto h-9 w-9 rounded-xl bg-black/20 border border-white/10 flex items-center justify-center overflow-hidden">
-                              {s.iconDataUrl || s.iconUrl ? (
-                                <img
-                                  src={s.iconDataUrl || s.iconUrl}
-                                  alt=""
-                                  className="h-6 w-6 object-contain"
-                                />
-                              ) : (
-                                <i className="ri-link text-lg text-white"></i>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="mt-2 text-[11px] text-white/65">
-                            Icon max 512KB.
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => removeShortcut(s.id)}
-                          className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/15 transition-all duration-200 flex items-center justify-center cursor-pointer"
-                          aria-label="Remove shortcut"
-                        >
-                          <i className="ri-delete-bin-6-line text-xl text-white"></i>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <a
-                href="https://www.linkedin.com/in/rahul-jha-049945257/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 text-sm text-center font-semibold hover:text-white transition-colors"
-              >
-                Developed by Rahul Jha 👌🏼
-              </a>
-            </div>
-          </aside>
+            <i className="ri-settings-3-fill text-[2.8vh] relative z-10" />
+          </button>
         </div>
+
+        {/* Full-screen Settings Page */}
+        <SettingsPage
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          // UI Theme & Base Font
+          uiTheme={uiTheme}
+          onUiThemeChange={handleUiThemeChange}
+          baseFont={baseFont}
+          onBaseFontChange={setBaseFont}
+          baseFontSize={baseFontSize}
+          onBaseFontSizeChange={setBaseFontSize}
+          // Wallpaper
+          wallpaper={wallpaper}
+          onWallpaperPick={handleWallpaperChange}
+          onWallpaperReset={handleWallpaperResetChange}
+          // Theme
+          themeColor={themeColor}
+          themeColorsMap={themeColorsMap}
+          onThemeChange={handleThemeColorChange}
+          themeTextColorIndex={themeTextColorIndex}
+          onThemeTextColorChange={setThemeTextColorIndex}
+          // Shortcuts
+          shortcuts={shortcuts}
+          onShortcutUpdate={updateShortcut}
+          onShortcutRemove={removeShortcut}
+          onShortcutAdd={addShortcut}
+          onShortcutIconPick={handleShortcutIconPick}
+          // Focus Timer
+          showTimer={showTimer}
+          onShowTimerChange={setShowTimer}
+          focusNotifEnabled={focusNotifEnabled}
+          onFocusNotifChange={setFocusNotifEnabled}
+          focusEndRingtone={focusEndRingtone}
+          onFocusEndRingtoneChange={setFocusEndRingtone}
+          restEndRingtone={restEndRingtone}
+          onRestEndRingtoneChange={setRestEndRingtone}
+          // Water Reminder
+          showWaterReminder={showWaterReminder}
+          onShowWaterReminderChange={setShowWaterReminder}
+          waterGoalMl={waterGoalMl}
+          onWaterGoalChange={setWaterGoalMl}
+          waterNotifEnabled={waterNotifEnabled}
+          onWaterNotifChange={setWaterNotifEnabled}
+          waterRingtone={waterRingtone}
+          onWaterRingtoneChange={setWaterRingtone}
+          // Song Player
+          showSongPlayer={showSongPlayer}
+          onShowSongPlayerChange={setShowSongPlayer}
+          songPlaylistUrl={songPlaylistUrl}
+          onSongPlaylistUrlChange={setSongPlaylistUrl}
+          songAutoPlay={songAutoPlay}
+          onSongAutoPlayChange={setSongAutoPlay}
+          songCustomVideo={songCustomVideo}
+          onSongCustomVideoChange={setSongCustomVideo}
+          lofiStations={lofiStations}
+          onLofiStationsChange={setLofiStations}
+          // Notepad
+          showTodo={showTodo}
+          onShowTodoChange={setShowTodo}
+          // Important Tabs
+          showImportantTabs={showImportantTabs}
+          onShowImportantTabsChange={setShowImportantTabs}
+          importantTabsConfig={importantTabsConfig}
+          onImportantTabsConfigChange={setImportantTabsConfig}
+          // TimeBoxing
+          showTimeBoxing={showTimeBoxing}
+          onShowTimeBoxingChange={setShowTimeBoxing}
+          timeBoxingGroups={timeBoxingGroups}
+          onTimeBoxingGroupsChange={setTimeBoxingGroups}
+          // Streak
+          showStreakGrid={showStreakGrid}
+          onShowStreakGridChange={setShowStreakGrid}
+        />
       </div>
     </div>
   );
-}
+};
 
-export default App
+export default App;

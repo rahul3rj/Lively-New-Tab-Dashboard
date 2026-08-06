@@ -1,257 +1,157 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useState } from "react";
+import { recordActivity } from "../utils/activityStore";
 
 const STORAGE = {
-  items: 'todo_items_v1',
-}
+  items: "todo_items_v2",
+};
 
-const chromeApi = typeof globalThis !== 'undefined' ? globalThis.chrome : undefined
-
-const hasChromeStorage =
-  !!chromeApi?.runtime?.id &&
-  !!chromeApi?.storage?.local &&
-  typeof chromeApi.storage.local.get === 'function' &&
-  typeof chromeApi.storage.local.set === 'function'
-
-const storageGet = (key) => {
-  if (!hasChromeStorage) return Promise.resolve(undefined)
-
-  return new Promise((resolve) => {
-    chromeApi.storage.local.get([key], (result) => {
-      if (chromeApi.runtime?.lastError) {
-        resolve(undefined)
-        return
-      }
-      resolve(result?.[key])
-    })
-  })
-}
-
-const storageSet = (key, value) => {
-  if (!hasChromeStorage) return Promise.resolve()
-
-  return new Promise((resolve) => {
-    chromeApi.storage.local.set({ [key]: value }, () => {
-      resolve()
-    })
-  })
-}
+import { storageGet, storageSet } from "../utils/storage.js";
 
 const makeId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return String(Date.now() + Math.random())
-}
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
+  return String(Date.now() + Math.random());
+};
 
-const Todo = () => {
-  const [tasks, setTasks] = useState([])
-  const [newText, setNewText] = useState('')
+const DEFAULT_DEMO_TASKS = [
+  { id: "demo-1", text: "Job Apply On LinkedIn", done: true },
+  { id: "demo-2", text: "TCS Form Fill", done: true },
+  { id: "demo-3", text: "Command Code Subs Ends", done: true },
+  { id: "demo-4", text: "LinkedIn Post", done: false },
+];
 
-  const [editingId, setEditingId] = useState(null)
-  const [editingText, setEditingText] = useState('')
-
-  const editInputRef = useRef(null)
+const Todo = ({ dragHandleProps }) => {
+  const [tasks, setTasks] = useState([]);
+  const [newText, setNewText] = useState("");
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
-    ;(async () => {
-      const raw = await storageGet(STORAGE.items)
-      if (cancelled) return
+    (async () => {
+      const raw = await storageGet(STORAGE.items);
+      if (cancelled) return;
 
       try {
-        const parsed = JSON.parse(String(raw ?? '[]'))
-        setTasks(Array.isArray(parsed) ? parsed : [])
+        const parsed = JSON.parse(String(raw ?? "[]"));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTasks(parsed);
+        } else {
+          setTasks(DEFAULT_DEMO_TASKS);
+        }
       } catch {
-        setTasks([])
+        setTasks(DEFAULT_DEMO_TASKS);
       }
-    })()
+    })();
 
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-    storageSet(STORAGE.items, JSON.stringify(tasks))
-  }, [tasks])
-
-  const sortedTasks = useMemo(() => {
-    return [...tasks].sort((a, b) => {
-      const ap = a?.pinned ? 1 : 0
-      const bp = b?.pinned ? 1 : 0
-      if (bp !== ap) return bp - ap
-      return (a?.createdAt ?? 0) - (b?.createdAt ?? 0)
-    })
-  }, [tasks])
+    if (tasks.length > 0) {
+      storageSet(STORAGE.items, JSON.stringify(tasks));
+    }
+  }, [tasks]);
 
   const addTask = () => {
-    const text = newText.trim()
-    if (!text) return
+    const text = newText.trim();
+    if (!text) return;
 
     const task = {
       id: makeId(),
       text,
       done: false,
-      pinned: false,
-      createdAt: Date.now(),
-    }
+    };
 
-    setTasks((prev) => [task, ...prev])
-    setNewText('')
-  }
+    setTasks((prev) => [...prev, task]);
+    setNewText("");
+  };
 
   const toggleDone = (id) => {
-    if (editingId) return
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
-  }
-
-  const togglePinned = (id) => {
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, pinned: !t.pinned } : t)))
-  }
+    const task = tasks.find((t) => t.id === id);
+    if (task && !task.done) recordActivity(1);
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+    );
+  };
 
   const removeTask = (id) => {
-    setTasks((prev) => prev.filter((t) => t.id !== id))
-    if (editingId === id) {
-      setEditingId(null)
-      setEditingText('')
-    }
-  }
-
-  const startEdit = (task) => {
-    setEditingId(task.id)
-    setEditingText(task.text)
-    queueMicrotask(() => editInputRef.current?.focus())
-  }
-
-  const cancelEdit = () => {
-    setEditingId(null)
-    setEditingText('')
-  }
-
-  const commitEdit = () => {
-    const next = editingText.trim()
-    if (!editingId) return
-
-    if (!next) {
-      removeTask(editingId)
-      return
-    }
-
-    setTasks((prev) => prev.map((t) => (t.id === editingId ? { ...t, text: next } : t)))
-    cancelEdit()
-  }
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+  };
 
   return (
-    <div className='w-full max-w-[520px] mx-auto rounded-3xl bg-[color:var(--theme)]/36 backdrop-blur-md  shadow-2xl px-6 py-5 text-white font-poppins'>
-      <h1 className='text-start text-base font-semibold text-white'>To Do List</h1>
-
-      <div className='mt-4 w-full h-9 rounded-full bg-[color:var(--theme)]/36 flex items-center overflow-hidden border border-black/30'>
-        <input
-          value={newText}
-          onChange={(e) => setNewText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') addTask()
-          }}
-          className='h-full w-full px-5 text-white/70 placeholder:text-white/40 outline-none bg-transparent'
-          placeholder='Add task...'
-        />
-        <button
-          type='button'
-          onClick={addTask}
-          className='h-9 w-10 rounded-full bg-black/55 hover:bg-black/65 transition-all duration-200 flex items-center justify-center cursor-pointer'
-          aria-label='Add task'
+    <div className="figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col justify-between shadow-2xl relative overflow-hidden">
+      {/* Header Row */}
+      <div className="w-full flex items-center justify-between z-10 relative shrink-0 mb-3">
+        <div
+          className="flex items-center gap-2 text-white/70 text-xs font-gilroy-medium cursor-grab active:cursor-grabbing select-none"
+          data-drag-handle
+          {...dragHandleProps}
         >
-          <i className='ri-add-line text-2xl text-white'></i>
-        </button>
+          <i className="ri-draggable text-sm pointer-events-none"></i>
+          <span className="pointer-events-none">Notepad</span>
+        </div>
       </div>
 
-      <div className='mt-4 flex flex-col gap-3 h-[calc(50vh-250px)] overflow-auto scrollbar-hide '>
-        {sortedTasks.map((task) => {
-          const isEditing = editingId === task.id
-
-          return (
-            <div
-              key={task.id}
-              className='w-full rounded-2xl bg-black/45 backdrop-blur-md px-4 py-3 flex items-center gap-4'
+      {/* Task Items & Inline Add Task Input */}
+      <div className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide flex flex-col gap-1.5 z-10 pr-0.5">
+        {tasks.map((task) => (
+          <div
+            key={task.id}
+            className="group/task flex items-center gap-2.5 text-xs sm:text-sm py-0.5 transition-colors"
+          >
+            {/* Checked / Unchecked Circle Icon */}
+            <button
+              type="button"
+              onClick={() => toggleDone(task.id)}
+              className="shrink-0 text-white/80 hover:text-white cursor-pointer focus:outline-none"
             >
-              <button
-                type='button'
-                onClick={() => toggleDone(task.id)}
-                className='h-4 w-4 rounded-full border-2 border-white/90 flex items-center justify-center shrink-0 cursor-pointer'
-                aria-label={task.done ? 'Mark as not done' : 'Mark as done'}
-              >
-                <span
-                  className={task.done ? 'h-4 w-4 rounded-full bg-white/95' : 'h-4 w-4 rounded-full'}
-                  aria-hidden='true'
-                />
-              </button>
+              {task.done ? (
+                <i className="ri-checkbox-circle-fill text-base text-white/70"></i>
+              ) : (
+                <i className="ri-checkbox-blank-circle-line text-base text-white/60 hover:text-white"></i>
+              )}
+            </button>
 
-              <div className='flex-1 min-w-0'>
-                {isEditing ? (
-                  <input
-                    ref={editInputRef}
-                    value={editingText}
-                    onChange={(e) => setEditingText(e.target.value)}
-                    onBlur={commitEdit}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitEdit()
-                      if (e.key === 'Escape') cancelEdit()
-                    }}
-                    className={`w-full bg-transparent outline-none text-sm font-semibold ${
-                      task.done ? 'text-zinc-500 line-through' : 'text-white'
-                    }`}
-                  />
-                ) : (
-                  <button
-                    type='button'
-                    onClick={() => toggleDone(task.id)}
-                    className={`w-full text-left text-sm font-semibold truncate ${
-                      task.done ? 'text-zinc-500 line-through' : 'text-white'
-                    }`}
-                    title={task.text}
-                  >
-                    {task.text}
-                  </button>
-                )}
-              </div>
+            {/* Task Title */}
+            <span
+              onClick={() => toggleDone(task.id)}
+              className={`flex-1 min-w-0 font-gilroy-medium cursor-pointer truncate ${
+                task.done ? "line-through text-white/40" : "text-white/90"
+              }`}
+            >
+              {task.text}
+            </span>
 
-              <div className='flex items-center gap-2 shrink-0'>
-                <button
-                  type='button'
-                  onClick={() => startEdit(task)}
-                  className='h-6 w-6 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 flex items-center justify-center cursor-pointer'
-                  aria-label='Edit task'
-                >
-                  <i className='ri-pencil-line text-md text-white'></i>
-                </button>
+            {/* Hover Delete Action */}
+            <button
+              type="button"
+              onClick={() => removeTask(task.id)}
+              className="opacity-0 group-hover/task:opacity-100 text-white/30 hover:text-white/80 transition-opacity p-0.5 cursor-pointer shrink-0"
+              title="Delete task"
+            >
+              <i className="ri-close-line text-xs"></i>
+            </button>
+          </div>
+        ))}
 
-                <button
-                  type='button'
-                  onClick={() => togglePinned(task.id)}
-                  className='h-6 w-6 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 flex items-center justify-center cursor-pointer'
-                  aria-label={task.pinned ? 'Unpin task' : 'Pin task'}
-                >
-                  <i className={`${task.pinned ? 'ri-pushpin-2-fill' : 'ri-pushpin-2-line'} text-md text-white`}></i>
-                </button>
-
-                <button
-                  type='button'
-                  onClick={() => removeTask(task.id)}
-                  className='h-6 w-6 rounded-full bg-white/10 hover:bg-white/15 transition-all duration-200 flex items-center justify-center cursor-pointer'
-                  aria-label='Delete task'
-                >
-                  <i className='ri-close-line text-md text-white'></i>
-                </button>
-              </div>
-            </div>
-          )
-        })}
-
-        {sortedTasks.length === 0 && (
-          <div className='w-full text-center text-sm text-white/80 py-6'>No tasks yet</div>
-        )}
+        {/* Inline Add Task Row (matching mockup screenshot) */}
+        <div className="flex items-center gap-2.5 text-xs sm:text-sm py-0.5">
+          <i className="ri-checkbox-blank-circle-line text-base text-white/30 shrink-0"></i>
+          <input
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addTask();
+            }}
+            className="w-full bg-transparent outline-none font-gilroy-medium text-white placeholder:text-white/30 text-xs sm:text-sm"
+            placeholder="TO Do..."
+          />
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Todo
+export default Todo;

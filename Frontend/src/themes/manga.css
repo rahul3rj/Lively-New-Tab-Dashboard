@@ -1,0 +1,268 @@
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * MANGA THEME  |  data-theme="manga"
+ * Black & white comic aesthetic tinted with your custom --theme-* accent palette!
+ * Card panels use clean white background with thick ink borders & stamp shadows.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+
+
+/* ── Wallpaper: Keep wallpaper visible ── */
+[data-theme="manga"] .theme-wallpaper {
+  display: block !important;
+  filter: contrast(1.05) grayscale(0.2) !important;
+}
+
+/* Halftone dot overlay over wallpaper */
+[data-theme="manga"] .theme-bg {
+  background-color: transparent !important;
+  background-image:
+    radial-gradient(circle, rgba(26,26,26,0.3) 1.2px, transparent 1.2px) !important;
+  background-size: 22px 22px !important;
+}
+
+/* ── Font ── */
+[data-theme="manga"],
+[data-theme="manga"] body,
+[data-theme="manga"] html {
+  font-family: var(--font-base-custom, "Bangers", "Gilroy", cursive) !important;
+  letter-spacing: 0.03em;
+}
+
+/* ── Glass cards → clean ink panels tinted with 3rd theme color ── */
+[data-theme="manga"] .figma-glass-card,
+[data-theme="manga"] .figma-glass-static,
+[data-theme="manga"] .figma-glass-clean,
+[data-theme="manga"] .figma-glass-border-slide,
+[data-theme="manga"] .card-glass-bg {
+  background: var(--theme-3, #ffffff) !important;
+  border: 2.5px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--theme-1, #1a1a1a) 80%, #1a1a1a) !important;
+  color: #ffffff !important;
+}
+
+/* Remove noise pseudo */
+[data-theme="manga"] .figma-glass-card::before,
+[data-theme="manga"] .figma-glass-static::before,
+[data-theme="manga"] .figma-glass-clean::before,
+[data-theme="manga"] .figma-glass-border-slide::before,
+[data-theme="manga"] .card-glass-bg::before {
+  display: none !important;
+}
+
+/* Remove border slide animation and pseudo lines in manga mode */
+[data-theme="manga"] .figma-glass-card::after,
+[data-theme="manga"] .figma-glass-static::after,
+[data-theme="manga"] .figma-glass-clean::after,
+[data-theme="manga"] .figma-glass-border-slide::after,
+[data-theme="manga"] .card-glass-bg::after {
+  display: none !important;
+}
+
+/* Whole Component Containers (Grid Widgets, Glass Cards & Settings Cards): Disable hover shift animation & white top/bottom borders */
+[data-theme="manga"] .figma-glass-card:hover,
+[data-theme="manga"] .grid-widget:hover,
+[data-theme="manga"] .card-glass-bg:hover,
+[data-theme="manga"] .figma-glass-static:hover,
+[data-theme="manga"] .figma-glass-clean:hover,
+[data-theme="manga"] .figma-glass-border-slide:hover {
+  transform: none !important;
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--theme-1, #1a1a1a) 80%, #1a1a1a) !important;
+  border-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  border-top-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  border-bottom-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  border-left-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  border-right-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+}
+
+/* Interactive Elements (Buttons & Taskbar Links): Enable hover animation specifically for buttons and taskbar icons in Manga mode */
+[data-theme="manga"] a:hover,
+[data-theme="manga"] a.figma-glass-card:hover,
+[data-theme="manga"] button:not(.font-heathergreen):not(.timebox-subtask-check):hover,
+[data-theme="manga"] .card-glass-bg button:not(.font-heathergreen):not(.timebox-subtask-check):hover,
+[data-theme="manga"] .figma-glass-card button:not(.font-heathergreen):not(.timebox-subtask-check):hover,
+[data-theme="manga"] .grid-widget button:not(.font-heathergreen):not(.timebox-subtask-check):hover {
+  transform: translate(2px, 2px) translateZ(0) !important;
+  box-shadow: 2px 2px 0px var(--theme-1, #1a1a1a) !important;
+  border-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  border-top-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  border-bottom-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  border-left-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  border-right-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+}
+
+/* ── Buttons in Focus, Lofi Song, and Water Reminder Widgets in Manga Mode ──
+   Light background in default state, turns Dark on hover (NO shift animation). ── */
+[data-theme="manga"] .focus-widget button:not(.font-heathergreen),
+[data-theme="manga"] .song-widget button:not(.font-heathergreen),
+[data-theme="manga"] .water-widget button:not(.font-heathergreen) {
+  background: #ffffff !important;
+  color: #1a1a1a !important;
+  border: 2px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  box-shadow: 2px 2px 0px var(--theme-1, #1a1a1a) !important;
+  transform: none !important;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
+}
+
+[data-theme="manga"] .focus-widget button:not(.font-heathergreen) *,
+[data-theme="manga"] .song-widget button:not(.font-heathergreen) *,
+[data-theme="manga"] .water-widget button:not(.font-heathergreen) * {
+  color: inherit !important;
+}
+
+/* Hover: turn dark background & white text/icon, NO movement shift */
+[data-theme="manga"] .focus-widget button:not(.font-heathergreen):hover,
+[data-theme="manga"] .song-widget button:not(.font-heathergreen):hover,
+[data-theme="manga"] .water-widget button:not(.font-heathergreen):hover {
+  background: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #1a1a1a !important;
+  border-top-color: #1a1a1a !important;
+  border-bottom-color: #1a1a1a !important;
+  border-left-color: #1a1a1a !important;
+  border-right-color: #1a1a1a !important;
+  transform: none !important;
+  box-shadow: 2px 2px 0px var(--theme-1, #1a1a1a) !important;
+}
+
+[data-theme="manga"] .focus-widget button:not(.font-heathergreen):hover *,
+[data-theme="manga"] .song-widget button:not(.font-heathergreen):hover *,
+[data-theme="manga"] .water-widget button:not(.font-heathergreen):hover * {
+  color: #ffffff !important;
+}
+
+/* Text colours */
+[data-theme="manga"] .grid-widget,
+[data-theme="manga"] .figma-glass-card,
+[data-theme="manga"] .card-glass-bg,
+[data-theme="manga"] .figma-glass-clean,
+[data-theme="manga"] .figma-glass-static {
+  color: #1a1a1a !important;
+}
+
+[data-theme="manga"] .grid-widget .text-white,
+[data-theme="manga"] .figma-glass-card .text-white,
+[data-theme="manga"] .card-glass-bg .text-white,
+[data-theme="manga"] .figma-glass-clean .text-white,
+[data-theme="manga"] .figma-glass-static .text-white {
+  color: #1a1a1a !important;
+}
+
+[data-theme="manga"] .grid-widget .text-white\/90,
+[data-theme="manga"] .figma-glass-card .text-white\/90,
+[data-theme="manga"] .card-glass-bg .text-white\/90,
+[data-theme="manga"] .figma-glass-clean .text-white\/90,
+[data-theme="manga"] .figma-glass-static .text-white\/90 { color: rgba(26,26,26,0.9) !important; }
+
+[data-theme="manga"] .grid-widget .text-white\/80,
+[data-theme="manga"] .figma-glass-card .text-white\/80,
+[data-theme="manga"] .card-glass-bg .text-white\/80,
+[data-theme="manga"] .figma-glass-clean .text-white\/80,
+[data-theme="manga"] .figma-glass-static .text-white\/80 { color: rgba(26,26,26,0.8) !important; }
+
+[data-theme="manga"] .grid-widget .text-white\/70,
+[data-theme="manga"] .figma-glass-card .text-white\/70,
+[data-theme="manga"] .card-glass-bg .text-white\/70,
+[data-theme="manga"] .figma-glass-clean .text-white\/70,
+[data-theme="manga"] .figma-glass-static .text-white\/70 { color: rgba(26,26,26,0.7) !important; }
+
+/* Buttons & Inputs */
+[data-theme="manga"] .figma-glass-card button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="manga"] .figma-glass-static button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="manga"] .figma-glass-clean button:not(.font-heathergreen):not(.timebox-subtask-check),
+[data-theme="manga"] .grid-widget button:not(.font-heathergreen):not(.timebox-subtask-check) {
+  border-color: color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+}
+
+/* Drag ghost */
+[data-theme="manga"] .grid-ghost {
+  border: 2.5px dashed var(--theme-1, #1a1a1a) !important;
+  background: color-mix(in srgb, var(--theme-1, #1a1a1a) 10%, transparent) !important;
+}
+
+/* Resize handle */
+[data-theme="manga"] .grid-widget [data-resize-handle] div {
+  background: var(--theme-1, #1a1a1a) !important;
+}
+
+/* Dragging widget shadow & cursor locking to prevent flicker */
+[data-theme="manga"] .grid-widget--dragging {
+  filter: drop-shadow(4px 4px 0 var(--theme-1, #1a1a1a)) !important;
+  cursor: grabbing !important;
+}
+
+[data-theme="manga"] .grid-widget--dragging * {
+  cursor: grabbing !important;
+  pointer-events: none !important;
+  transform: none !important;
+}
+
+/* Speed-lines decoration */
+[data-theme="manga"] .theme-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    100deg,
+    transparent,
+    transparent 60px,
+    color-mix(in srgb, var(--theme-1, #1a1a1a) 5%, transparent) 60px,
+    color-mix(in srgb, var(--theme-1, #1a1a1a) 5%, transparent) 61px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Settings Page Manga Overrides ── */
+[data-theme="manga"] .card-glass-bg {
+  background: var(--theme-3, #ffffff) !important;
+  border: 2.5px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  box-shadow: 4px 4px 0px color-mix(in srgb, var(--theme-1, #1a1a1a) 80%, #1a1a1a) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="manga"] .card-glass-bg button {
+  background: #ffffff !important;
+  border: 2px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  color: #1a1a1a !important;
+  box-shadow: 2px 2px 0px var(--theme-1, #1a1a1a) !important;
+  font-family: var(--font-base-custom, "Bangers", cursive) !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* ── Toggle buttons in Settings Manga Theme (uses 2nd darkest color var(--theme-3)) ── */
+[data-theme="manga"] .card-glass-bg button[aria-pressed],
+[data-theme="manga"] button[aria-pressed] {
+  background: var(--theme-3, #334155) !important;
+  border: 2px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  box-shadow: 2px 2px 0px var(--theme-1, #1a1a1a) !important;
+}
+
+[data-theme="manga"] .card-glass-bg button[aria-pressed="true"],
+[data-theme="manga"] button[aria-pressed="true"] {
+  background: var(--theme-1, #CBD5E1) !important;
+}
+
+[data-theme="manga"] .card-glass-bg button[aria-pressed] span,
+[data-theme="manga"] button[aria-pressed] span {
+  background: #ffffff !important;
+  border: 1.5px solid #1a1a1a !important;
+  box-shadow: 1px 1px 0px #1a1a1a !important;
+}
+
+[data-theme="manga"] .card-glass-bg input {
+  background: #ffffff !important;
+  border: 2.5px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 60%, #1a1a1a) !important;
+  color: #1a1a1a !important;
+}
+
+/* ── Time Boxing Manga Overrides ── */
+[data-theme="manga"] .timebox-task-card {
+  border-radius: 0 !important;
+  border: 2px solid color-mix(in srgb, var(--theme-1, #1a1a1a) 70%, #1a1a1a) !important;
+  box-shadow: 3px 3px 0px var(--theme-1, #1a1a1a) !important;
+  font-family: var(--font-base-custom, "Bangers", cursive) !important;
+}

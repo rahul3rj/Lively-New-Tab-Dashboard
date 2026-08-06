@@ -1,246 +1,261 @@
-# 🚀 Lively New Tab Dashboard
+# 🖥️ Project OS — Ultimate New Tab Workspace & Dashboard
 
-> Turn every new tab into your **personal productivity HQ** ⚡
-> Clean. Custom. Focused. No distractions.
-
-**Lively New Tab Dashboard** is a Chrome New Tab extension (Manifest V3) that replaces boring blank tabs with a **customizable workspace** featuring search, clock, focus timer, todo list, shortcuts, and aesthetic wallpapers.
-
-Built for students, devs, and productivity nerds who want their browser to actually *work for them* 💻✨
+> **Transform every new tab into a futuristic, hyper-customizable productivity HQ.**  
+> *Sleek aesthetics. Zero distractions. Unrivaled focus.*
 
 ---
 
-## 🌟 Why Lively?
+## 📌 Overview
 
-Because your new tab should be:
+**Project OS** is a cutting-edge Chrome New Tab Extension (**Manifest V3**) built with **React 19**, **Vite**, **Tailwind CSS v4**, and **dnd-kit**. It replaces standard blank browser tabs with an interactive, modular operating system dashboard designed for developers, students, power users, and productivity enthusiasts.
 
-✅ Useful
-✅ Aesthetic
-✅ Fast
-✅ Minimal
-✅ Yours
-
-Not just… empty.
+Whether you need a distraction-free minimalist view, an hourly routine time-box planner, an ambient Lofi music player, or a GitHub-style activity contribution calendar, **Project OS** adapts to your workflow seamlessly.
 
 ---
 
-## ✨ Features
+## ✨ Features Breakdown
 
-### 🔍 Smart Search
+### 🎨 1. Multi-Aesthetic Theme Engine
+Personalize your dashboard with 4 handcrafted design themes:
+- 💎 **Glassmorphic (Default):** Translucent frosted-glass cards, smooth modern gradients, and sleek backdrop blurs.
+- ⚡ **Cyberpunk:** High-contrast neon glows, futuristic cyan/pink accents, scanline textures, and sci-fi styling.
+- 🖋️ **Manga / Ink:** Monochromatic black-and-white ink aesthetic with high-contrast outlines and manga panel styling.
+- 👾 **Pixel Art:** Nostalgic 8-bit retro arcade interface with pixelated borders and retro typography.
 
-* Choose your favorite search engine
-* Personalized welcome name (auto-saved)
+---
 
-### ⏰ Time & Date
+### 🧱 2. Drag & Drop Modular Grid Dashboard
+- **Flexible Grid Layout:** Drag, drop, and rearrange widgets dynamically using `@dnd-kit/core`.
+- **Dual Workspace View Modes:**
+  - **Dashboard Grid Mode:** Multi-widget layout displaying all your active tools at once.
+  - **Hero View Mode:** Distraction-free, minimal focus screen for deep work sessions.
+- **Widget Toggle Control:** Turn individual widgets on/off on demand to keep your space clean.
 
-* Live clock + date widget
-* Keeps you grounded in reality 😄
+---
 
-### 🧭 Workspace Shortcuts
+### ⏰ 3. Smart Clock & Dynamic Greeting
+- Real-time digital clock with **12-hour / 24-hour** display formats.
+- Customizable greetings (e.g. *"Good Morning, Rahul"*).
+- Live date presentation and optional seconds ticker.
+- Theme-responsive fonts and custom text color index selection.
 
-* Add / Edit / Remove shortcuts
-* Max 7 (clean UI = clear mind)
-* Upload custom icons
+---
 
-### 🎯 Focus Timer
+### 🧭 4. Workspace Shortcuts & AI Tool Launcher
+- Quick-launch bar pre-configured with top AI tools & developer sites:
+  - 🤖 **Gemini**, **Claude**, **Copilot**, **ChatGPT**, **Perplexity**, **DeepSeek**, **Higgsfield AI**, and custom bookmarks.
+- Full CRUD management: Add, edit, remove, reorder, and upload custom icons/favicons for any shortcut.
 
-* Custom focus duration
-* Tracks **Today’s Focus Time**
-* Auto-saves progress
+---
 
-### ✅ Todo Manager
+### 🎯 5. Pomodoro & Focus Timer
+- Customizable **Work / Rest** timer durations.
+- Session counter and total daily focus time tracking.
+- Audio ringtone alerts on session completion (Focus finish & Rest finish).
+- Chrome browser notifications support.
+- Automatically syncs focus metrics to your streak contribution log.
 
-* Lightweight task list
-* Persistent storage
-* Zero clutter
+---
 
-### ⚙️ Settings Drawer
+### ✅ 6. Structured Task Manager (Todo)
+- Lightweight, persistent task checklist.
+- Task completion progress bar & quick filters.
+- Zero clutter, smooth micro-animations, and fast keyboard entry.
 
-* Upload wallpaper (image / video)
-* Toggle widgets (Timer / Todo)
-* Theme color picker
-* Personalize everything
+---
+
+### 📅 7. Time-Boxing Routine Planner
+- Hourly habit and routine block planner.
+- Pre-loaded & customizable task groups (*Brain Stretching, Exercise, LeetCode, Deep Work, Skill Development*).
+- Subtask checklists and per-group streak tracking.
+- Automatic daily UTC reset to keep your habits fresh every morning.
+
+---
+
+### 🟩 8. Activity Contribution & Streak Grid
+- GitHub-style activity contribution calendar matrix (powered by `react-activity-calendar`).
+- Visualizes daily focus intensity, logged activity, and long-term consistency streaks.
+
+---
+
+### 💧 9. Hydration Tracker / Water Reminder
+- Interactive water intake monitor with customizable daily target in milliliters (ml).
+- Quick drink logs (`+250ml`, `+500ml`, custom amounts) with visual hydration progress ring.
+- Configurable interval reminders and customizable sound ringtones.
+
+---
+
+### 🎵 10. Ambient Audio & Media Player
+- **Lofi Radio Stations:** Embedded live streaming audio feeds (*ILoveMusic, Zeno.fm, Laut.fm, FluxFM*).
+- **YouTube Audio Integration:** Play YouTube music videos or streams directly in the background.
+- **Spotify Integration:** Quick access to Spotify audio streams.
+- Full control bar: Play/Pause, track details, volume adjustment, and custom audio stream URLs.
+
+---
+
+### 📑 11. Important Tabs & Categorized Bookmarks
+- Categorized bookmark hubs (*Study, AI Engineering, DSA / LeetCode, News, Personal*).
+- Quickly access, group, and manage link collections without tab clutter.
+
+---
+
+### 🖼️ 12. Background & Wallpaper Customizer
+- Support for custom **High-Res Images** and **Animated Video Backgrounds** (`.mp4`, `.webm`).
+- Built-in wallpaper library (Default, Cyberpunk, Manga, CLI).
+- Adjustable background **blur filter**, dark overlay **opacity slider**, and image sizing options.
+
+---
+
+### 💾 13. Data Privacy & Backup / Restore
+- **100% Local & Private:** All settings, wallpapers, todos, and focus stats stay stored on your device via `chrome.storage.local`.
+- **JSON Backup & Restore:** Export your complete setup configuration to JSON and restore it anytime or transfer across browsers.
 
 ---
 
 ## 🛠️ Tech Stack
 
-Built with modern tools only 🔥
-
-* ⚛️ React + Vite
-* 🎨 Tailwind CSS
-* 🧩 Chrome Extension (Manifest V3)
-* 💾 chrome.storage.local
-
----
-
-## 🔐 Chrome Permissions
-
-```
-storage
-```
-
-Used for:
-
-* Settings
-* Wallpapers
-* Shortcuts
-* Todos
-* Focus stats
-
-No shady stuff. Your data stays local 💯
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/) |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) + Vanilla CSS Theme Engines |
+| **Drag & Drop** | [@dnd-kit/core](https://dndkit.com/) & `@dnd-kit/utilities` |
+| **Activity Graph** | `react-activity-calendar` |
+| **Icons** | Remix Icon (`remixicon`) |
+| **Extension Architecture** | Chrome Extension Manifest V3 (`chrome.storage.local`, `declarativeNetRequest`) |
 
 ---
 
-## 🚀 Run Locally (Dev Mode)
+## 📂 Project Directory Structure
 
-From the `Frontend` folder:
-
-```bash
-npm install
-npm run dev
+```txt
+Chrome_Extension/
+├── README.md                      # Project OS Documentation
+└── Frontend/
+    ├── package.json               # Dependencies & build scripts
+    ├── vite.config.js             # Vite configuration
+    ├── index.html                 # Main extension HTML template
+    ├── public/
+    │   ├── manifest.json          # Chrome Extension Manifest V3 config
+    │   ├── rules.json             # Declarative net request header rules
+    │   ├── logo.png               # Extension branding icon
+    │   └── wallpapers & fonts     # Pre-loaded wallpaper assets & custom typography
+    └── src/
+        ├── App.jsx                # Core application state, storage syncing & settings
+        ├── main.jsx               # Application entry point
+        ├── index.css              # Global styles & design system utilities
+        ├── components/
+        │   ├── DashboardGrid.jsx  # Drag-and-drop widget layout manager
+        │   ├── HeroView.jsx       # Distraction-free minimal focus view
+        │   ├── Clock.jsx          # Digital clock & dynamic greeting widget
+        │   ├── Taskbar.jsx        # Quick shortcuts launcher bar
+        │   ├── Timmer.jsx         # Pomodoro / focus session timer widget
+        │   ├── Todo.jsx           # Task manager widget
+        │   ├── TimeBoxing.jsx     # Hourly routine planner widget
+        │   ├── StreakGrid.jsx     # Activity contribution graph widget
+        │   ├── WaterReminder.jsx  # Hydration tracker widget
+        │   ├── SongPlayer.jsx     # Ambient Lofi & YouTube music player
+        │   ├── ImportantTabs.jsx  # Categorized link bookmarks widget
+        │   ├── SettingsPage.jsx   # Complete settings, theme & wallpaper drawer
+        │   └── FigmaGlassCard.jsx # Frosted glass card UI wrapper
+        ├── utils/
+        │   ├── storage.js         # Chrome storage wrapper (local & fallback support)
+        │   ├── activityStore.js   # Focus streak activity logger
+        │   ├── youtube.js         # YouTube player helper utilities
+        │   └── spotify.js         # Spotify integration helper utilities
+        └── themes/
+            ├── index.js           # Theme registry & state management
+            ├── cyberpunk.css      # Cyberpunk neon theme stylesheet
+            ├── manga.css          # Manga ink monochrome stylesheet
+            └── pixel.css          # 8-Bit Pixel Art theme stylesheet
 ```
-
-⚠️ Note:
-Local dev is for UI/testing only.
-New Tab override works **only when loaded as extension**.
 
 ---
 
-## 📦 Build & Load in Chrome
+## 🚀 Quick Start & Installation Guide
 
-### 1️⃣ Build Project
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- Google Chrome (or any Chromium-based browser like Brave, Edge, Arc)
+
+---
+
+### 1️⃣ Clone & Install Dependencies
+
+Navigating to the `Frontend` directory:
 
 ```bash
 cd Frontend
 npm install
-npm run build
 ```
-
-### 2️⃣ Load Extension
-
-1. Open `chrome://extensions`
-2. Enable **Developer Mode**
-3. Click **Load unpacked**
-4. Select: `Frontend/dist`
-
-### 3️⃣ Open New Tab 🎉
-
-You’re live.
 
 ---
 
-### 🔄 After Making Changes
+### 2️⃣ Development Mode (Local UI Testing)
 
-Whenever you update code:
+To run the app locally in the browser for fast UI testing:
 
+```bash
+npm run dev
+```
+
+> **Note:** The Chrome New Tab override feature requires loading the built extension into Chrome.
+
+---
+
+### 3️⃣ Build & Load Extension in Chrome
+
+#### Step A: Build the project
 ```bash
 npm run build
 ```
+This generates the optimized production bundle inside `Frontend/dist`.
 
-Then:
+#### Step B: Load into Google Chrome
+1. Open Google Chrome and navigate to `chrome://extensions`.
+2. Enable **Developer mode** (toggle switch in top right corner).
+3. Click **Load unpacked**.
+4. Select the `Frontend/dist` directory.
 
-* Go to `chrome://extensions`
-* Hit **Reload**
-
-Boom. Updated.
-
----
-
-## ⚠️ Settings & Limits
-
-| Feature   | Limit                 |
-| --------- | --------------------- |
-| Wallpaper | Max 7MB               |
-| Shortcuts | Max 7                 |
-| Icons     | ≤ 512KB (Recommended) |
-
-Keeping it fast + smooth 🚀
+#### Step C: Open a New Tab!
+Open a new tab (`Ctrl + T` or `Cmd + T`) to experience **Project OS**! 🎉
 
 ---
 
-## 💾 Data Persistence
-
-All data is stored using `chrome.storage.local`:
-
-### Stored Items:
-
-* 🎨 Theme + Wallpaper
-* ⚙️ Widget Toggles
-* 🧭 Shortcuts
-* 🎯 Focus Stats
-* ✅ Todos
-
-Your setup stays safe even after restart.
+### 🔄 Updating After Code Changes
+Whenever you modify files in `src/`:
+```bash
+cd Frontend
+npm run build
+```
+Then go to `chrome://extensions` and click the **Reload** (🔄) icon on **Project OS**.
 
 ---
 
-## 📁 Project Structure
+## 🔐 Chrome Permissions & Privacy
 
-Key Files:
+**Project OS** respects your privacy. All user data stays strictly on your local device.
 
-```txt
-src/App.jsx                 → Main layout + Settings logic
-src/components/SearchBar    → Search + Welcome
-src/components/Taskbar      → Shortcuts
-src/components/Clock        → Time + Date
-src/components/Timmer       → Focus Timer
-src/components/Todo         → Task Manager
-dist/manifest.json          → MV3 Config
+```json
+"permissions": [
+  "storage",
+  "unlimitedStorage",
+  "declarativeNetRequest"
+]
 ```
 
----
-
-## 🧯 Troubleshooting
-
-### Fonts / Zoom Issues
-
-If UI looks weird:
-
-```txt
-Ctrl + 0
-```
-
-Reset zoom on extension page.
+- **`storage` / `unlimitedStorage`:** Stores custom themes, wallpapers, shortcuts, routine schedules, todos, and timer stats locally on your machine.
+- **`declarativeNetRequest`:** Enables smooth audio streaming playback for Lofi radio stations and YouTube media embedding.
+- **Zero External Data Tracking:** No analytics, no remote telemetry, no external accounts required.
 
 ---
 
-### Changes Not Showing?
+## 👨‍💻 Author & Credits
 
-Checklist:
-
-✅ Did you run `npm run build`?
-✅ Did you reload extension?
-✅ Did you select correct `dist` folder?
-
-If yes, you’re good.
-
----
-
-## 👨‍💻 Author
-
-Built with ❤️ by **Rahul Jha**
-Student • Developer • Builder • Hustler 🚀
-
-If you like it, drop a ⭐
+Crafted with ❤️ by **Rahul Jha**  
+*Developer • Student • Builder • Hustler* 🚀
 
 ---
 
 ## 📜 License
 
-Choose one:
-
-* MIT (Recommended)
-* Apache-2.0
-* GPL
-
-Then add it here.
-
----
-
-## 🤝 Contribute
-
-PRs are welcome 💪
-Ideas? Issues? Improvements?
-Open a ticket and let’s build together.
-
----
+This project is licensed under the **MIT License**. Feel free to customize and extend it for personal or open-source use.
