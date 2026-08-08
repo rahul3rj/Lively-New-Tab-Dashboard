@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_LOFI_STATIONS } from "../App";
 import { UI_THEMES } from "../themes/index.js";
 
@@ -62,20 +62,114 @@ const WATER_GOALS = [
   { label: "6.0 L", value: 6000 },
 ];
 
-const ICON_GRID = [
-  "ri-book-open-line", "ri-gemini-fill", "ri-code-s-slash-line", "ri-newspaper-line",
-  "ri-youtube-fill", "ri-github-fill", "ri-notion-fill", "ri-twitter-x-fill",
-  "ri-instagram-line", "ri-linkedin-fill", "ri-discord-fill", "ri-reddit-line",
-  "ri-google-fill", "ri-chrome-fill", "ri-mail-line", "ri-calendar-line",
-  "ri-chat-3-line", "ri-music-2-line", "ri-film-line", "ri-gamepad-line",
-  "ri-headphone-line", "ri-camera-line", "ri-shopping-cart-line", "ri-wallet-line",
-  "ri-briefcase-line", "ri-flask-line", "ri-leaf-line", "ri-globe-line",
-  "ri-map-pin-line", "ri-trophy-line", "ri-heart-line", "ri-star-line",
-  "ri-bookmark-line", "ri-lightbulb-line", "ri-fire-line", "ri-robot-2-line",
-  "ri-code-box-line", "ri-terminal-box-line", "ri-database-line", "ri-bar-chart-2-line",
-  "ri-cpu-line", "ri-cloud-line", "ri-shield-line", "ri-lock-line",
-  "ri-pen-nib-line", "ri-palette-line", "ri-layout-grid-line", "ri-home-2-line",
-  "ri-user-line", "ri-team-line",
+const ICON_CATEGORIES = [
+  { id: "all", label: "All Icons", icon: "ri-grid-fill" },
+  { id: "daily", label: "Daily Life", icon: "ri-sun-line" },
+  { id: "fitness", label: "Fitness", icon: "ri-heart-pulse-line" },
+  { id: "work", label: "Work & Code", icon: "ri-code-s-slash-line" },
+  { id: "study", label: "Study", icon: "ri-book-open-line" },
+  { id: "leisure", label: "Hobbies & Leisure", icon: "ri-gamepad-line" },
+  { id: "social", label: "Social & Apps", icon: "ri-chat-3-line" },
+];
+
+const ICON_GRID_ITEMS = [
+  // Daily & Routine
+  { class: "ri-hotel-bed-line", category: "daily", keywords: "bed sleep rest night lie down routine" },
+  { class: "ri-moon-line", category: "daily", keywords: "moon night sleep rest dark evening" },
+  { class: "ri-zzz-line", category: "daily", keywords: "zzz sleep rest nap snooze" },
+  { class: "ri-rest-time-line", category: "daily", keywords: "rest time relax break chill" },
+  { class: "ri-shower-line", category: "daily", keywords: "shower bath clean hygiene wash bath routine" },
+  { class: "ri-coffee-line", category: "daily", keywords: "coffee tea cup drink morning mug cafe espresso" },
+  { class: "ri-cup-line", category: "daily", keywords: "cup drink tea beverage matcha" },
+  { class: "ri-restaurant-line", category: "daily", keywords: "restaurant food eating meal lunch dinner fork knife" },
+  { class: "ri-restaurant-2-line", category: "daily", keywords: "food meal dinner plate dish" },
+  { class: "ri-cake-line", category: "daily", keywords: "cake dessert food sweet treat" },
+  { class: "ri-apple-line", category: "daily", keywords: "apple fruit healthy food snack diet" },
+  { class: "ri-drop-line", category: "daily", keywords: "water hydration drop drink liquid" },
+  { class: "ri-t-shirt-line", category: "daily", keywords: "t-shirt clothes laundry dress wear outfit" },
+  { class: "ri-alarm-line", category: "daily", keywords: "alarm clock morning wake up timer" },
+  { class: "ri-time-line", category: "daily", keywords: "time clock schedule hour duration" },
+  { class: "ri-home-2-line", category: "daily", keywords: "home house routine chores cleaning" },
+  { class: "ri-home-gear-line", category: "daily", keywords: "home chores maintenance repair fix" },
+  { class: "ri-shopping-cart-line", category: "daily", keywords: "shopping cart buy groceries store market" },
+  { class: "ri-shopping-bag-line", category: "daily", keywords: "shopping bag store buy retail" },
+  { class: "ri-sun-line", category: "daily", keywords: "sun morning day sunshine wake up rise" },
+
+  // Fitness & Health
+  { class: "ri-run-line", category: "fitness", keywords: "run running exercise cardio jog track" },
+  { class: "ri-walk-line", category: "fitness", keywords: "walk walking steps exercise movement outdoor" },
+  { class: "ri-riding-line", category: "fitness", keywords: "bike bicycle riding cycling workout ride" },
+  { class: "ri-boxing-line", category: "fitness", keywords: "boxing dumbbell gym workout fight exercise strength heavy" },
+  { class: "ri-dribbble-line", category: "fitness", keywords: "exercise sports workout gym fitness" },
+  { class: "ri-basketball-line", category: "fitness", keywords: "basketball sports game play court" },
+  { class: "ri-football-line", category: "fitness", keywords: "football soccer sports play match" },
+  { class: "ri-ping-pong-line", category: "fitness", keywords: "ping pong table tennis sports match" },
+  { class: "ri-heart-pulse-line", category: "fitness", keywords: "heart pulse fitness health cardio vitals" },
+  { class: "ri-mental-health-line", category: "fitness", keywords: "meditation mental health brain calm relax yoga zen" },
+  { class: "ri-capsule-line", category: "fitness", keywords: "medication medicine pills vitamins health supplement" },
+  { class: "ri-stethoscope-line", category: "fitness", keywords: "doctor health medical checkup clinic" },
+  { class: "ri-shield-cross-line", category: "fitness", keywords: "health care medical safety protection" },
+  { class: "ri-footprint-line", category: "fitness", keywords: "footprint steps walking distance health goal" },
+  { class: "ri-fire-line", category: "fitness", keywords: "fire burn calories workout streak hot" },
+
+  // Work & Code
+  { class: "ri-briefcase-line", category: "work", keywords: "work briefcase job office business corporate" },
+  { class: "ri-laptop-line", category: "work", keywords: "laptop computer work coding dev machine" },
+  { class: "ri-computer-line", category: "work", keywords: "desktop computer pc work setup screen" },
+  { class: "ri-code-s-slash-line", category: "work", keywords: "code coding developer programming leetcode html js" },
+  { class: "ri-terminal-box-line", category: "work", keywords: "terminal bash command line shell code cli" },
+  { class: "ri-code-box-line", category: "work", keywords: "code box dev script component" },
+  { class: "ri-bug-line", category: "work", keywords: "bug debugging fix code error issue" },
+  { class: "ri-git-branch-line", category: "work", keywords: "git github branch commit push repo pr" },
+  { class: "ri-database-line", category: "work", keywords: "database sql backend server storage data" },
+  { class: "ri-cpu-line", category: "work", keywords: "cpu hardware processing tech chip" },
+  { class: "ri-robot-2-line", category: "work", keywords: "robot ai bot automation prompt" },
+  { class: "ri-gemini-fill", category: "work", keywords: "gemini ai google model assistant prompt" },
+  { class: "ri-github-fill", category: "work", keywords: "github code open source repo git" },
+  { class: "ri-task-line", category: "work", keywords: "task check todo work done checklist" },
+  { class: "ri-file-list-3-line", category: "work", keywords: "file list documents tasks notes specs" },
+  { class: "ri-presentation-line", category: "work", keywords: "presentation slides meeting demo pitch decks" },
+  { class: "ri-building-line", category: "work", keywords: "building office company workplace headquarters" },
+
+  // Study & Learn
+  { class: "ri-book-open-line", category: "study", keywords: "book reading study learn pages literature" },
+  { class: "ri-book-read-line", category: "study", keywords: "read reading education study textbook" },
+  { class: "ri-graduation-cap-line", category: "study", keywords: "graduation cap college university course school degree" },
+  { class: "ri-pencil-ruler-line", category: "study", keywords: "design draw pencil ruler craft geometry" },
+  { class: "ri-quill-pen-line", category: "study", keywords: "quill pen writing journal blog article essay" },
+  { class: "ri-lightbulb-line", category: "study", keywords: "idea lightbulb solution brain insight spark" },
+  { class: "ri-brain-line", category: "study", keywords: "brain thinking focus mind puzzle memory intelligence" },
+  { class: "ri-microscope-line", category: "study", keywords: "science research lab study microscope biology" },
+  { class: "ri-flask-line", category: "study", keywords: "flask experiment chemistry lab test science" },
+  { class: "ri-notion-fill", category: "study", keywords: "notion notes workspace docs study summary" },
+
+  // Hobbies & Leisure
+  { class: "ri-gamepad-line", category: "leisure", keywords: "game gaming gamepad arcade play console ps5 steam" },
+  { class: "ri-headphone-line", category: "leisure", keywords: "music headphones audio stream podcast listen" },
+  { class: "ri-music-2-line", category: "leisure", keywords: "music song lofi audio sound track playlist" },
+  { class: "ri-film-line", category: "leisure", keywords: "film movie cinema video watch netflix show" },
+  { class: "ri-palette-line", category: "leisure", keywords: "art palette paint drawing creative hobby paint" },
+  { class: "ri-camera-line", category: "leisure", keywords: "camera photography photo picture snapshot record" },
+  { class: "ri-tv-line", category: "leisure", keywords: "tv television show watch stream anime" },
+  { class: "ri-brush-line", category: "leisure", keywords: "brush paint art creative studio canvas" },
+  { class: "ri-trophy-line", category: "leisure", keywords: "trophy winner achievement reward streak goal cup" },
+  { class: "ri-star-line", category: "leisure", keywords: "star favorite priority bookmark highlight key" },
+  { class: "ri-heart-line", category: "leisure", keywords: "heart love care passion favorite like" },
+  { class: "ri-youtube-fill", category: "leisure", keywords: "youtube video stream watch music channel" },
+  { class: "ri-wallet-line", category: "leisure", keywords: "wallet money finance budget gold savings" },
+
+  // Social & Apps
+  { class: "ri-chat-3-line", category: "social", keywords: "chat message talk communication social discuss" },
+  { class: "ri-mail-line", category: "social", keywords: "mail email message inbox contact newsletter" },
+  { class: "ri-discord-fill", category: "social", keywords: "discord chat community voice server hang out" },
+  { class: "ri-twitter-x-fill", category: "social", keywords: "twitter x social news feed posts" },
+  { class: "ri-instagram-line", category: "social", keywords: "instagram social media photos story reels" },
+  { class: "ri-linkedin-fill", category: "social", keywords: "linkedin network professional jobs career" },
+  { class: "ri-reddit-line", category: "social", keywords: "reddit social forum community posts threads" },
+  { class: "ri-globe-line", category: "social", keywords: "web globe internet online browsing world" },
+  { class: "ri-map-pin-line", category: "social", keywords: "map pin location travel trip spot vacation" },
+  { class: "ri-team-line", category: "social", keywords: "team group people friends meeting hang" },
+  { class: "ri-user-smile-line", category: "social", keywords: "user profile me person avatar happy" },
 ];
 
 const NAV_TABS = [
@@ -188,49 +282,314 @@ const RingtoneRow = ({ label, value, onChange }) => {
   );
 };
 
-/* ─── Icon Picker Modal ─── */
-const IconPickerModal = ({ current, onSelect, onClose }) => {
-  const [search, setSearch] = useState("");
-  const filtered = search
-    ? ICON_GRID.filter((ic) => ic.includes(search.toLowerCase()))
-    : ICON_GRID;
+/* ─── Custom Time Dropdown Popover ─── */
+const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+  const popoverRef = useRef(null);
+
+  const safeCurrent = useMemo(() => String(current || "9:00 am").trim(), [current]);
+
+  const parseInit = (tStr) => {
+    const match = /^(\d{1,2}):(\d{2})\s*([ap]m)$/i.exec(String(tStr || "").trim());
+    if (match) {
+      let h = parseInt(match[1], 10);
+      if (h < 1 || h > 12) h = 9;
+      let m = parseInt(match[2], 10);
+      if (isNaN(m) || m < 0 || m > 59) m = 0;
+      const p = match[3].toUpperCase();
+      return { hour: h, minute: m, period: p };
+    }
+    return { hour: 9, minute: 0, period: "AM" };
+  };
+
+  const [timeState, setTimeState] = useState(() => parseInit(safeCurrent));
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    const timerId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 50);
+    return () => {
+      clearTimeout(timerId);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [onClose]);
+
+  const handleApply = () => {
+    const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toLowerCase()}`;
+    onSelect(formatted);
+  };
+
+  const themeDropdownClasses = {
+    default: "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl",
+    cyberpunk: "bg-[#08020d]/95 backdrop-blur-2xl border border-[#ff0055]/50 text-cyan-300 shadow-[0_0_20px_rgba(255,0,85,0.3)] font-mono",
+    manga: "bg-white border-2 border-black text-black shadow-[4px_4px_0px_#000]",
+    pixel: "bg-[#05100a]/95 backdrop-blur-2xl border border-[#00ff66]/50 text-[#00ff66] shadow-[0_0_15px_rgba(0,255,102,0.25)] font-mono",
+  }[uiTheme] || "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl";
 
   return (
     <div
-      className="fixed inset-0 z-[250] flex items-center justify-center bg-black/65 backdrop-blur-xl animate-fade-in"
+      ref={popoverRef}
+      onClick={(e) => e.stopPropagation()}
+      className={`absolute right-0 top-full mt-2 z-[9999] w-60 rounded-2xl p-3.5 flex flex-col gap-3 shadow-2xl animate-fade-in ${themeDropdownClasses}`}
+    >
+      <div className="grid grid-cols-3 gap-2">
+        <div>
+          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Hour</label>
+          <select
+            value={timeState.hour}
+            onChange={(e) => setTimeState({ ...timeState, hour: parseInt(e.target.value, 10) })}
+            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+              <option key={h} value={h} className="bg-[#18181b] text-white">
+                {h}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Minute</label>
+          <select
+            value={timeState.minute}
+            onChange={(e) => setTimeState({ ...timeState, minute: parseInt(e.target.value, 10) })}
+            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+          >
+            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+              <option key={m} value={m} className="bg-[#18181b] text-white">
+                :{String(m).padStart(2, "0")}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Period</label>
+          <select
+            value={timeState.period}
+            onChange={(e) => setTimeState({ ...timeState, period: e.target.value })}
+            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+          >
+            <option value="AM" className="bg-[#18181b] text-white">AM</option>
+            <option value="PM" className="bg-[#18181b] text-white">PM</option>
+          </select>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleApply}
+        className="w-full py-2.5 rounded-xl bg-[color:var(--theme)]/80 hover:bg-[color:var(--theme)] border border-white/20 text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
+      >
+        Apply Time ({timeState.hour}:{String(timeState.minute).padStart(2, "0")} {timeState.period})
+      </button>
+    </div>
+  );
+};
+
+/* ─── Inline Icon Dropdown Popover ─── */
+const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+  const popoverRef = useRef(null);
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    const timerId = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+    }, 50);
+    return () => {
+      clearTimeout(timerId);
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [onClose]);
+
+  const filteredItems = useMemo(() => {
+    return ICON_GRID_ITEMS.filter((item) => {
+      const matchesCategory = activeCategory === "all" || item.category === activeCategory;
+      const q = search.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        item.class.toLowerCase().includes(q) ||
+        (item.keywords && item.keywords.toLowerCase().includes(q));
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, search]);
+
+  const themeDropdownClasses = {
+    default: "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl",
+    cyberpunk: "bg-[#08020d]/95 backdrop-blur-2xl border border-[#ff0055]/50 text-cyan-300 shadow-[0_0_20px_rgba(255,0,85,0.3)] font-mono",
+    manga: "bg-white border-2 border-black text-black shadow-[4px_4px_0px_#000]",
+    pixel: "bg-[#05100a]/95 backdrop-blur-2xl border border-[#00ff66]/50 text-[#00ff66] shadow-[0_0_15px_rgba(0,255,102,0.25)] font-mono",
+  }[uiTheme] || "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl";
+
+  return (
+    <div
+      ref={popoverRef}
+      onClick={(e) => e.stopPropagation()}
+      className={`absolute left-0 top-full mt-2 z-[9999] w-72 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl animate-fade-in ${themeDropdownClasses}`}
+    >
+      {/* Search Input */}
+      <div className="relative w-full">
+        <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search icons (bed, exercise, coffee)..."
+          className="w-full h-8 pl-8 pr-3 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 transition-all font-gilroy-medium"
+        />
+      </div>
+
+      {/* Category Pills */}
+      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5 shrink-0">
+        {ICON_CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            type="button"
+            onClick={() => setActiveCategory(cat.id)}
+            className={`px-2 py-1 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
+              activeCategory === cat.id
+                ? "bg-[color:var(--theme)] border-white/40 text-white font-gilroy-bold shadow-sm"
+                : "bg-black/40 border-white/15 text-white/70 hover:text-white hover:bg-white/15"
+            }`}
+          >
+            <i className={`${cat.icon} text-[10px]`} />
+            <span>{cat.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Icon Grid */}
+      <div className="grid grid-cols-6 gap-1.5 overflow-y-auto scrollbar-hide max-h-44 pr-0.5 z-10 relative">
+        {filteredItems.map((item) => (
+          <button
+            key={item.class}
+            type="button"
+            onClick={() => {
+              onSelect(item.class);
+              onClose();
+            }}
+            className={`h-9 w-9 rounded-xl flex items-center justify-center text-lg transition-all cursor-pointer border ${
+              item.class === current
+                ? "bg-[color:var(--theme)] border-white/50 text-white font-bold shadow-md scale-105"
+                : "bg-black/40 border-white/15 text-white/80 hover:text-white hover:bg-[color:var(--theme)]/30 hover:border-white/30 hover:scale-105"
+            }`}
+            title={`${item.class}`}
+          >
+            <i className={`${item.class}`} />
+          </button>
+        ))}
+        {filteredItems.length === 0 && (
+          <div className="col-span-6 py-4 text-center text-xs opacity-50 font-gilroy-medium">
+            No icons found
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/* ─── Unified Icon Picker Modal ─── */
+const IconPickerModal = ({ current, onSelect, onClose }) => {
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+
+  const filteredItems = useMemo(() => {
+    return ICON_GRID_ITEMS.filter((item) => {
+      const matchesCategory = activeCategory === "all" || item.category === activeCategory;
+      const q = search.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
+        item.class.toLowerCase().includes(q) ||
+        (item.keywords && item.keywords.toLowerCase().includes(q));
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeCategory, search]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[250] flex items-center justify-center bg-black/65 backdrop-blur-xl animate-fade-in p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 rounded-[26px] p-6 w-96 max-h-[75vh] flex flex-col gap-4 shadow-2xl relative"
+        className="bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 rounded-[26px] p-6 w-full max-w-lg max-h-[82vh] flex flex-col gap-4 text-white font-gilroy-medium shadow-2xl relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between z-10 relative">
-          <h4 className="text-white text-sm font-gilroy-bold">Select Icon</h4>
-          <button type="button" onClick={onClose} className="text-white/50 hover:text-white cursor-pointer transition-all">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2">
+            <i className="ri-palette-line text-lg text-[color:var(--theme)]" />
+            <h4 className="text-sm font-gilroy-bold text-white">Select Icon</h4>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-white/50 hover:text-white cursor-pointer transition-all p-1"
+          >
             <i className="ri-close-line text-xl" />
           </button>
         </div>
+
+        {/* Search Input */}
         <InputField
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search icons (e.g. code, book, gemini)..."
+          placeholder="Search icons (e.g. bed, exercise, coffee, code, sleep)..."
         />
-        <div className="grid grid-cols-6 gap-2.5 overflow-y-auto scrollbar-hide max-h-60 pr-1 z-10 relative">
-          {filtered.map((ic) => (
+
+        {/* Category Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 shrink-0">
+          {ICON_CATEGORIES.map((cat) => (
             <button
-              key={ic}
+              key={cat.id}
               type="button"
-              onClick={() => { onSelect(ic); onClose(); }}
-              className={`h-11 w-11 rounded-2xl flex items-center justify-center text-xl transition-all cursor-pointer border ${
-                ic === current
-                  ? "bg-[color:var(--theme)] border-white/40 text-white font-bold shadow-md scale-105"
-                  : "bg-[color:var(--theme)]/15 border-white/10 text-white/70 hover:text-white hover:bg-[color:var(--theme)]/35"
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${
+                activeCategory === cat.id
+                  ? "bg-[color:var(--theme)] border-white/40 text-white font-gilroy-bold shadow-md"
+                  : "bg-black/40 border-white/15 text-white/70 hover:text-white hover:bg-white/15"
               }`}
-              title={ic}
             >
-              <i className={`${ic} relative z-10`} />
+              <i className={`${cat.icon} text-xs`} />
+              <span>{cat.label}</span>
             </button>
           ))}
+        </div>
+
+        {/* Icons Grid */}
+        <div className="grid grid-cols-7 gap-2 overflow-y-auto scrollbar-hide max-h-64 pr-1 z-10 relative py-1">
+          {filteredItems.map((item) => (
+            <button
+              key={item.class}
+              type="button"
+              onClick={() => {
+                onSelect(item.class);
+                onClose();
+              }}
+              className={`h-11 w-11 rounded-2xl flex items-center justify-center text-xl transition-all cursor-pointer border ${
+                item.class === current
+                  ? "bg-[color:var(--theme)] border-white/50 text-white font-bold shadow-md scale-105"
+                  : "bg-black/40 border-white/15 text-white/80 hover:text-white hover:bg-[color:var(--theme)]/30 hover:border-white/30 hover:scale-105"
+              }`}
+              title={`${item.class} (${item.keywords})`}
+            >
+              <i className={`${item.class} relative z-10`} />
+            </button>
+          ))}
+          {filteredItems.length === 0 && (
+            <div className="col-span-7 py-8 text-center text-xs opacity-50 font-gilroy-medium">
+              No matching icons found for "{search}"
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1363,7 +1722,7 @@ const SongPlayerTab = ({
 
 /* ─── TAB 4: Taskbar Shortcuts ─── */
 const TaskbarTab = ({
-  shortcuts, onShortcutUpdate, onShortcutRemove, onShortcutAdd, onShortcutIconPick,
+  shortcuts, onShortcutUpdate, onShortcutRemove, onShortcutAdd, onShortcutIconPick, uiTheme = "default",
 }) => {
   const [iconPickerShortcutId, setIconPickerShortcutId] = useState(null);
 
@@ -1371,32 +1730,30 @@ const TaskbarTab = ({
   <div className="flex flex-col gap-6">
     {/* Taskbar Shortcuts */}
     <CardContainer
-      title="Taskbar Quick Launch Shortcuts"
-      description={`Manage icons displayed on the top taskbar (${shortcuts.length}/${MAX_SHORTCUTS}). Click any icon badge to choose a symbol or upload a custom image favicon.`}
+      title="Taskbar Quick Launchers"
+      description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar."
       action={
         <button
           type="button"
           onClick={onShortcutAdd}
-          disabled={shortcuts.length >= MAX_SHORTCUTS}
-          className={`px-4 py-2 rounded-full bg-[color:var(--theme)]/30 border border-white/20 text-xs font-gilroy-medium flex items-center gap-1.5 transition-all active:scale-95 shadow-sm ${
-            shortcuts.length >= MAX_SHORTCUTS
-              ? "opacity-40 cursor-not-allowed"
-              : "text-white cursor-pointer hover:bg-[color:var(--theme)]/50"
-          }`}
+          className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
         >
           <i className="ri-add-line text-sm relative z-10" />
           <span className="relative z-10">Add Shortcut</span>
         </button>
       }
     >
-      <div className="flex flex-col gap-3">
-        {shortcuts.map((s) => (
-          <div key={s.id} className="bg-black/25 border border-white/10 hover:border-white/20 rounded-2xl p-3 flex items-center gap-3 transition-all shadow-sm">
+      <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
+        {(shortcuts || []).map((s) => (
+          <div
+            key={s.id}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-black/25 border border-white/10 hover:border-white/20 rounded-2xl transition-all shadow-sm"
+          >
             <button
               type="button"
               onClick={() => setIconPickerShortcutId(s.id)}
-              className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 flex items-center justify-center overflow-hidden shrink-0 shadow-md cursor-pointer transition-all active:scale-95 group/ic"
-              title="Click to select icon symbol"
+              className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/20 hover:bg-[color:var(--theme)]/40 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shrink-0 group/ic active:scale-95 shadow-inner"
+              title="Change Icon"
             >
               {s.iconDataUrl || s.iconUrl ? (
                 <img src={s.iconDataUrl || s.iconUrl} alt="" className="h-5 w-5 object-contain" />
@@ -1457,6 +1814,7 @@ const TaskbarTab = ({
           current={shortcuts.find((s) => s.id === iconPickerShortcutId)?.iconClass}
           onSelect={(ic) => onShortcutUpdate(iconPickerShortcutId, { iconClass: ic, iconDataUrl: null, iconUrl: null })}
           onClose={() => setIconPickerShortcutId(null)}
+          uiTheme={uiTheme}
         />
       )}
     </CardContainer>
@@ -1465,7 +1823,7 @@ const TaskbarTab = ({
 };
 
 /* ─── TAB 4: Important Tabs ─── */
-const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange }) => {
+const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
   const [iconPickerTabId, setIconPickerTabId] = useState(null);
   const [expandedTabId, setExpandedTabId] = useState(null);
 
@@ -1610,6 +1968,7 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
           current={importantTabsConfig.find((t) => t.id === iconPickerTabId)?.iconClass}
           onSelect={(ic) => updateTab(iconPickerTabId, { iconClass: ic })}
           onClose={() => setIconPickerTabId(null)}
+          uiTheme={uiTheme}
         />
       )}
     </CardContainer>
@@ -1617,9 +1976,13 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
 };
 
 /* ─── TAB 5: Time Boxing ─── */
-const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange }) => {
+const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "default" }) => {
   const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
+  const [timePickerGroupId, setTimePickerGroupId] = useState(null);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
+
+  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
 
   const addGroup = () => {
     const g = { id: makeId(), title: "New Routine", iconClass: "ri-briefcase-line", time: "9:00 am", streak: 0, subtasks: [] };
@@ -1631,6 +1994,35 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange }) => {
 
   const updateGroup = (id, patch) =>
     onTimeBoxingGroupsChange(timeBoxingGroups.map((g) => (g.id === id ? { ...g, ...patch } : g)));
+
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (dragOverIdx !== index) {
+      setDragOverIdx(index);
+    }
+  };
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx !== null && draggedIdx !== targetIdx) {
+      const reordered = [...timeBoxingGroups];
+      const [movedItem] = reordered.splice(draggedIdx, 1);
+      reordered.splice(targetIdx, 0, movedItem);
+      onTimeBoxingGroupsChange(reordered);
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
 
   const addSubtask = (groupId) => {
     const g = timeBoxingGroups.find((g) => g.id === groupId);
@@ -1653,22 +2045,71 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange }) => {
   return (
     <CardContainer
       title="Time Boxing Routine Editor"
-      description="Structure your daily routines into scheduled task blocks with subtask checklists."
+      description="Structure your daily routines into scheduled task blocks with subtask checklists. Drag task cards up or down to reorder them."
     >
       <div className="flex flex-col gap-4 pt-3 border-t border-white/10">
-          <div className="flex flex-col gap-3">
-            {(timeBoxingGroups || []).map((group) => (
-              <div key={group.id} className="bg-black/25 border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition-all shadow-sm">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3">
-                  <button
-                    type="button"
-                    onClick={() => setIconPickerGroupId(group.id)}
-                    className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 flex items-center justify-center text-white text-xl transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm"
-                    title="Change Icon"
-                  >
-                    <i className={`${group.iconClass || "ri-briefcase-line"} relative z-10`} />
-                  </button>
+        <div className="flex flex-col gap-3">
+          {(timeBoxingGroups || []).map((group, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
 
+            return (
+              <div
+                key={group.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={handleDragEnd}
+                className={`bg-black/25 border rounded-2xl transition-all shadow-sm relative ${
+                  (timePickerGroupId === group.id || iconPickerGroupId === group.id) ? "z-30 overflow-visible" : "z-10 overflow-hidden"
+                } ${
+                  isDragging
+                    ? "opacity-40 border-dashed border-white/40 scale-[0.99]"
+                    : isDragOver
+                    ? "border-[color:var(--theme)] shadow-lg ring-2 ring-[color:var(--theme)]/30 scale-[1.01]"
+                    : "border-white/10 hover:border-white/20"
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3">
+                  {/* Drag Handle */}
+                  <div className="flex items-center shrink-0">
+                    <div
+                      className="h-10 w-7 flex items-center justify-center text-white/40 hover:text-white cursor-grab active:cursor-grabbing transition-colors"
+                      title="Drag to reorder routine tasks"
+                    >
+                      <i className="ri-drag-move-fill text-lg" />
+                    </div>
+                  </div>
+
+                  {/* Icon Picker Dropdown */}
+                  <div className="relative shrink-0 z-50">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIconPickerGroupId(iconPickerGroupId === group.id ? null : group.id);
+                      }}
+                      className="h-10 w-10 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/15 hover:border-white/30 flex items-center justify-center text-white text-xl transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm"
+                      title="Change Icon"
+                    >
+                      <i className={`${group.iconClass || "ri-briefcase-line"} relative z-10`} />
+                    </button>
+
+                    {iconPickerGroupId === group.id && (
+                      <IconDropdownPopover
+                        current={group.iconClass || "ri-briefcase-line"}
+                        onSelect={(newIcon) => {
+                          updateGroup(group.id, { iconClass: newIcon });
+                          setIconPickerGroupId(null);
+                        }}
+                        onClose={() => setIconPickerGroupId(null)}
+                        uiTheme={uiTheme}
+                      />
+                    )}
+                  </div>
+
+                  {/* Task Group Title */}
                   <div className="flex-1 min-w-0">
                     <InputField
                       value={group.title}
@@ -1678,15 +2119,36 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange }) => {
                     />
                   </div>
 
-                  <div className="w-28 shrink-0">
-                    <InputField
-                      value={group.time}
-                      onChange={(e) => updateGroup(group.id, { time: e.target.value })}
-                      placeholder="9:00 am"
-                      className="w-full text-center font-gilroy-bold"
-                    />
+                  {/* Time Selector Dropdown */}
+                  <div className="relative shrink-0 z-50">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTimePickerGroupId(timePickerGroupId === group.id ? null : group.id);
+                      }}
+                      className="h-10 px-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/15 hover:border-white/30 text-xs text-white font-gilroy-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95 shadow-sm min-w-[105px]"
+                      title="Select Routine Scheduled Time"
+                    >
+                      <i className="ri-time-line text-sm text-[color:var(--theme)]" />
+                      <span>{group.time || "9:00 am"}</span>
+                      <i className={`ri-arrow-${timePickerGroupId === group.id ? "up" : "down"}-s-line text-xs opacity-60 transition-transform`} />
+                    </button>
+
+                    {timePickerGroupId === group.id && (
+                      <TimeDropdownPopover
+                        current={group.time || "9:00 am"}
+                        onSelect={(newTime) => {
+                          updateGroup(group.id, { time: newTime });
+                          setTimePickerGroupId(null);
+                        }}
+                        onClose={() => setTimePickerGroupId(null)}
+                        uiTheme={uiTheme}
+                      />
+                    )}
                   </div>
 
+                  {/* Subtask Toggle & Delete Button */}
                   <div className="flex items-center gap-2 shrink-0 ml-auto">
                     <button
                       type="button"
@@ -1741,26 +2203,19 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange }) => {
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={addGroup}
-            className="w-full py-3 rounded-2xl bg-[color:var(--theme)]/30 hover:bg-[color:var(--theme)]/50 border border-white/20 text-xs text-white font-gilroy-bold flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-md mt-1"
-          >
-            <i className="ri-add-line text-base relative z-10" />
-            <span className="relative z-10">Add Time Boxing Group</span>
-          </button>
+            );
+          })}
         </div>
 
-      {iconPickerGroupId && (
-        <IconPickerModal
-          current={timeBoxingGroups.find((g) => g.id === iconPickerGroupId)?.iconClass}
-          onSelect={(ic) => updateGroup(iconPickerGroupId, { iconClass: ic })}
-          onClose={() => setIconPickerGroupId(null)}
-        />
-      )}
+        <button
+          type="button"
+          onClick={addGroup}
+          className="w-full py-3 rounded-2xl bg-[color:var(--theme)]/30 hover:bg-[color:var(--theme)]/50 border border-white/20 text-xs text-white font-gilroy-bold flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 shadow-md mt-1"
+        >
+          <i className="ri-add-line text-base relative z-10" />
+          <span className="relative z-10">Add Time Boxing Group</span>
+        </button>
+      </div>
     </CardContainer>
   );
 };
@@ -1968,6 +2423,7 @@ const SettingsPage = (props) => {
                 onShortcutRemove={props.onShortcutRemove}
                 onShortcutAdd={props.onShortcutAdd}
                 onShortcutIconPick={props.onShortcutIconPick}
+                uiTheme={props.uiTheme}
               />
             )}
 
@@ -1975,6 +2431,7 @@ const SettingsPage = (props) => {
               <ImportantTabsTab
                 importantTabsConfig={props.importantTabsConfig}
                 onImportantTabsConfigChange={props.onImportantTabsConfigChange}
+                uiTheme={props.uiTheme}
               />
             )}
 
@@ -1982,6 +2439,7 @@ const SettingsPage = (props) => {
               <TimeBoxingTab
                 timeBoxingGroups={props.timeBoxingGroups}
                 onTimeBoxingGroupsChange={props.onTimeBoxingGroupsChange}
+                uiTheme={props.uiTheme}
               />
             )}
 
