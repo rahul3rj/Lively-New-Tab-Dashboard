@@ -323,26 +323,36 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
     onSelect(formatted);
   };
 
-  const themeDropdownClasses = {
-    default: "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl",
-    cyberpunk: "bg-[#08020d]/95 backdrop-blur-2xl border border-[#ff0055]/50 text-cyan-300 shadow-[0_0_20px_rgba(255,0,85,0.3)] font-mono",
-    manga: "bg-white border-2 border-black text-black shadow-[4px_4px_0px_#000]",
-    pixel: "bg-[#05100a]/95 backdrop-blur-2xl border border-[#00ff66]/50 text-[#00ff66] shadow-[0_0_15px_rgba(0,255,102,0.25)] font-mono",
-  }[uiTheme] || "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl";
+  const isManga = uiTheme === "manga";
 
   return (
     <div
       ref={popoverRef}
       onClick={(e) => e.stopPropagation()}
-      className={`absolute right-0 top-full mt-2 z-[9999] w-60 rounded-2xl p-3.5 flex flex-col gap-3 shadow-2xl animate-fade-in ${themeDropdownClasses}`}
+      style={{
+        borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+      }}
+      className={`absolute right-0 top-full mt-2 z-[9999] w-60 rounded-2xl p-3.5 flex flex-col gap-3 shadow-2xl animate-fade-in border ${
+        isManga
+          ? "bg-white text-black shadow-[4px_4px_0px_#000]"
+          : "bg-[#121216]/95 backdrop-blur-2xl text-white shadow-[0_0_20px_rgba(0,0,0,0.6)]"
+      }`}
     >
       <div className="grid grid-cols-3 gap-2">
         <div>
-          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Hour</label>
+          <label
+            style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+            className="text-[10px] uppercase tracking-wider block mb-1 font-gilroy-bold opacity-90"
+          >
+            Hour
+          </label>
           <select
             value={timeState.hour}
             onChange={(e) => setTimeState({ ...timeState, hour: parseInt(e.target.value, 10) })}
-            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+            style={{
+              borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+            }}
+            className="w-full py-2 px-2 rounded-xl bg-black/60 border text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:brightness-125 transition-all"
           >
             {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
               <option key={h} value={h} className="bg-[#18181b] text-white">
@@ -353,11 +363,19 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Minute</label>
+          <label
+            style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+            className="text-[10px] uppercase tracking-wider block mb-1 font-gilroy-bold opacity-90"
+          >
+            Minute
+          </label>
           <select
             value={timeState.minute}
             onChange={(e) => setTimeState({ ...timeState, minute: parseInt(e.target.value, 10) })}
-            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+            style={{
+              borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+            }}
+            className="w-full py-2 px-2 rounded-xl bg-black/60 border text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:brightness-125 transition-all"
           >
             {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
               <option key={m} value={m} className="bg-[#18181b] text-white">
@@ -368,11 +386,19 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-wider opacity-60 block mb-1 font-gilroy-bold">Period</label>
+          <label
+            style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+            className="text-[10px] uppercase tracking-wider block mb-1 font-gilroy-bold opacity-90"
+          >
+            Period
+          </label>
           <select
             value={timeState.period}
             onChange={(e) => setTimeState({ ...timeState, period: e.target.value })}
-            className="w-full py-2 px-2.5 rounded-xl bg-black/50 border border-white/15 focus:border-white/40 text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:border-white/30 transition-all"
+            style={{
+              borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+            }}
+            className="w-full py-2 px-2 rounded-xl bg-black/60 border text-xs font-gilroy-bold text-white focus:outline-none cursor-pointer hover:brightness-125 transition-all"
           >
             <option value="AM" className="bg-[#18181b] text-white">AM</option>
             <option value="PM" className="bg-[#18181b] text-white">PM</option>
@@ -383,7 +409,11 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       <button
         type="button"
         onClick={handleApply}
-        className="w-full py-2.5 rounded-xl bg-[color:var(--theme)]/80 hover:bg-[color:var(--theme)] border border-white/20 text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
+        style={{
+          backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+          borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+        }}
+        className="w-full py-2.5 rounded-xl hover:brightness-110 border text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
       >
         Apply Time ({timeState.hour}:{String(timeState.minute).padStart(2, "0")} {timeState.period})
       </button>
@@ -424,70 +454,106 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
     });
   }, [activeCategory, search]);
 
-  const themeDropdownClasses = {
-    default: "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl",
-    cyberpunk: "bg-[#08020d]/95 backdrop-blur-2xl border border-[#ff0055]/50 text-cyan-300 shadow-[0_0_20px_rgba(255,0,85,0.3)] font-mono",
-    manga: "bg-white border-2 border-black text-black shadow-[4px_4px_0px_#000]",
-    pixel: "bg-[#05100a]/95 backdrop-blur-2xl border border-[#00ff66]/50 text-[#00ff66] shadow-[0_0_15px_rgba(0,255,102,0.25)] font-mono",
-  }[uiTheme] || "bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 text-white shadow-2xl";
+  const isManga = uiTheme === "manga";
 
   return (
     <div
       ref={popoverRef}
       onClick={(e) => e.stopPropagation()}
-      className={`absolute left-0 top-full mt-2 z-[9999] w-72 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl animate-fade-in ${themeDropdownClasses}`}
+      style={{
+        borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+      }}
+      className={`absolute left-0 top-full mt-2 z-[9999] w-72 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl animate-fade-in border ${
+        isManga
+          ? "bg-white text-black shadow-[4px_4px_0px_#000]"
+          : "bg-[#121216]/95 backdrop-blur-2xl text-white shadow-[0_0_20px_rgba(0,0,0,0.6)]"
+      }`}
     >
       {/* Search Input */}
       <div className="relative w-full">
-        <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs" />
+        <i
+          style={{ color: isManga ? "#000000" : "var(--theme-1, var(--theme))" }}
+          className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-xs"
+        />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search icons (bed, exercise, coffee)..."
-          className="w-full h-8 pl-8 pr-3 rounded-xl bg-black/40 border border-white/15 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 transition-all font-gilroy-medium"
+          style={{
+            borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+          }}
+          className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-black/60 border text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
         />
       </div>
 
       {/* Category Pills */}
       <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5 shrink-0">
-        {ICON_CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-2 py-1 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
-              activeCategory === cat.id
-                ? "bg-[color:var(--theme)] border-white/40 text-white font-gilroy-bold shadow-sm"
-                : "bg-black/40 border-white/15 text-white/70 hover:text-white hover:bg-white/15"
-            }`}
-          >
-            <i className={`${cat.icon} text-[10px]`} />
-            <span>{cat.label}</span>
-          </button>
-        ))}
+        {ICON_CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id)}
+              style={{
+                backgroundColor: isActive
+                  ? isManga ? "#000000" : "var(--theme-1, var(--theme))"
+                  : "transparent",
+                borderColor: isManga
+                  ? "#000000"
+                  : isActive
+                  ? "var(--theme-1, var(--theme))"
+                  : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
+                color: isActive ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
+              }}
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
+                isActive
+                  ? "font-gilroy-bold shadow-sm"
+                  : "bg-black/50 hover:brightness-125"
+              }`}
+            >
+              <i className={`${cat.icon} text-[10px]`} />
+              <span>{cat.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Icon Grid */}
       <div className="grid grid-cols-6 gap-1.5 overflow-y-auto scrollbar-hide max-h-44 pr-0.5 z-10 relative">
-        {filteredItems.map((item) => (
-          <button
-            key={item.class}
-            type="button"
-            onClick={() => {
-              onSelect(item.class);
-              onClose();
-            }}
-            className={`h-9 w-9 rounded-xl flex items-center justify-center text-lg transition-all cursor-pointer border ${
-              item.class === current
-                ? "bg-[color:var(--theme)] border-white/50 text-white font-bold shadow-md scale-105"
-                : "bg-black/40 border-white/15 text-white/80 hover:text-white hover:bg-[color:var(--theme)]/30 hover:border-white/30 hover:scale-105"
-            }`}
-            title={`${item.class}`}
-          >
-            <i className={`${item.class}`} />
-          </button>
-        ))}
+        {filteredItems.map((item) => {
+          const isSelected = item.class === current;
+          return (
+            <button
+              key={item.class}
+              type="button"
+              onClick={() => {
+                onSelect(item.class);
+                onClose();
+              }}
+              style={{
+                backgroundColor: isSelected
+                  ? isManga ? "#000000" : "var(--theme-1, var(--theme))"
+                  : "transparent",
+                borderColor: isManga
+                  ? "#000000"
+                  : isSelected
+                  ? "var(--theme-1, var(--theme))"
+                  : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
+                color: isSelected ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
+              }}
+              className={`h-9 w-9 rounded-xl flex items-center justify-center text-lg transition-all cursor-pointer border ${
+                isSelected
+                  ? "font-bold shadow-md scale-105"
+                  : "bg-black/50 hover:scale-105 hover:brightness-125"
+              }`}
+              title={`${item.class}`}
+            >
+              <i className={`${item.class}`} />
+            </button>
+          );
+        })}
         {filteredItems.length === 0 && (
           <div className="col-span-6 py-4 text-center text-xs opacity-50 font-gilroy-medium">
             No icons found
@@ -521,7 +587,7 @@ const IconPickerModal = ({ current, onSelect, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="bg-[#18181b]/95 backdrop-blur-2xl border border-white/15 rounded-[26px] p-6 w-full max-w-lg max-h-[82vh] flex flex-col gap-4 text-white font-gilroy-medium shadow-2xl relative z-10"
+        className="bg-[#121216]/95 backdrop-blur-2xl border border-[color:var(--theme)]/40 rounded-[26px] p-6 w-full max-w-lg max-h-[82vh] flex flex-col gap-4 text-white font-gilroy-medium shadow-2xl relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
