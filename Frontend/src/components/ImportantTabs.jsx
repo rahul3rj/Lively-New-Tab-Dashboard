@@ -45,7 +45,16 @@ const ImportantTabs = ({ dragHandleProps, tabsConfig }) => {
               className="flex items-center justify-between gap-2.5 text-xs sm:text-sm py-0.5 cursor-pointer group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <i className={`${tab.iconClass || "ri-globe-line"} text-white/80 text-base shrink-0`}></i>
+                {tab.iconClass && (tab.iconClass.startsWith("img:") || tab.iconClass.startsWith("http") || tab.iconClass.startsWith("data:")) ? (
+                  <img
+                    src={tab.iconClass.replace(/^img:/, "")}
+                    alt=""
+                    className="w-4 h-4 object-contain shrink-0"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                ) : (
+                  <i className={`${tab.iconClass || "ri-globe-line"} text-white/80 text-base shrink-0`} />
+                )}
                 <span className="font-gilroy-medium text-xs sm:text-sm text-white/90 truncate">
                   {tab.title}
                 </span>

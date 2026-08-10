@@ -215,6 +215,7 @@ const App = () => {
   const [isThemeChanging, setIsThemeChanging] = useState(false);
 
   const hydratedRef = useRef(false);
+  const lastResetDateRef = useRef(null);
 
   /* ── Hydration ── */
   useEffect(() => {
@@ -258,21 +259,26 @@ const App = () => {
 
         const todayUtc = getTodayUtcDate();
 
-        // Check if a new UTC 00 day has arrived since last reset
-        if (storedResetDate && storedResetDate !== todayUtc && Array.isArray(storedTimeboxGroups)) {
-          storedTimeboxGroups = storedTimeboxGroups.map((group) => {
-            const isCompleted =
-              group.subtasks?.length > 0 && group.subtasks.every((s) => s.done);
-            return {
-              ...group,
-              streak: isCompleted ? (group.streak || 0) + 1 : 0,
-              subtasks: (group.subtasks || []).map((s) => ({ ...s, done: false })),
-            };
-          });
-          storageSet(STORAGE.timeBoxingGroups, storedTimeboxGroups);
-          storageSet(STORAGE.timeboxingLastResetDate, todayUtc);
+        // Check if a new UTC 00 day (5:30 AM IST) has arrived since last reset
+        if (Array.isArray(storedTimeboxGroups)) {
+          if (storedResetDate && storedResetDate !== todayUtc) {
+            storedTimeboxGroups = storedTimeboxGroups.map((group) => {
+              const isCompleted =
+                group.subtasks?.length > 0 && group.subtasks.every((s) => s.done);
+              return {
+                ...group,
+                streak: isCompleted ? (group.streak || 0) + 1 : (group.streak || 0),
+                subtasks: (group.subtasks || []).map((s) => ({ ...s, done: false })),
+              };
+            });
+            storageSet(STORAGE.timeBoxingGroups, storedTimeboxGroups);
+            storageSet(STORAGE.timeboxingLastResetDate, todayUtc);
+          } else if (!storedResetDate) {
+            storageSet(STORAGE.timeboxingLastResetDate, todayUtc);
+          }
         }
 
+        lastResetDateRef.current = todayUtc;
         setTimeboxingLastResetDate(todayUtc);
 
         if (storedWallpaper && typeof storedWallpaper === "object") setWallpaper(storedWallpaper);
@@ -377,6 +383,51 @@ const App = () => {
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.uiTheme, uiTheme); }, [uiTheme]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.baseFont, baseFont); }, [baseFont]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.baseFontSize, baseFontSize); }, [baseFontSize]);
+
+  /* ── Periodic & Focus Check for 00:00 UTC / 5:30 AM IST Daily Reset ── */
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const checkAndRunReset = () => {
+      const todayUtc = getTodayUtcDate();
+      if (lastResetDateRef.current && lastResetDateRef.current !== todayUtc) {
+        lastResetDateRef.current = todayUtc;
+        setTimeboxingLastResetDate(todayUtc);
+        storageSet(STORAGE.timeboxingLastResetDate, todayUtc);
+
+        setTimeBoxingGroups((prevGroups) => {
+          if (!Array.isArray(prevGroups)) return prevGroups;
+          const resetGroups = prevGroups.map((group) => {
+            const isCompleted =
+              group.subtasks?.length > 0 && group.subtasks.every((s) => s.done);
+            return {
+              ...group,
+              streak: isCompleted ? (group.streak || 0) + 1 : (group.streak || 0),
+              subtasks: (group.subtasks || []).map((s) => ({ ...s, done: false })),
+            };
+          });
+          storageSet(STORAGE.timeBoxingGroups, resetGroups);
+          return resetGroups;
+        });
+      }
+    };
+
+    const intervalId = setInterval(checkAndRunReset, 30000);
+    const handleFocusOrVisibility = () => {
+      if (document.visibilityState === "visible") {
+        checkAndRunReset();
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleFocusOrVisibility);
+    window.addEventListener("focus", checkAndRunReset);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("visibilitychange", handleFocusOrVisibility);
+      window.removeEventListener("focus", checkAndRunReset);
+    };
+  }, [isHydrated]);
 
   /* ── Dynamic Google Font Loader for Base Font ── */
   useEffect(() => {
@@ -656,6 +707,7 @@ const App = () => {
           onThemeTextColorChange={setThemeTextColorIndex}
           // Shortcuts
           shortcuts={shortcuts}
+          onShortcutsChange={setShortcuts}
           onShortcutUpdate={updateShortcut}
           onShortcutRemove={removeShortcut}
           onShortcutAdd={addShortcut}

@@ -27,8 +27,13 @@ const Taskbar = ({ shortcuts = DEFAULT_SHORTCUTS }) => {
             className='figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all'
             title={s.title || s.url}
           >
-            {s.iconDataUrl || s.iconUrl ? (
-              <img src={s.iconDataUrl || s.iconUrl} alt={s.title || ''} className='h-[3vh] w-[3vh] min-h-[20px] min-w-[20px] object-contain relative z-10' />
+            {s.iconDataUrl || s.iconUrl || (s.iconClass && (s.iconClass.startsWith('img:') || s.iconClass.startsWith('http://') || s.iconClass.startsWith('https://') || s.iconClass.startsWith('data:'))) ? (
+              <img
+                src={(s.iconDataUrl || s.iconUrl || s.iconClass).replace(/^img:/, '')}
+                alt={s.title || ''}
+                className='h-[3.2vh] w-[3.2vh] min-h-[22px] min-w-[22px] object-contain relative z-10'
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
             ) : s.iconClass ? (
               <i className={`${s.iconClass} text-[2.8vh] text-white relative z-10`}></i>
             ) : (

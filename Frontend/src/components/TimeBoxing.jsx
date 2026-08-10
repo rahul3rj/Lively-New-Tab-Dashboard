@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { updateTodayCompletedTasksCount } from "../utils/activityStore";
 
 
@@ -67,11 +67,17 @@ const DEFAULT_TASK_GROUPS = [
 ];
 
 const parseTimeToMinutes = (time) => {
-  const match = /^(\d{1,2}):(\d{2})\s*([ap]m)$/i.exec(String(time).trim());
+  if (!time) return null;
+  const match = /^(\d{1,2})(?::(\d{2}))?\s*([ap]m)$/i.exec(String(time).trim());
   if (!match) return null;
-  let hours = parseInt(match[1], 10) % 12;
-  if (match[3].toLowerCase() === "pm") hours += 12;
-  return hours * 60 + parseInt(match[2], 10);
+  let hours = parseInt(match[1], 10);
+  let minutes = match[2] ? parseInt(match[2], 10) : 0;
+  const period = match[3].toLowerCase();
+
+  if (period === "pm" && hours < 12) hours += 12;
+  if (period === "am" && hours === 12) hours = 0;
+
+  return hours * 60 + minutes;
 };
 
 const getNowMinutes = () => {
@@ -82,6 +88,8 @@ const getNowMinutes = () => {
 const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
+  const containerRef = useRef(null);
+  const activeTaskRef = useRef(null);
 
   // Use externalGroups when provided (always the case from DashboardGrid),
   // falling back to built-in defaults only for standalone/testing usage.
@@ -93,30 +101,39 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   }, [externalGroups]);
 
   useEffect(() => {
-    const id = setInterval(() => setNowMinutes(getNowMinutes()), 60000);
+    const id = setInterval(() => setNowMinutes(getNowMinutes()), 10000);
     return () => clearInterval(id);
   }, []);
 
   const activeId = useMemo(() => {
     if (!groups || groups.length === 0) return null;
 
-    let current = null;
-    let minTime = Infinity;
-    let earliestId = groups[0]?.id || null;
+    let bestActiveGroup = null;
+    let maxPastStart = -1;
+    let earliestGroup = null;
+    let minStart = Infinity;
 
     for (const g of groups) {
       const start = parseTimeToMinutes(g.time);
       if (start !== null) {
-        if (start < minTime) {
-          minTime = start;
-          earliestId = g.id;
+        if (start < minStart) {
+          minStart = start;
+          earliestGroup = g;
         }
-        if (start <= nowMinutes) {
-          current = g.id;
+        if (start <= nowMinutes && start > maxPastStart) {
+          maxPastStart = start;
+          bestActiveGroup = g;
         }
       }
     }
-    return current || earliestId || groups[0]?.id || null;
+
+    if (bestActiveGroup) {
+      return bestActiveGroup.id;
+    }
+    if (earliestGroup) {
+      return earliestGroup.id;
+    }
+    return groups[0]?.id || null;
   }, [groups, nowMinutes]);
 
   // Default to expanding the current active task relevant to time
@@ -124,6 +141,33 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     if (activeId) {
       setExpandedId(activeId);
     }
+  }, [activeId]);
+
+  // Auto-scroll active task to center on page load / refresh or activeId change
+  useEffect(() => {
+    if (!activeId) return;
+
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      const target = activeTaskRef.current;
+      if (container && target) {
+        const containerRect = container.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+
+        const targetTopRelativeToContainer =
+          targetRect.top - containerRect.top + container.scrollTop;
+        const targetCenter = targetTopRelativeToContainer + targetRect.height / 2;
+        const containerCenter = container.clientHeight / 2;
+
+        const scrollToTop = targetCenter - containerCenter;
+        container.scrollTo({
+          top: Math.max(0, scrollToTop),
+          behavior: "smooth",
+        });
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
   }, [activeId]);
 
   const toggleSubtask = (groupId, subtaskId) => {
@@ -165,7 +209,10 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
       </div>
 
       {/* Task Groups + Timeline */}
-      <div className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide z-10 relative pr-0.5">
+      <div
+        ref={containerRef}
+        className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide z-10 relative pr-0.5"
+      >
         <div className="flex flex-col">
           {groups.map((group, index) => {
             const total = group.subtasks.length;
@@ -181,9 +228,13 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
             const displayStreak = baseStreak + (isCompleted ? 1 : 0);
 
             return (
-              <div key={group.id} className="flex items-stretch">
+              <div
+                key={group.id}
+                ref={active ? activeTaskRef : null}
+                className="flex items-stretch"
+              >
                 {/* Task Group Card */}
-                <div className={`flex-1 min-w-0 ${isLast ? "" : "pb-3"}`}>
+                <div className={`flex-1 min-w-0 ${isLast ? "" : "pb-5"}`}>
                   <div
                     className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 overflow-hidden shadow-lg transition-all duration-300 ${
                       active
@@ -203,11 +254,20 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                       onClick={() => setExpandedId(expanded ? null : group.id)}
                     >
                       <div className="flex items-center gap-2.5">
-                        <i
-                          className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
-                            active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white/75"
-                          }`}
-                        ></i>
+                        {group.iconClass && (group.iconClass.startsWith("img:") || group.iconClass.startsWith("http") || group.iconClass.startsWith("data:")) ? (
+                          <img
+                            src={group.iconClass.replace(/^img:/, "")}
+                            alt=""
+                            className="w-[18px] h-[18px] object-contain shrink-0"
+                            onError={(e) => { e.currentTarget.style.display = "none"; }}
+                          />
+                        ) : (
+                          <i
+                            className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
+                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white/75"
+                            }`}
+                          />
+                        )}
                         <h3
                           className={`font-gilroy-bold text-[15px] truncate ${
                             active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"

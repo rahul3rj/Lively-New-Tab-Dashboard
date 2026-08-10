@@ -285,6 +285,7 @@ const RingtoneRow = ({ label, value, onChange }) => {
 /* ─── Custom Time Dropdown Popover ─── */
 const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
   const popoverRef = useRef(null);
+  const [openUpwards, setOpenUpwards] = useState(false);
 
   const safeCurrent = useMemo(() => String(current || "9:00 am").trim(), [current]);
 
@@ -302,6 +303,15 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   };
 
   const [timeState, setTimeState] = useState(() => parseInit(safeCurrent));
+
+  useEffect(() => {
+    if (popoverRef.current) {
+      const rect = popoverRef.current.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 20) {
+        setOpenUpwards(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -330,12 +340,20 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       ref={popoverRef}
       onClick={(e) => e.stopPropagation()}
       style={{
-        borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+        backgroundColor: isManga
+          ? "#FFFFFF"
+          : "color-mix(in srgb, var(--theme-4, #0F172A) 96%, #000000)",
+        borderColor: isManga
+          ? "#000000"
+          : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+        boxShadow: isManga
+          ? "4px 4px 0px #000"
+          : "0 10px 40px rgba(0,0,0,0.9), 0 0 20px color-mix(in srgb, var(--theme-1, var(--theme)) 25%, transparent)",
       }}
-      className={`absolute right-0 top-full mt-2 z-[9999] w-60 rounded-2xl p-3.5 flex flex-col gap-3 shadow-2xl animate-fade-in border ${
-        isManga
-          ? "bg-white text-black shadow-[4px_4px_0px_#000]"
-          : "bg-[#121216]/95 backdrop-blur-2xl text-white shadow-[0_0_20px_rgba(0,0,0,0.6)]"
+      className={`absolute right-0 ${
+        openUpwards ? "bottom-full mb-2" : "top-full mt-2"
+      } z-[99999] w-60 rounded-2xl p-3.5 flex flex-col gap-3 animate-fade-in border backdrop-blur-2xl ${
+        isManga ? "text-black" : "text-white"
       }`}
     >
       <div className="grid grid-cols-3 gap-2">
@@ -424,8 +442,30 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
 /* ─── Inline Icon Dropdown Popover ─── */
 const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
   const popoverRef = useRef(null);
+  const [openUpwards, setOpenUpwards] = useState(false);
+
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [customIconInput, setCustomIconInput] = useState(() => {
+    if (typeof current === "string") {
+      if (current.startsWith("img:") || current.startsWith("http") || current.startsWith("data:")) {
+        return current.replace(/^img:/, "");
+      }
+      if (current.startsWith("ri-")) {
+        return current.slice(3).replace(/-/g, " ");
+      }
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (popoverRef.current) {
+      const rect = popoverRef.current.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 20) {
+        setOpenUpwards(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -454,6 +494,34 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
     });
   }, [activeCategory, search]);
 
+  const handleApplyCustomIcon = () => {
+    const trimmed = customIconInput.trim();
+    if (!trimmed) return;
+
+    if (trimmed.startsWith("img:") || trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+      const imgVal = trimmed.startsWith("img:") ? trimmed : `img:${trimmed}`;
+      onSelect(imgVal);
+      onClose();
+      return;
+    }
+
+    let val = trimmed;
+    const classMatch = /class(?:Name)?=["']([^"']+)["']/i.exec(val);
+    if (classMatch) {
+      val = classMatch[1].trim();
+    } else {
+      val = val.replace(/<[^>]*>/g, "").trim();
+    }
+
+    let formattedClass = val.toLowerCase().replace(/\s+/g, "-");
+    if (!formattedClass.startsWith("ri-")) {
+      formattedClass = `ri-${formattedClass}`;
+    }
+
+    onSelect(formattedClass);
+    onClose();
+  };
+
   const isManga = uiTheme === "manga";
 
   return (
@@ -461,16 +529,24 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       ref={popoverRef}
       onClick={(e) => e.stopPropagation()}
       style={{
-        borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+        backgroundColor: isManga
+          ? "#FFFFFF"
+          : "color-mix(in srgb, var(--theme-4, #0F172A) 96%, #000000)",
+        borderColor: isManga
+          ? "#000000"
+          : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
+        boxShadow: isManga
+          ? "4px 4px 0px #000"
+          : "0 10px 40px rgba(0,0,0,0.9), 0 0 20px color-mix(in srgb, var(--theme-1, var(--theme)) 25%, transparent)",
       }}
-      className={`absolute left-0 top-full mt-2 z-[9999] w-72 rounded-2xl p-3 flex flex-col gap-2.5 shadow-2xl animate-fade-in border ${
-        isManga
-          ? "bg-white text-black shadow-[4px_4px_0px_#000]"
-          : "bg-[#121216]/95 backdrop-blur-2xl text-white shadow-[0_0_20px_rgba(0,0,0,0.6)]"
+      className={`absolute left-0 ${
+        openUpwards ? "bottom-full mb-2" : "top-full mt-2"
+      } z-[99999] w-72 h-[270px] max-h-[280px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
+        isManga ? "text-black" : "text-white"
       }`}
     >
       {/* Search Input */}
-      <div className="relative w-full">
+      <div className="relative w-full shrink-0">
         <i
           style={{ color: isManga ? "#000000" : "var(--theme-1, var(--theme))" }}
           className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-xs"
@@ -483,7 +559,7 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
           style={{
             borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
           }}
-          className="w-full h-8.5 pl-8.5 pr-3 rounded-xl bg-black/60 border text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
+          className="w-full h-8 pl-8 pr-3 rounded-xl bg-black/60 border text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
         />
       </div>
 
@@ -507,7 +583,7 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
                   : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
                 color: isActive ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
               }}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
+              className={`px-2 py-0.5 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
                 isActive
                   ? "font-gilroy-bold shadow-sm"
                   : "bg-black/50 hover:brightness-125"
@@ -521,7 +597,7 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       </div>
 
       {/* Icon Grid */}
-      <div className="grid grid-cols-6 gap-1.5 overflow-y-auto scrollbar-hide max-h-44 pr-0.5 z-10 relative">
+      <div className="flex-1 min-h-0 grid grid-cols-6 gap-1.5 overflow-y-auto scrollbar-hide pr-0.5 z-10 relative">
         {filteredItems.map((item) => {
           const isSelected = item.class === current;
           return (
@@ -543,7 +619,7 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
                   : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
                 color: isSelected ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
               }}
-              className={`h-9 w-9 rounded-xl flex items-center justify-center text-lg transition-all cursor-pointer border ${
+              className={`h-8 w-8 rounded-lg flex items-center justify-center text-base transition-all cursor-pointer border ${
                 isSelected
                   ? "font-bold shadow-md scale-105"
                   : "bg-black/50 hover:scale-105 hover:brightness-125"
@@ -559,6 +635,45 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
             No icons found
           </div>
         )}
+      </div>
+
+      {/* Custom Remix Icon Name / Class Input */}
+      <div className="pt-2 border-t border-white/10 flex flex-col gap-1 shrink-0">
+        <label
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[9px] uppercase tracking-wider block font-gilroy-bold opacity-90"
+        >
+          Or Custom Remix Icon Name / CDN Link
+        </label>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text"
+            value={customIconInput}
+            onChange={(e) => setCustomIconInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleApplyCustomIcon();
+              }
+            }}
+            placeholder="Type icon name (e.g. openai fill)..."
+            style={{
+              borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+            }}
+            className="flex-1 h-7.5 px-2.5 rounded-xl bg-black/60 border text-[11px] text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
+          />
+          <button
+            type="button"
+            onClick={handleApplyCustomIcon}
+            style={{
+              backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+              borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+            }}
+            className="px-3 h-7.5 rounded-xl border text-white font-gilroy-bold text-[11px] cursor-pointer hover:brightness-110 shrink-0 transition-all active:scale-95 shadow-sm"
+          >
+            Apply
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1788,103 +1903,178 @@ const SongPlayerTab = ({
 
 /* ─── TAB 4: Taskbar Shortcuts ─── */
 const TaskbarTab = ({
-  shortcuts, onShortcutUpdate, onShortcutRemove, onShortcutAdd, onShortcutIconPick, uiTheme = "default",
+  shortcuts, onShortcutUpdate, onShortcutRemove, onShortcutAdd, onShortcutIconPick, onShortcutsReorder, uiTheme = "default",
 }) => {
   const [iconPickerShortcutId, setIconPickerShortcutId] = useState(null);
+  const buttonRefs = useRef({});
+
+  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === index) return;
+    setDragOverIdx(index);
+  };
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const updated = [...shortcuts];
+    const [moved] = updated.splice(draggedIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+    if (typeof onShortcutsReorder === "function") {
+      onShortcutsReorder(updated);
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
 
   return (
-  <div className="flex flex-col gap-6">
-    {/* Taskbar Shortcuts */}
-    <CardContainer
-      title="Taskbar Quick Launchers"
-      description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar."
-      action={
-        <button
-          type="button"
-          onClick={onShortcutAdd}
-          className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
-        >
-          <i className="ri-add-line text-sm relative z-10" />
-          <span className="relative z-10">Add Shortcut</span>
-        </button>
-      }
-    >
-      <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
-        {(shortcuts || []).map((s) => (
-          <div
-            key={s.id}
-            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-black/25 border border-white/10 hover:border-white/20 rounded-2xl transition-all shadow-sm"
+    <div className="flex flex-col gap-6">
+      {/* Taskbar Shortcuts */}
+      <CardContainer
+        title="Taskbar Quick Launchers"
+        description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar. Drag shortcut cards up or down to reorder them."
+        action={
+          <button
+            type="button"
+            onClick={onShortcutAdd}
+            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
           >
-            <button
-              type="button"
-              onClick={() => setIconPickerShortcutId(s.id)}
-              className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/20 hover:bg-[color:var(--theme)]/40 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shrink-0 group/ic active:scale-95 shadow-inner"
-              title="Change Icon"
-            >
-              {s.iconDataUrl || s.iconUrl ? (
-                <img src={s.iconDataUrl || s.iconUrl} alt="" className="h-5 w-5 object-contain" />
-              ) : s.iconClass ? (
-                <i className={`${s.iconClass} text-white text-xl group-hover/ic:scale-110 transition-transform`} />
-              ) : (
-                <i className="ri-link text-white text-xl" />
-              )}
-            </button>
+            <i className="ri-add-line text-sm relative z-10" />
+            <span className="relative z-10">Add Shortcut</span>
+          </button>
+        }
+      >
+        <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
+          {(shortcuts || []).map((s, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
 
-            <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <InputField
-                value={s.title ?? ""}
-                onChange={(e) => onShortcutUpdate(s.id, { title: e.target.value })}
-                placeholder="Title"
-                className="w-full"
-              />
-              <InputField
-                value={s.url ?? ""}
-                onChange={(e) => onShortcutUpdate(s.id, { url: e.target.value })}
-                placeholder="https://..."
-                className="w-full"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                id={`sc-icon-${s.id}`}
-                onChange={(e) => onShortcutIconPick(s.id, e.target.files?.[0])}
-              />
-              <button
-                type="button"
-                onClick={() => document.getElementById(`sc-icon-${s.id}`)?.click()}
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
-                title="Upload image favicon"
+            return (
+              <div
+                key={s.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={handleDragEnd}
+                className={`bg-black/25 border rounded-2xl transition-all shadow-sm relative ${
+                  iconPickerShortcutId === s.id ? "z-30 overflow-visible" : "z-10 overflow-hidden"
+                } ${
+                  isDragging
+                    ? "opacity-40 border-dashed border-white/40 scale-[0.99]"
+                    : isDragOver
+                    ? "border-[color:var(--theme)] bg-[color:var(--theme)]/15 scale-[1.01]"
+                    : "border-white/10 hover:border-white/20"
+                }`}
               >
-                <i className="ri-image-line text-xs" />
-                <span className="hidden sm:inline">Upload Image</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onShortcutRemove(s.id)}
-                className="h-9 w-9 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 text-white/50 hover:text-red-400 cursor-pointer transition-all flex items-center justify-center shrink-0 active:scale-95"
-                title="Remove Shortcut"
-              >
-                <i className="ri-delete-bin-6-line text-sm" />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3">
+                  {/* Drag Handle */}
+                  <div
+                    className="cursor-grab active:cursor-grabbing text-white/40 hover:text-white/80 transition-colors p-1 shrink-0 flex items-center justify-center"
+                    title="Drag to reorder"
+                  >
+                    <i className="ri-drag-move-fill text-base" />
+                  </div>
 
-      {iconPickerShortcutId && (
-        <IconPickerModal
-          current={shortcuts.find((s) => s.id === iconPickerShortcutId)?.iconClass}
-          onSelect={(ic) => onShortcutUpdate(iconPickerShortcutId, { iconClass: ic, iconDataUrl: null, iconUrl: null })}
-          onClose={() => setIconPickerShortcutId(null)}
-          uiTheme={uiTheme}
-        />
-      )}
-    </CardContainer>
-  </div>
+                  {/* Icon Button with Inline Dropdown */}
+                  <div className="relative shrink-0">
+                    <button
+                      ref={(el) => (buttonRefs.current[s.id] = el)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIconPickerShortcutId(iconPickerShortcutId === s.id ? null : s.id);
+                      }}
+                      className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/20 hover:bg-[color:var(--theme)]/40 border border-white/20 flex items-center justify-center text-white transition-all cursor-pointer shrink-0 group/ic active:scale-95 shadow-inner"
+                      title="Change Icon"
+                    >
+                      {s.iconDataUrl || s.iconUrl ? (
+                        <img src={s.iconDataUrl || s.iconUrl} alt="" className="h-5 w-5 object-contain" />
+                      ) : s.iconClass && (s.iconClass.startsWith("img:") || s.iconClass.startsWith("http") || s.iconClass.startsWith("data:")) ? (
+                        <img src={s.iconClass.replace(/^img:/, "")} alt="" className="h-5 w-5 object-contain" />
+                      ) : s.iconClass ? (
+                        <i className={`${s.iconClass} text-white text-xl group-hover/ic:scale-110 transition-transform`} />
+                      ) : (
+                        <i className="ri-link text-white text-xl" />
+                      )}
+                    </button>
+
+                    {iconPickerShortcutId === s.id && (
+                      <IconDropdownPopover
+                        triggerRef={{ current: buttonRefs.current[s.id] }}
+                        current={s.iconClass}
+                        onSelect={(ic) => onShortcutUpdate(s.id, { iconClass: ic, iconDataUrl: null, iconUrl: null })}
+                        onClose={() => setIconPickerShortcutId(null)}
+                        uiTheme={uiTheme}
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <InputField
+                      value={s.title ?? ""}
+                      onChange={(e) => onShortcutUpdate(s.id, { title: e.target.value })}
+                      placeholder="Title"
+                      className="w-full"
+                    />
+                    <InputField
+                      value={s.url ?? ""}
+                      onChange={(e) => onShortcutUpdate(s.id, { url: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id={`sc-icon-${s.id}`}
+                      onChange={(e) => onShortcutIconPick(s.id, e.target.files?.[0])}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById(`sc-icon-${s.id}`)?.click()}
+                      className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs text-white cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 shrink-0"
+                      title="Upload image favicon"
+                    >
+                      <i className="ri-image-line text-xs" />
+                      <span className="hidden sm:inline">Upload Image</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onShortcutRemove(s.id)}
+                      className="h-9 w-9 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 text-white/50 hover:text-red-400 cursor-pointer transition-all flex items-center justify-center shrink-0 active:scale-95"
+                      title="Remove Shortcut"
+                    >
+                      <i className="ri-delete-bin-6-line text-sm" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </CardContainer>
+    </div>
   );
 };
 
@@ -1892,6 +2082,41 @@ const TaskbarTab = ({
 const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
   const [iconPickerTabId, setIconPickerTabId] = useState(null);
   const [expandedTabId, setExpandedTabId] = useState(null);
+  const buttonRefs = useRef({});
+
+  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const handleDragStart = (e, index) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === index) return;
+    setDragOverIdx(index);
+  };
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx) {
+      setDraggedIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const updated = [...importantTabsConfig];
+    const [moved] = updated.splice(draggedIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+    onImportantTabsConfigChange(updated);
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
 
   const addTab = () => {
     const newTab = { id: makeId(), title: "New Tab Group", iconClass: "ri-globe-line", links: [] };
@@ -1929,94 +2154,144 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
   return (
     <CardContainer
       title="Important Tabs Bundles"
-      description="Organize multiple website links into one-click tab groups."
+      description="Organize multiple website links into one-click tab groups. Drag tab cards up or down to reorder them."
     >
       <div className="flex flex-col gap-4 pt-3 border-t border-white/10">
-        <div className="flex flex-col gap-3">
-          {(importantTabsConfig || []).map((tab) => (
-            <div key={tab.id} className="bg-black/25 border border-white/10 hover:border-white/20 rounded-2xl overflow-hidden transition-all shadow-sm">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3">
-                <button
-                  type="button"
-                  onClick={() => setIconPickerTabId(tab.id)}
-                  className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 flex items-center justify-center text-white text-xl transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm"
-                  title="Change Icon"
-                >
-                  <i className={`${tab.iconClass || "ri-globe-line"} relative z-10`} />
-                </button>
+        <div className="flex flex-col gap-4">
+          {(importantTabsConfig || []).map((tab, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
 
-                <div className="flex-1 min-w-0">
-                  <InputField
-                    value={tab.title}
-                    onChange={(e) => updateTab(tab.id, { title: e.target.value })}
-                    placeholder="Tab Group Title"
-                    className="w-full font-gilroy-bold"
-                  />
+            return (
+              <div
+                key={tab.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={handleDragEnd}
+                className={`bg-black/25 border rounded-2xl transition-all shadow-sm relative ${
+                  iconPickerTabId === tab.id ? "z-30 overflow-visible" : "z-10 overflow-hidden"
+                } ${
+                  isDragging
+                    ? "opacity-40 border-dashed border-white/40 scale-[0.99]"
+                    : isDragOver
+                    ? "border-[color:var(--theme)] bg-[color:var(--theme)]/15 scale-[1.01]"
+                    : "border-white/10 hover:border-white/20"
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 p-3">
+                  {/* Drag Handle */}
+                  <div
+                    className="cursor-grab active:cursor-grabbing text-white/40 hover:text-white/80 transition-colors p-1 shrink-0 flex items-center justify-center"
+                    title="Drag to reorder"
+                  >
+                    <i className="ri-drag-move-fill text-base" />
+                  </div>
+
+                  {/* Icon Button with Inline Dropdown */}
+                  <div className="relative shrink-0">
+                    <button
+                      ref={(el) => (buttonRefs.current[tab.id] = el)}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIconPickerTabId(iconPickerTabId === tab.id ? null : tab.id);
+                      }}
+                      className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 flex items-center justify-center text-white text-xl transition-all shrink-0 cursor-pointer active:scale-95 shadow-sm"
+                      title="Change Icon"
+                    >
+                      {tab.iconClass && (tab.iconClass.startsWith("img:") || tab.iconClass.startsWith("http") || tab.iconClass.startsWith("data:")) ? (
+                        <img src={tab.iconClass.replace(/^img:/, "")} alt="" className="h-5 w-5 object-contain" />
+                      ) : (
+                        <i className={`${tab.iconClass || "ri-globe-line"} relative z-10`} />
+                      )}
+                    </button>
+
+                    {iconPickerTabId === tab.id && (
+                      <IconDropdownPopover
+                        triggerRef={{ current: buttonRefs.current[tab.id] }}
+                        current={tab.iconClass}
+                        onSelect={(ic) => updateTab(tab.id, { iconClass: ic })}
+                        onClose={() => setIconPickerTabId(null)}
+                        uiTheme={uiTheme}
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <InputField
+                      value={tab.title}
+                      onChange={(e) => updateTab(tab.id, { title: e.target.value })}
+                      placeholder="Tab Group Title"
+                      className="w-full font-gilroy-bold"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTabId(expandedTabId === tab.id ? null : tab.id)}
+                      className="h-10 px-3.5 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 text-xs text-white/80 hover:text-white cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 shrink-0"
+                    >
+                      <span className="text-xs font-gilroy-medium">{tab.links?.length || 0} links</span>
+                      <i className={`ri-arrow-${expandedTabId === tab.id ? "up" : "down"}-s-line text-sm relative z-10`} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeTab(tab.id)}
+                      className="h-10 w-10 rounded-2xl bg-white/5 hover:bg-red-500/20 border border-white/10 text-white/50 hover:text-red-400 cursor-pointer transition-all flex items-center justify-center shrink-0 active:scale-95"
+                      title="Remove Tab Group"
+                    >
+                      <i className="ri-delete-bin-6-line text-sm" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 ml-auto">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedTabId(expandedTabId === tab.id ? null : tab.id)}
-                    className="h-10 px-3.5 rounded-2xl bg-[color:var(--theme)]/25 hover:bg-[color:var(--theme)]/45 border border-white/20 text-xs text-white/80 hover:text-white cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 shrink-0"
-                  >
-                    <span className="text-xs font-gilroy-medium">{tab.links?.length || 0} links</span>
-                    <i className={`ri-arrow-${expandedTabId === tab.id ? "up" : "down"}-s-line text-sm relative z-10`} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeTab(tab.id)}
-                    className="h-10 w-10 rounded-2xl bg-white/5 hover:bg-red-500/20 border border-white/10 text-white/50 hover:text-red-400 cursor-pointer transition-all flex items-center justify-center shrink-0 active:scale-95"
-                    title="Remove Tab Group"
-                  >
-                    <i className="ri-delete-bin-6-line text-sm" />
-                  </button>
-                </div>
+                {expandedTabId === tab.id && (
+                  <div className="border-t border-white/10 p-3 bg-black/20 flex flex-col gap-2">
+                    {tab.links?.map((link) => (
+                      <div key={link.id} className="flex items-center gap-2.5">
+                        <i className="ri-corner-down-right-line text-white/40 text-sm shrink-0 ml-1.5" />
+                        <div className="w-36 shrink-0">
+                          <InputField
+                            value={link.label}
+                            onChange={(e) => updateLink(tab.id, link.id, { label: e.target.value })}
+                            placeholder="Label (e.g. Docs)"
+                            className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <InputField
+                            value={link.url}
+                            onChange={(e) => updateLink(tab.id, link.id, { url: e.target.value })}
+                            placeholder="https://..."
+                            className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeLink(tab.id, link.id)}
+                          className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
+                          title="Remove Link"
+                        >
+                          <i className="ri-close-line text-base" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addLink(tab.id)}
+                      className="mt-1.5 self-start px-4 py-1.5 rounded-xl bg-[color:var(--theme)]/30 hover:bg-[color:var(--theme)]/50 border border-white/20 text-xs text-white font-gilroy-medium cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
+                    >
+                      <i className="ri-add-line text-xs relative z-10" />
+                      <span className="relative z-10">Add Link</span>
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {expandedTabId === tab.id && (
-                <div className="border-t border-white/10 p-3 bg-black/20 flex flex-col gap-2">
-                  {tab.links?.map((link) => (
-                    <div key={link.id} className="flex items-center gap-2.5">
-                      <i className="ri-corner-down-right-line text-white/40 text-sm shrink-0 ml-1.5" />
-                      <div className="w-36 shrink-0">
-                        <InputField
-                          value={link.label}
-                          onChange={(e) => updateLink(tab.id, link.id, { label: e.target.value })}
-                          placeholder="Label (e.g. Docs)"
-                          className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <InputField
-                          value={link.url}
-                          onChange={(e) => updateLink(tab.id, link.id, { url: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeLink(tab.id, link.id)}
-                        className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
-                        title="Remove Link"
-                      >
-                        <i className="ri-close-line text-base" />
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => addLink(tab.id)}
-                    className="mt-1.5 self-start px-4 py-1.5 rounded-xl bg-[color:var(--theme)]/30 hover:bg-[color:var(--theme)]/50 border border-white/20 text-xs text-white font-gilroy-medium cursor-pointer transition-all flex items-center gap-1.5 active:scale-95 shadow-sm"
-                  >
-                    <i className="ri-add-line text-xs relative z-10" />
-                    <span className="relative z-10">Add Link</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <button
@@ -2028,15 +2303,6 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
           <span className="relative z-10">Add Tab Group</span>
         </button>
       </div>
-
-      {iconPickerTabId && (
-        <IconPickerModal
-          current={importantTabsConfig.find((t) => t.id === iconPickerTabId)?.iconClass}
-          onSelect={(ic) => updateTab(iconPickerTabId, { iconClass: ic })}
-          onClose={() => setIconPickerTabId(null)}
-          uiTheme={uiTheme}
-        />
-      )}
     </CardContainer>
   );
 };
@@ -2046,6 +2312,8 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
   const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
   const [timePickerGroupId, setTimePickerGroupId] = useState(null);
   const [expandedGroupId, setExpandedGroupId] = useState(null);
+  const iconButtonRefs = useRef({});
+  const timeButtonRefs = useRef({});
 
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
@@ -2114,7 +2382,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
       description="Structure your daily routines into scheduled task blocks with subtask checklists. Drag task cards up or down to reorder them."
     >
       <div className="flex flex-col gap-4 pt-3 border-t border-white/10">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {(timeBoxingGroups || []).map((group, idx) => {
             const isDragging = draggedIdx === idx;
             const isDragOver = dragOverIdx === idx;
@@ -2151,6 +2419,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
                   {/* Icon Picker Dropdown */}
                   <div className="relative shrink-0 z-50">
                     <button
+                      ref={(el) => (iconButtonRefs.current[group.id] = el)}
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -2164,6 +2433,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
                     {iconPickerGroupId === group.id && (
                       <IconDropdownPopover
+                        triggerRef={{ current: iconButtonRefs.current[group.id] }}
                         current={group.iconClass || "ri-briefcase-line"}
                         onSelect={(newIcon) => {
                           updateGroup(group.id, { iconClass: newIcon });
@@ -2188,6 +2458,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
                   {/* Time Selector Dropdown */}
                   <div className="relative shrink-0 z-50">
                     <button
+                      ref={(el) => (timeButtonRefs.current[group.id] = el)}
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -2203,6 +2474,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
                     {timePickerGroupId === group.id && (
                       <TimeDropdownPopover
+                        triggerRef={{ current: timeButtonRefs.current[group.id] }}
                         current={group.time || "9:00 am"}
                         onSelect={(newTime) => {
                           updateGroup(group.id, { time: newTime });
@@ -2485,6 +2757,7 @@ const SettingsPage = (props) => {
             {activeTab === "taskbar" && (
               <TaskbarTab
                 shortcuts={props.shortcuts}
+                onShortcutsReorder={props.onShortcutsChange}
                 onShortcutUpdate={props.onShortcutUpdate}
                 onShortcutRemove={props.onShortcutRemove}
                 onShortcutAdd={props.onShortcutAdd}
