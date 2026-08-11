@@ -55,6 +55,31 @@ const buildCalendarData = (map, rangeId) => {
   return data;
 };
 
+const buildGithubCalendarData = (githubData) => {
+  const { start, end } = getRangeDates("current");
+  const days = githubData?.days ?? {};
+  const isScrape = githubData?.source === "github";
+  const data = [];
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    const key = dateKeyOf(cursor);
+    const raw = Number(days[key]);
+    let level;
+    let count;
+    if (isScrape) {
+      level = Number.isFinite(raw) && raw > 0 ? Math.max(0, Math.min(4, raw)) : 0;
+      count = level;
+    } else {
+      count = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+      level = levelForCount(count);
+    }
+    data.push({ date: key, count, level });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return data;
+};
+
 const computeStats = (data) => {
   let totalActiveDays = 0;
   let maxStreak = 0;
@@ -87,7 +112,7 @@ const computeStats = (data) => {
 
 const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = "" }) => {
   const [activityMap, setActivityMap] = useState(null);
-  const [githubMap, setGithubMap] = useState(null);
+  const [githubData, setGithubData] = useState(null);
   const [githubStatus, setGithubStatus] = useState("idle");
   const [githubError, setGithubError] = useState("");
   const [githubRetryKey, setGithubRetryKey] = useState(0);
@@ -144,7 +169,7 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
     let cancelled = false;
     if (!isGithub || !extractUsername(githubUsername)) {
       setGithubStatus("idle");
-      setGithubMap(null);
+      setGithubData(null);
       setGithubError("");
       return undefined;
     }
@@ -152,13 +177,13 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
     setGithubError("");
     const timer = setTimeout(async () => {
       try {
-        const { map } = await fetchGitHubContributions(githubUsername);
+        const result = await fetchGitHubContributions(githubUsername);
         if (cancelled) return;
-        setGithubMap(map);
+        setGithubData(result);
         setGithubStatus("ready");
       } catch (err) {
         if (cancelled) return;
-        setGithubMap(null);
+        setGithubData(null);
         setGithubStatus("error");
         setGithubError(err?.message || "Failed to load GitHub contributions.");
       }
@@ -170,9 +195,9 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
   }, [isGithub, githubUsername, githubRetryKey]);
 
   const data = useMemo(() => {
-    if (isGithub) return githubMap ? buildCalendarData(githubMap, range) : [];
+    if (isGithub) return githubData ? buildGithubCalendarData(githubData) : [];
     return activityMap ? buildCalendarData(activityMap, range) : [];
-  }, [isGithub, githubMap, activityMap, range]);
+  }, [isGithub, githubData, activityMap, range]);
 
   const { totalActiveDays, maxStreak, currentStreak } = useMemo(
     () => computeStats(data),
@@ -203,10 +228,12 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs">
             <span className="font-gilroy-bold text-white/70">
-              Active Days:
+              {isGithub ? "Total:" : "Active Days:"}
             </span>
             <span className="font-gilroy-medium text-white/90">
-              {totalActiveDays}
+              {isGithub
+                ? (githubData?.yearTotal ?? totalActiveDays).toLocaleString()
+                : totalActiveDays}
             </span>
           </div>
           <div className="flex items-center gap-1 text-xs">
