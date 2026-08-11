@@ -5,9 +5,18 @@ const GITHUB_WEB = "https://github.com";
 /** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
 export const extractUsername = (input) => {
   const raw = String(input ?? "").trim().replace(/^@+/, "");
-  const match = raw.match(/github\.com\/([^/?#]+)/);
-  const candidate = match ? match[1] : raw;
-  return candidate.split(/[/?#]/)[0].trim();
+  if (!raw) return "";
+
+  const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+  try {
+    const url = new URL(withProto);
+    if (!/^(www\.)?github\.com$/i.test(url.hostname)) return "";
+    const username = (url.pathname.split("/").filter(Boolean)[0] || "").trim();
+    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(username) ? username : "";
+  } catch {
+    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(raw) ? raw : "";
+  }
 };
 
 const levelForCount = (count) =>
