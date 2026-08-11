@@ -331,13 +331,13 @@ const App = () => {
         if (typeof storedPlaylist === "string") setSongPlaylistUrl(storedPlaylist);
         if (typeof storedAutoPlay === "boolean") setSongAutoPlay(storedAutoPlay);
         if (storedCustomVideo) setSongCustomVideo(storedCustomVideo);
-        let parsedImpTabs = storedImpTabsCfg;
-        if (typeof storedImpTabsCfg === "string") {
-          try { parsedImpTabs = JSON.parse(storedImpTabsCfg); } catch {}
-        }
-        if (Array.isArray(parsedImpTabs)) setImportantTabsConfig(parsedImpTabs);
         if (Array.isArray(storedLofiStations) && storedLofiStations.length > 0) setLofiStations(storedLofiStations);
         if (Array.isArray(storedTimeboxGroups) && storedTimeboxGroups.length > 0) setTimeBoxingGroups(storedTimeboxGroups);
+        let parsedImpTabs = storedImpTabsCfg;
+        if (typeof storedImpTabsCfg === "string") {
+          try { parsedImpTabs = JSON.parse(storedImpTabsCfg); } catch { parsedImpTabs = null; }
+        }
+        if (Array.isArray(parsedImpTabs)) setImportantTabsConfig(parsedImpTabs);
         if (typeof storedUiTheme === "string" && ["default","manga","cyberpunk","pixel"].includes(storedUiTheme)) setUiTheme(storedUiTheme);
         if (typeof storedBaseFont === "string" && storedBaseFont.trim()) setBaseFont(storedBaseFont);
         if (typeof storedBaseFontSize === "number" && storedBaseFontSize >= 12 && storedBaseFontSize <= 24) setBaseFontSize(storedBaseFontSize);
