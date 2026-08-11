@@ -58,22 +58,15 @@ const buildCalendarData = (map, rangeId) => {
 const buildGithubCalendarData = (githubData) => {
   const { start, end } = getRangeDates("current");
   const days = githubData?.days ?? {};
-  const isScrape = githubData?.source === "github";
   const data = [];
   const cursor = new Date(start);
 
   while (cursor <= end) {
     const key = dateKeyOf(cursor);
-    const raw = Number(days[key]);
-    let level;
-    let count;
-    if (isScrape) {
-      level = Number.isFinite(raw) && raw > 0 ? Math.max(0, Math.min(4, raw)) : 0;
-      count = level;
-    } else {
-      count = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
-      level = levelForCount(count);
-    }
+    const day = days[key];
+    const count = day && day.count > 0 ? Math.floor(day.count) : 0;
+    const level =
+      day && Number.isFinite(day.level) ? Math.max(0, Math.min(4, day.level)) : 0;
     data.push({ date: key, count, level });
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }

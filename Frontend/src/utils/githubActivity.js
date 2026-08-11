@@ -1,3 +1,4 @@
+const JOG_RUBER_API = "https://github-contributions-api.jogruber.de";
 const GITHUB_API = "https://api.github.com";
 const GITHUB_WEB = "https://github.com";
 
@@ -8,6 +9,9 @@ export const extractUsername = (input) => {
   const candidate = match ? match[1] : raw;
   return candidate.split(/[/?#]/)[0].trim();
 };
+
+const levelForCount = (count) =>
+  count <= 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count === 3 ? 3 : 4;
 
 const contributeDeltaForEvent = (event) => {
   switch (event.type) {
@@ -31,9 +35,101 @@ const contributeDeltaForEvent = (event) => {
 };
 
 /**
- * Best-effort fallback (used on localhost dev, where GitHub's contributions
- * page is CORS-blocked): aggregates public events via the REST API.
- * Only covers roughly the last ~90 days, so stats are approximate.
+ * Primary source: the same third-party API your portfolio uses
+ * (`github-contributions-api.jogruber.de`). Returns complete per-day counts
+ * and levels for the full history, matches GitHub exactly, and sends
+ * `Access-Control-Allow-Origin: *` so it works from localhost dev too.
+ */
+const fetchJogruber = async (username) => {
+  const url = `${JOG_RUBER_API}/v4/${encodeURIComponent(username)}`;
+  const res = await fetch(url);
+  if (res.status === 404) {
+    throw new Error(`GitHub user "@${username}" was not found.`);
+  }
+  if (!res.ok) {
+    throw new Error(`GitHub API error (HTTP ${res.status}).`);
+  }
+  const data = await res.json();
+  const list = Array.isArray(data?.contributions) ? data.contributions : [];
+  if (list.length === 0) {
+    throw new Error("Could not read the contribution graph for this user.");
+  }
+
+  const today = new Date();
+  const start = new Date(today);
+  start.setUTCDate(start.getUTCDate() - 364);
+  const startKey = start.toISOString().slice(0, 10);
+  const todayKey = today.toISOString().slice(0, 10);
+
+  const days = {};
+  let yearTotal = 0;
+  let newest = null;
+  for (const item of list) {
+    const date = String(item?.date ?? "");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    const count = Number(item?.count) || 0;
+    const level = Math.max(0, Math.min(4, Number(item?.level) || 0));
+    days[date] = { count, level };
+    if (count > 0 && (!newest || date > newest)) newest = date;
+    if (date >= startKey && date <= todayKey) yearTotal += count;
+  }
+  if (Object.keys(days).length === 0) {
+    throw new Error("Could not read the contribution graph for this user.");
+  }
+  return { days, yearTotal, newest, source: "github" };
+};
+
+/** Parses GitHub's own yearly contributions grid out of its HTML page. */
+const parseContributionsHtml = (html) => {
+  const days = {};
+  const cellRe = /<td[^>]*?class="[^"]*\bContributionCalendar-day\b[^"]*"[^>]*>/g;
+  let match;
+  while ((match = cellRe.exec(html))) {
+    const tag = match[0];
+    const date = /data-date="([0-9-]+)"/.exec(tag)?.[1];
+    const level = /data-level="([0-4])"/.exec(tag)?.[1];
+    if (date && level !== undefined) days[date] = Number(level);
+  }
+  const totalMatch = /([\d,]+)\s+contributions?\s+in the last year/i.exec(html);
+  return {
+    days,
+    yearTotal: totalMatch ? Number(totalMatch[1].replace(/,/g, "")) : null,
+  };
+};
+
+/**
+ * Fallback 1: GitHub's own contributions page. Exact levels GitHub shows, but
+ * only works from the extension page (https://github.com/* host permission);
+ * CORS-blocked from localhost.
+ */
+const fetchScrape = async (username) => {
+  const url = `${GITHUB_WEB}/users/${encodeURIComponent(username)}/contributions`;
+  const res = await fetch(url, { headers: { Accept: "text/html" } });
+  if (res.status === 404) {
+    throw new Error(`GitHub user "@${username}" was not found.`);
+  }
+  if (!res.ok) {
+    throw new Error(`GitHub error (HTTP ${res.status}).`);
+  }
+  const parsed = parseContributionsHtml(await res.text());
+  const days = {};
+  for (const [date, level] of Object.entries(parsed.days)) {
+    days[date] = { count: level, level };
+  }
+  if (Object.keys(days).length === 0) {
+    throw new Error("Could not read the contribution graph for this user.");
+  }
+  return {
+    days,
+    yearTotal: parsed.yearTotal,
+    newest: Object.keys(parsed.days).sort().pop() ?? null,
+    source: "github",
+  };
+};
+
+/**
+ * Fallback 2 (local-only, approximate): aggregates public events via the REST
+ * API. Only covers roughly the last ~90 days, so the graph is sparse.
  */
 const fetchGitHubEvents = async (username, pages = 3) => {
   const perPage = 100;
@@ -76,33 +172,16 @@ const fetchGitHubEvents = async (username, pages = 3) => {
     }
   }
 
-  return { map: agg, newest };
-};
-
-/** Parses GitHub's own yearly contributions grid out of its HTML page. */
-const parseContributionsHtml = (html) => {
   const days = {};
-  const cellRe = /<td[^>]*?class="[^"]*\bContributionCalendar-day\b[^"]*"[^>]*>/g;
-  let match;
-  while ((match = cellRe.exec(html))) {
-    const tag = match[0];
-    const date = /data-date="([0-9-]+)"/.exec(tag)?.[1];
-    const level = /data-level="([0-4])"/.exec(tag)?.[1];
-    if (date && level !== undefined) days[date] = Number(level);
+  for (const [date, count] of Object.entries(agg)) {
+    days[date] = { count, level: levelForCount(count) };
   }
-  const totalMatch = /([\d,]+)\s+contributions?\s+in the last year/i.exec(html);
-  return {
-    days,
-    yearTotal: totalMatch ? Number(totalMatch[1].replace(/,/g, "")) : null,
-  };
+  return { days, yearTotal: null, newest, source: "events" };
 };
 
 /**
- * Primary source: fetches GitHub's own contributions page
- * (`/users/{user}/contributions`) and returns the exact levels GitHub shows.
- * Works from the extension page because `https://github.com/*` is granted by
- * host_permissions (CORS is bypassed for extension origins). Falls back to the
- * public events API when the page can't be fetched (e.g. localhost dev).
+ * Fetches GitHub contributions for a user, preferring the most complete,
+ * CORS-friendly source and falling back down the chain when one fails.
  */
 export const fetchGitHubContributions = async (inputUsername) => {
   const username = extractUsername(inputUsername);
@@ -111,31 +190,12 @@ export const fetchGitHubContributions = async (inputUsername) => {
   }
 
   try {
-    const url = `${GITHUB_WEB}/users/${encodeURIComponent(username)}/contributions`;
-    const res = await fetch(url, { headers: { Accept: "text/html" } });
-    if (res.status === 404) {
-      throw new Error(`GitHub user "@${username}" was not found.`);
+    return await fetchJogruber(username);
+  } catch {
+    try {
+      return await fetchScrape(username);
+    } catch {
+      return fetchGitHubEvents(username);
     }
-    if (!res.ok) {
-      throw new Error(`GitHub error (HTTP ${res.status}).`);
-    }
-    const parsed = parseContributionsHtml(await res.text());
-    if (!parsed.days || Object.keys(parsed.days).length === 0) {
-      throw new Error("Could not read the contribution graph for this user.");
-    }
-    return {
-      days: parsed.days,
-      yearTotal: parsed.yearTotal,
-      newest: Object.keys(parsed.days).sort().pop() ?? null,
-      source: "github",
-    };
-  } catch (err) {
-    const fallback = await fetchGitHubEvents(username);
-    return {
-      days: fallback.map,
-      yearTotal: null,
-      newest: fallback.newest,
-      source: "events",
-    };
   }
 };
