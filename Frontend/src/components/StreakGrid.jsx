@@ -222,43 +222,45 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
             </span>
           </div>
 
-          <div className="relative" ref={rangeMenuRef}>
-            <button
-              type="button"
-              onClick={() => setRangeMenuOpen((v) => !v)}
-              className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
-            >
-              <span className="relative z-10">{activeRangeLabel}</span>
-              <i
-                className={`ri-arrow-down-s-line text-xs relative z-10 transition-transform ${rangeMenuOpen ? "rotate-180" : ""}`}
-              ></i>
-            </button>
+          {!isGithub && (
+            <div className="relative" ref={rangeMenuRef}>
+              <button
+                type="button"
+                onClick={() => setRangeMenuOpen((v) => !v)}
+                className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
+              >
+                <span className="relative z-10">{activeRangeLabel}</span>
+                <i
+                  className={`ri-arrow-down-s-line text-xs relative z-10 transition-transform ${rangeMenuOpen ? "rotate-180" : ""}`}
+                ></i>
+              </button>
 
-            {rangeMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 min-w-[110px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-1 shadow-2xl z-50 flex flex-col">
-                {RANGE_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => {
-                      setRange(option.id);
-                      setRangeMenuOpen(false);
-                    }}
-                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-gilroy-medium transition-colors cursor-pointer ${
-                      range === option.id
-                        ? "bg-white/15 text-white"
-                        : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <span>{option.label}</span>
-                    {range === option.id && (
-                      <i className="ri-check-line text-xs"></i>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              {rangeMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 min-w-[110px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-1 shadow-2xl z-50 flex flex-col">
+                  {RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        setRange(option.id);
+                        setRangeMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-gilroy-medium transition-colors cursor-pointer ${
+                        range === option.id
+                          ? "bg-white/15 text-white"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>{option.label}</span>
+                      {range === option.id && (
+                        <i className="ri-check-line text-xs"></i>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
