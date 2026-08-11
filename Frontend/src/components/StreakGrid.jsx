@@ -211,7 +211,7 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
           </div>
           <div className="flex items-center gap-1 text-xs">
             <span className="font-gilroy-bold text-white/70">Current Streak:</span>
-            <span className="font-gilroy-medium text-[color:var(--theme)] font-gilroy-bold">
+            <span className="font-gilroy-medium text-[color:var(--theme-1,#CBD5E1)] font-gilroy-bold">
               {currentStreak}
             </span>
           </div>
