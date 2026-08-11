@@ -12,6 +12,8 @@ const STORAGE = {
   showTimer: "settings_show_timer_v1",
   showTodo: "settings_show_todo_v1",
   showStreakGrid: "settings_show_streak_grid_v1",
+  streakDataSource: "settings_streak_data_source_v1",
+  githubUsername: "settings_github_username_v1",
   showSongPlayer: "settings_show_song_player_v1",
   themeColor: "settings_theme_color_v1",
   shortcuts: "settings_shortcuts_v1",
@@ -180,6 +182,8 @@ const App = () => {
   const [showTimer, setShowTimer] = useState(true);
   const [showTodo, setShowTodo] = useState(true);
   const [showStreakGrid, setShowStreakGrid] = useState(true);
+  const [streakDataSource, setStreakDataSource] = useState("local");
+  const [githubUsername, setGithubUsername] = useState("");
   const [showSongPlayer, setShowSongPlayer] = useState(true);
   const [themeColor, setThemeColor] = useState(DEFAULT_THEME_PALETTE);
   const [themeColorsMap, setThemeColorsMap] = useState(DEFAULT_THEME_PALETTES);
@@ -250,6 +254,8 @@ const App = () => {
         const storedCustomVideo = data[STORAGE.songCustomVideo];
         const storedLofiStations = data[STORAGE.lofiStations];
         const storedImpTabsCfg = data[STORAGE.importantTabsConfig];
+        const storedStreakDataSource = data[STORAGE.streakDataSource];
+        const storedGithubUsername = data[STORAGE.githubUsername];
         let storedTimeboxGroups = data[STORAGE.timeBoxingGroups];
         const storedThemeTextIdx = data[STORAGE.themeTextColorIndex];
         const storedResetDate = data[STORAGE.timeboxingLastResetDate];
@@ -285,6 +291,8 @@ const App = () => {
         if (typeof storedShowTimer === "boolean") setShowTimer(storedShowTimer);
         if (typeof storedShowTodo === "boolean") setShowTodo(storedShowTodo);
         if (typeof storedShowStreakGrid === "boolean") setShowStreakGrid(storedShowStreakGrid);
+        if (storedStreakDataSource === "local" || storedStreakDataSource === "github") setStreakDataSource(storedStreakDataSource);
+        if (typeof storedGithubUsername === "string") setGithubUsername(storedGithubUsername);
         if (typeof storedShowSongPlayer === "boolean") setShowSongPlayer(storedShowSongPlayer);
         const storedThemeColorsMap = data[STORAGE.themeColorsMap];
         let activeThemeMap = { ...DEFAULT_THEME_PALETTES };
@@ -361,6 +369,8 @@ const App = () => {
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTimer, showTimer); }, [showTimer]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTodo, showTodo); }, [showTodo]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showStreakGrid, showStreakGrid); }, [showStreakGrid]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.streakDataSource, streakDataSource); }, [streakDataSource]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.githubUsername, githubUsername); }, [githubUsername]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showSongPlayer, showSongPlayer); }, [showSongPlayer]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColor, themeColor); }, [themeColor]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColorsMap, themeColorsMap); }, [themeColorsMap]);
@@ -657,6 +667,8 @@ const App = () => {
             songCustomVideo={songCustomVideo}
             lofiStations={lofiStations}
             waterGoalMl={waterGoalMl}
+            streakDataSource={streakDataSource}
+            githubUsername={githubUsername}
           />
         </div>
 
@@ -762,6 +774,10 @@ const App = () => {
           // Streak
           showStreakGrid={showStreakGrid}
           onShowStreakGridChange={setShowStreakGrid}
+          streakDataSource={streakDataSource}
+          onStreakDataSourceChange={setStreakDataSource}
+          githubUsername={githubUsername}
+          onGithubUsernameChange={setGithubUsername}
         />
       </div>
     </div>

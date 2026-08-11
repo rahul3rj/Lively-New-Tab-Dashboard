@@ -417,6 +417,8 @@ const DashboardGrid = ({
   songCustomVideo,
   lofiStations,
   waterGoalMl,
+  streakDataSource = "local",
+  githubUsername = "",
 }) => {
   const gridRef = useRef(null);
   const [deviceTier, setDeviceTier] = useState(() => getDeviceTier());
@@ -769,7 +771,7 @@ const DashboardGrid = ({
       case "importantTabs":
         return <ImportantTabs dragHandleProps={dragHandleProps} tabsConfig={importantTabsConfig} />;
       case "streakGrid":
-        return <StreakGrid dragHandleProps={dragHandleProps} />;
+        return <StreakGrid dragHandleProps={dragHandleProps} dataSource={streakDataSource} githubUsername={githubUsername} />;
       case "songPlayer":
         return <SongPlayer dragHandleProps={dragHandleProps} playlistUrl={songPlaylistUrl} autoPlay={songAutoPlay} customVideo={songCustomVideo} stations={lofiStations} />;
       case "timeBoxing":

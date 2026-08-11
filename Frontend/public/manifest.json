@@ -15,6 +15,7 @@
     "https://noembed.com/*",
     "https://music.youtube.com/*",
     "https://api.open-meteo.com/*",
+    "https://api.github.com/*",
     "https://*.spotify.com/*",
     "https://streams.ilovemusic.de/*",
     "https://*.zeno.fm/*",
@@ -39,6 +40,6 @@
     "128": "logo.png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self'; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://noembed.com https://www.youtube.com https://music.youtube.com https://api.open-meteo.com https://open.spotify.com https://*.spotify.com https://streams.ilovemusic.de https://*.zeno.fm https://*.laut.fm https://streams.fluxfm.de; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://music.youtube.com https://open.spotify.com; media-src 'self' data: blob: https:;"
+    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'self'; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net data:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cdn.jsdelivr.net https://noembed.com https://www.youtube.com https://music.youtube.com https://api.open-meteo.com https://api.github.com https://open.spotify.com https://*.spotify.com https://streams.ilovemusic.de https://*.zeno.fm https://*.laut.fm https://streams.fluxfm.de; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://music.youtube.com https://open.spotify.com; media-src 'self' data: blob: https:;"
   }
 }

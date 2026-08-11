@@ -6,6 +6,7 @@ import {
   getActivityMap,
   seedDemoActivityIfEmpty,
 } from "../utils/activityStore";
+import { fetchGitHubContributions } from "../utils/githubActivity";
 
 const RANGE_OPTIONS = [
   { id: "current", label: "Current" },
@@ -84,11 +85,16 @@ const computeStats = (data) => {
   return { totalActiveDays, maxStreak, currentStreak };
 };
 
-const StreakGrid = ({ dragHandleProps }) => {
+const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = "" }) => {
   const [activityMap, setActivityMap] = useState(null);
+  const [githubMap, setGithubMap] = useState(null);
+  const [githubStatus, setGithubStatus] = useState("idle");
+  const [githubError, setGithubError] = useState("");
+  const [githubRetryKey, setGithubRetryKey] = useState(0);
   const [range, setRange] = useState("current");
   const [rangeMenuOpen, setRangeMenuOpen] = useState(false);
   const rangeMenuRef = useRef(null);
+  const isGithub = dataSource === "github";
 
   useEffect(() => {
     let cancelled = false;
@@ -134,10 +140,38 @@ const StreakGrid = ({ dragHandleProps }) => {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [rangeMenuOpen]);
 
-  const data = useMemo(
-    () => (activityMap ? buildCalendarData(activityMap, range) : []),
-    [activityMap, range],
-  );
+  useEffect(() => {
+    let cancelled = false;
+    if (!isGithub || !githubUsername || !githubUsername.trim()) {
+      setGithubStatus("idle");
+      setGithubMap(null);
+      setGithubError("");
+      return undefined;
+    }
+    setGithubStatus("loading");
+    setGithubError("");
+    (async () => {
+      try {
+        const { map } = await fetchGitHubContributions(githubUsername.trim());
+        if (cancelled) return;
+        setGithubMap(map);
+        setGithubStatus("ready");
+      } catch (err) {
+        if (cancelled) return;
+        setGithubMap(null);
+        setGithubStatus("error");
+        setGithubError(err?.message || "Failed to load GitHub contributions.");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isGithub, githubUsername, githubRetryKey]);
+
+  const data = useMemo(() => {
+    if (isGithub) return githubMap ? buildCalendarData(githubMap, range) : [];
+    return activityMap ? buildCalendarData(activityMap, range) : [];
+  }, [isGithub, githubMap, activityMap, range]);
 
   const { totalActiveDays, maxStreak, currentStreak } = useMemo(
     () => computeStats(data),
@@ -145,6 +179,7 @@ const StreakGrid = ({ dragHandleProps }) => {
   );
 
   const activeRangeLabel = RANGE_OPTIONS.find((o) => o.id === range)?.label;
+  const titleLabel = isGithub ? "GitHub Contributions" : "Streak Grid View";
 
   return (
     <div
@@ -161,7 +196,7 @@ const StreakGrid = ({ dragHandleProps }) => {
           {...dragHandleProps}
         >
           <i className="ri-draggable text-sm pointer-events-none"></i>
-          <span className="pointer-events-none">Streak Grid View</span>
+          <span className="pointer-events-none">{titleLabel}</span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -228,30 +263,54 @@ const StreakGrid = ({ dragHandleProps }) => {
 
       {/* Heatmap */}
       <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
-        <ActivityCalendar
-          data={data}
-          loading={activityMap === null}
-          theme={STREAK_THEME}
-          colorScheme="dark"
-          blockSize={12}
-          blockMargin={4}
-          blockRadius={3}
-          fontSize={11}
-          showWeekdayLabels={false}
-          showTotalCount={false}
-          showColorLegend={false}
-          className="text-white/60 font-gilroy-medium"
-          renderBlock={(block, activity) =>
-            React.cloneElement(block, {
-              title: undefined,
-              children: null,
-              style: {
-                ...block.props.style,
-                ...(activity?.level === 0 ? { opacity: 0.7 } : {}),
-              },
-            })
-          }
-        />
+        {isGithub && !githubUsername.trim() ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-github-line text-3xl text-white/40"></i>
+            <p className="text-[11px] text-white/50 font-gilroy-medium max-w-[240px]">
+              Add your GitHub username in Settings to view your contribution graph.
+            </p>
+          </div>
+        ) : isGithub && githubStatus === "error" ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-error-warning-line text-3xl text-white/40"></i>
+            <p className="text-[11px] text-white/60 font-gilroy-medium max-w-[260px]">
+              {githubError}
+            </p>
+            <button
+              type="button"
+              onClick={() => setGithubRetryKey((k) => k + 1)}
+              className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-[11px] font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
+            >
+              <i className="ri-refresh-line text-xs"></i>
+              <span className="relative z-10">Retry</span>
+            </button>
+          </div>
+        ) : (
+          <ActivityCalendar
+            data={data}
+            loading={isGithub ? githubStatus === "loading" : activityMap === null}
+            theme={STREAK_THEME}
+            colorScheme="dark"
+            blockSize={12}
+            blockMargin={4}
+            blockRadius={3}
+            fontSize={11}
+            showWeekdayLabels={false}
+            showTotalCount={false}
+            showColorLegend={false}
+            className="text-white/60 font-gilroy-medium"
+            renderBlock={(block, activity) =>
+              React.cloneElement(block, {
+                title: undefined,
+                children: null,
+                style: {
+                  ...block.props.style,
+                  ...(activity?.level === 0 ? { opacity: 0.7 } : {}),
+                },
+              })
+            }
+          />
+        )}
       </div>
     </div>
   );
