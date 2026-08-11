@@ -1,12 +1,13 @@
 const JOG_RUBER_API = "https://github-contributions-api.jogruber.de";
 const GITHUB_API = "https://api.github.com";
 const GITHUB_WEB = "https://github.com";
+const GITHUB_USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
 /** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
 export const extractUsername = (input) => {
   const raw = String(input ?? "").trim().replace(/^@+/, "");
   if (!raw) return "";
-  if (/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(raw)) return raw;
+  if (GITHUB_USERNAME_RE.test(raw)) return raw;
 
   const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
 
@@ -14,9 +15,9 @@ export const extractUsername = (input) => {
     const url = new URL(withProto);
     if (!/^(www\.)?github\.com$/i.test(url.hostname)) return "";
     const username = (url.pathname.split("/").filter(Boolean)[0] || "").trim();
-    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(username) ? username : "";
+    return GITHUB_USERNAME_RE.test(username) ? username : "";
   } catch {
-    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(raw) ? raw : "";
+    return "";
   }
 };
 
