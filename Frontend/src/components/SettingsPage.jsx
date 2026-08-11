@@ -231,8 +231,11 @@ const Pill = ({ active, onClick, children }) => (
   </button>
 );
 
-const CardContainer = ({ title, description, children, action }) => (
-  <div className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm">
+const CardContainer = ({ title, description, children, action, overflowVisible = false }) => (
+  <div
+    className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm"
+    style={overflowVisible ? { overflow: "visible" } : undefined}
+  >
     <div className="flex items-start justify-between gap-4 z-10 relative">
       <div>
         <h3 className="text-white text-base font-gilroy-bold">{title}</h3>
@@ -1911,6 +1914,8 @@ const TaskbarTab = ({
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = iconPickerShortcutId !== null;
+
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -1948,6 +1953,7 @@ const TaskbarTab = ({
     <div className="flex flex-col gap-6">
       {/* Taskbar Shortcuts */}
       <CardContainer
+        overflowVisible={anyPickerOpen}
         title="Taskbar Quick Launchers"
         description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar. Drag shortcut cards up or down to reorder them."
         action={
@@ -2087,6 +2093,8 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = iconPickerTabId !== null;
+
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -2153,6 +2161,7 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
 
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Important Tabs Bundles"
       description="Organize multiple website links into one-click tab groups. Drag tab cards up or down to reorder them."
     >
@@ -2318,6 +2327,8 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = timePickerGroupId !== null || iconPickerGroupId !== null;
+
   const addGroup = () => {
     const g = { id: makeId(), title: "New Routine", iconClass: "ri-briefcase-line", time: "9:00 am", streak: 0, subtasks: [] };
     onTimeBoxingGroupsChange([...timeBoxingGroups, g]);
@@ -2378,6 +2389,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Time Boxing Routine Editor"
       description="Structure your daily routines into scheduled task blocks with subtask checklists. Drag task cards up or down to reorder them."
     >
