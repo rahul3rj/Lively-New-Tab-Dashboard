@@ -231,8 +231,11 @@ const Pill = ({ active, onClick, children }) => (
   </button>
 );
 
-const CardContainer = ({ title, description, children, action }) => (
-  <div className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm">
+const CardContainer = ({ title, description, children, action, overflowVisible = false }) => (
+  <div
+    className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm"
+    style={overflowVisible ? { overflow: "visible" } : undefined}
+  >
     <div className="flex items-start justify-between gap-4 z-10 relative">
       <div>
         <h3 className="text-white text-base font-gilroy-bold">{title}</h3>
@@ -283,7 +286,7 @@ const RingtoneRow = ({ label, value, onChange }) => {
 };
 
 /* ─── Custom Time Dropdown Popover ─── */
-const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", triggerRef }) => {
   const popoverRef = useRef(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
@@ -314,19 +317,24 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+    const handlePointerDownOutside = (e) => {
+      const trigger = triggerRef?.current;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target) &&
+        !(trigger && trigger.contains(e.target))
+      ) {
         onClose();
       }
     };
     const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("pointerdown", handlePointerDownOutside, true);
     }, 50);
     return () => {
       clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const handleApply = () => {
     const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toLowerCase()}`;
@@ -356,6 +364,29 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         isManga ? "text-black" : "text-white"
       }`}
     >
+      {/* Header with Close */}
+      <div className="flex items-center justify-between shrink-0">
+        <span
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[10px] uppercase tracking-wider font-gilroy-bold opacity-90"
+        >
+          Set Time
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close time picker"
+          className={`h-6 w-6 rounded-lg border flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0 ${
+            isManga
+              ? "bg-white text-black border-black hover:bg-black hover:text-white"
+              : "bg-white/10 text-white/70 hover:text-white border-white/15 hover:bg-white/25"
+          }`}
+        >
+          <i className="ri-close-line text-sm" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-2">
         <div>
           <label
@@ -428,8 +459,8 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         type="button"
         onClick={handleApply}
         style={{
-          backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-          borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+          backgroundColor: isManga ? "#000000" : "var(--theme)",
+          borderColor: isManga ? "#000000" : "var(--theme)",
         }}
         className="w-full py-2.5 rounded-xl hover:brightness-110 border text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
       >
@@ -440,7 +471,7 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
 };
 
 /* ─── Inline Icon Dropdown Popover ─── */
-const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", triggerRef }) => {
   const popoverRef = useRef(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
@@ -468,19 +499,24 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+    const handlePointerDownOutside = (e) => {
+      const trigger = triggerRef?.current;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target) &&
+        !(trigger && trigger.contains(e.target))
+      ) {
         onClose();
       }
     };
     const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("pointerdown", handlePointerDownOutside, true);
     }, 50);
     return () => {
       clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const filteredItems = useMemo(() => {
     return ICON_GRID_ITEMS.filter((item) => {
@@ -541,10 +577,33 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       }}
       className={`absolute left-0 ${
         openUpwards ? "bottom-full mb-2" : "top-full mt-2"
-      } z-[99999] w-72 h-[270px] max-h-[280px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
+      } z-[99999] w-72 h-[300px] max-h-[310px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
         isManga ? "text-black" : "text-white"
       }`}
     >
+      {/* Header with Close */}
+      <div className="flex items-center justify-between shrink-0">
+        <span
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[10px] uppercase tracking-wider font-gilroy-bold opacity-90"
+        >
+          Select Icon
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close icon picker"
+          className={`h-6 w-6 rounded-lg border flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0 ${
+            isManga
+              ? "bg-white text-black border-black hover:bg-black hover:text-white"
+              : "bg-white/10 text-white/70 hover:text-white border-white/15 hover:bg-white/25"
+          }`}
+        >
+          <i className="ri-close-line text-sm" />
+        </button>
+      </div>
+
       {/* Search Input */}
       <div className="relative w-full shrink-0">
         <i
@@ -666,8 +725,8 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
             type="button"
             onClick={handleApplyCustomIcon}
             style={{
-              backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-              borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+              backgroundColor: isManga ? "#000000" : "var(--theme)",
+              borderColor: isManga ? "#000000" : "var(--theme)",
             }}
             className="px-3 h-7.5 rounded-xl border text-white font-gilroy-bold text-[11px] cursor-pointer hover:brightness-110 shrink-0 transition-all active:scale-95 shadow-sm"
           >
@@ -1911,6 +1970,8 @@ const TaskbarTab = ({
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = iconPickerShortcutId !== null;
+
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -1948,13 +2009,14 @@ const TaskbarTab = ({
     <div className="flex flex-col gap-6">
       {/* Taskbar Shortcuts */}
       <CardContainer
+        overflowVisible={anyPickerOpen}
         title="Taskbar Quick Launchers"
         description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar. Drag shortcut cards up or down to reorder them."
         action={
           <button
             type="button"
             onClick={onShortcutAdd}
-            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md whitespace-nowrap shrink-0"
           >
             <i className="ri-add-line text-sm relative z-10" />
             <span className="relative z-10">Add Shortcut</span>
@@ -2087,6 +2149,8 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = iconPickerTabId !== null;
+
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -2153,6 +2217,7 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
 
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Important Tabs Bundles"
       description="Organize multiple website links into one-click tab groups. Drag tab cards up or down to reorder them."
     >
@@ -2318,6 +2383,8 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = timePickerGroupId !== null || iconPickerGroupId !== null;
+
   const addGroup = () => {
     const g = { id: makeId(), title: "New Routine", iconClass: "ri-briefcase-line", time: "9:00 am", streak: 0, subtasks: [] };
     onTimeBoxingGroupsChange([...timeBoxingGroups, g]);
@@ -2378,6 +2445,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Time Boxing Routine Editor"
       description="Structure your daily routines into scheduled task blocks with subtask checklists. Drag task cards up or down to reorder them."
     >
@@ -2560,6 +2628,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
 /* ─── TAB 6: Widget Visibility ─── */
 const WidgetsTab = ({
+  uiTheme,
   showTimer, onShowTimerChange,
   showWaterReminder, onShowWaterReminderChange,
   showSongPlayer, onShowSongPlayerChange,
@@ -2567,37 +2636,113 @@ const WidgetsTab = ({
   showImportantTabs, onShowImportantTabsChange,
   showTimeBoxing, onShowTimeBoxingChange,
   showStreakGrid, onShowStreakGridChange,
-}) => (
-  <CardContainer
-    title="Dashboard Widgets Visibility"
-    description="Control which widgets and tools are displayed on your main dashboard grid."
-  >
-    <div className="flex flex-col gap-1 pt-3 border-t border-white/10">
-      {[
-        { title: "Focus Timer Widget", desc: "Pomodoro & rest countdown timer card", state: showTimer, set: onShowTimerChange, icon: "ri-timer-line" },
-        { title: "Water Reminder Widget", desc: "Liquid animation hydration goal & counter", state: showWaterReminder, set: onShowWaterReminderChange, icon: "ri-drop-line" },
-        { title: "24/7 Song Player Widget", desc: "24/7 Lofi live stream music player", state: showSongPlayer, set: onShowSongPlayerChange, icon: "ri-music-2-line" },
-        { title: "Notepad / To Do Checklist", desc: "Quick notes and task checklist card", state: showTodo, set: onShowTodoChange, icon: "ri-file-text-line" },
-        { title: "Important Tabs Widget", desc: "Categorized quick bookmarks and links", state: showImportantTabs, set: onShowImportantTabsChange, icon: "ri-bookmark-3-line" },
-        { title: "Time Boxing Routines", desc: "Daily time blocking and scheduled task cards", state: showTimeBoxing, set: onShowTimeBoxingChange, icon: "ri-time-line" },
-        { title: "Streak Activity Grid", desc: "GitHub-style daily contribution grid", state: showStreakGrid, set: onShowStreakGridChange, icon: "ri-calendar-check-line" },
-      ].map((w, idx) => (
-        <div key={idx} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] px-2 rounded-xl transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-base shrink-0 shadow-inner">
-              <i className={`${w.icon} relative z-10`} />
+  streakDataSource, onStreakDataSourceChange,
+  githubUsername, onGithubUsernameChange,
+}) => {
+  const isManga = uiTheme === "manga";
+  const accentStyle = {
+    backgroundColor: isManga ? "#000000" : "var(--theme)",
+    borderColor: isManga ? "#000000" : "var(--theme)",
+  };
+  const idleStyle = {
+    borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+  };
+
+  return (
+    <>
+      <CardContainer
+        title="Dashboard Widgets Visibility"
+        description="Control which widgets and tools are displayed on your main dashboard grid."
+      >
+        <div className="flex flex-col gap-1 pt-3 border-t border-white/10">
+          {[
+            { title: "Focus Timer Widget", desc: "Pomodoro & rest countdown timer card", state: showTimer, set: onShowTimerChange, icon: "ri-timer-line" },
+            { title: "Water Reminder Widget", desc: "Liquid animation hydration goal & counter", state: showWaterReminder, set: onShowWaterReminderChange, icon: "ri-drop-line" },
+            { title: "24/7 Song Player Widget", desc: "24/7 Lofi live stream music player", state: showSongPlayer, set: onShowSongPlayerChange, icon: "ri-music-2-line" },
+            { title: "Notepad / To Do Checklist", desc: "Quick notes and task checklist card", state: showTodo, set: onShowTodoChange, icon: "ri-file-text-line" },
+            { title: "Important Tabs Widget", desc: "Categorized quick bookmarks and links", state: showImportantTabs, set: onShowImportantTabsChange, icon: "ri-bookmark-3-line" },
+            { title: "Time Boxing Routines", desc: "Daily time blocking and scheduled task cards", state: showTimeBoxing, set: onShowTimeBoxingChange, icon: "ri-time-line" },
+            { title: "Streak Activity Grid", desc: "GitHub-style daily contribution grid", state: showStreakGrid, set: onShowStreakGridChange, icon: "ri-calendar-check-line" },
+          ].map((w, idx) => (
+            <div key={idx} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] px-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-base shrink-0 shadow-inner">
+                  <i className={`${w.icon} relative z-10`} />
+                </div>
+                <div>
+                  <h4 className="text-white text-xs font-gilroy-bold">{w.title}</h4>
+                  <p className="text-white/50 text-[11px] font-gilroy-medium">{w.desc}</p>
+                </div>
+              </div>
+              <Toggle checked={w.state} onChange={w.set} />
             </div>
-            <div>
-              <h4 className="text-white text-xs font-gilroy-bold">{w.title}</h4>
-              <p className="text-white/50 text-[11px] font-gilroy-medium">{w.desc}</p>
-            </div>
-          </div>
-          <Toggle checked={w.state} onChange={w.set} />
+          ))}
         </div>
-      ))}
-    </div>
-  </CardContainer>
-);
+      </CardContainer>
+
+      <CardContainer
+        title="Streak Grid Data Source"
+        description="Choose which contribution graph the Streak Activity Grid widget displays."
+      >
+        <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-black/40 border border-white/10">
+            {[
+              { id: "local", label: "Focus Activity", desc: "Tasks, timers & water goals logged on this device", icon: "ri-fire-line" },
+              { id: "github", label: "GitHub Contributions", desc: "Public commits, PRs & issues from your GitHub profile", icon: "ri-github-line" },
+            ].map((option) => {
+              const active = streakDataSource === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => onStreakDataSourceChange(option.id)}
+                  style={active ? accentStyle : undefined}
+                  className={`flex-1 flex flex-col items-start gap-0.5 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                    active ? "text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5 text-[11px] font-gilroy-bold">
+                    <i className={`${option.icon} text-sm`}></i>
+                    <span className="relative z-10">{option.label}</span>
+                  </span>
+                  <span className={`text-[10px] font-gilroy-medium ${active ? "text-white/70" : "text-white/40"}`}>
+                    {option.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {streakDataSource === "github" && (
+            <div className="flex flex-col gap-1.5">
+              <label
+                style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+                className="text-[9px] uppercase tracking-wider block font-gilroy-bold opacity-90"
+              >
+                GitHub Username
+              </label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/50 text-[11px] font-gilroy-bold">@</span>
+                <input
+                  type="text"
+                  value={githubUsername}
+                  onChange={(e) => onGithubUsernameChange(e.target.value)}
+                  placeholder="octocat"
+                  style={idleStyle}
+                  className="flex-1 h-8 px-2.5 rounded-xl bg-black/60 border text-[11px] text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
+                />
+              </div>
+              <p className="text-white/40 text-[10px] font-gilroy-medium leading-relaxed">
+                Paste your GitHub username or profile link (e.g. github.com/octocat). Shows
+                contributions from your public activity and reflects roughly the last 90 days.
+              </p>
+            </div>
+          )}
+        </div>
+      </CardContainer>
+    </>
+  );
+};
 
 /* ─── Main Full-Fledged Settings Screen ─── */
 const SettingsPage = (props) => {
@@ -2784,6 +2929,7 @@ const SettingsPage = (props) => {
 
             {activeTab === "widgets" && (
               <WidgetsTab
+                uiTheme={props.uiTheme}
                 showTimer={props.showTimer}
                 onShowTimerChange={props.onShowTimerChange}
                 showWaterReminder={props.showWaterReminder}
@@ -2798,6 +2944,10 @@ const SettingsPage = (props) => {
                 onShowTimeBoxingChange={props.onShowTimeBoxingChange}
                 showStreakGrid={props.showStreakGrid}
                 onShowStreakGridChange={props.onShowStreakGridChange}
+                streakDataSource={props.streakDataSource}
+                onStreakDataSourceChange={props.onStreakDataSourceChange}
+                githubUsername={props.githubUsername}
+                onGithubUsernameChange={props.onGithubUsernameChange}
               />
             )}
           </div>
