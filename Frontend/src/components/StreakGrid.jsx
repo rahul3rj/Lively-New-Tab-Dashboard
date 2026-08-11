@@ -286,7 +286,7 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
               <span className="relative z-10">Retry</span>
             </button>
           </div>
-        ) : (
+        ) : data.length > 0 ? (
           <ActivityCalendar
             data={data}
             loading={isGithub ? githubStatus === "loading" : activityMap === null}
@@ -311,6 +311,13 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
               })
             }
           />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-loader-4-line text-2xl text-white/40 animate-spin"></i>
+            <p className="text-[11px] text-white/50 font-gilroy-medium">
+              {isGithub ? "Loading GitHub contributions..." : "Loading activity..."}
+            </p>
+          </div>
         )}
       </div>
     </div>
