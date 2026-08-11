@@ -2016,7 +2016,7 @@ const TaskbarTab = ({
           <button
             type="button"
             onClick={onShortcutAdd}
-            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md whitespace-nowrap shrink-0"
           >
             <i className="ri-add-line text-sm relative z-10" />
             <span className="relative z-10">Add Shortcut</span>
