@@ -286,7 +286,7 @@ const RingtoneRow = ({ label, value, onChange }) => {
 };
 
 /* ─── Custom Time Dropdown Popover ─── */
-const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", triggerRef }) => {
   const popoverRef = useRef(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
@@ -317,19 +317,24 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+    const handlePointerDownOutside = (e) => {
+      const trigger = triggerRef?.current;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target) &&
+        !(trigger && trigger.contains(e.target))
+      ) {
         onClose();
       }
     };
     const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("pointerdown", handlePointerDownOutside, true);
     }, 50);
     return () => {
       clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const handleApply = () => {
     const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toLowerCase()}`;
@@ -359,6 +364,29 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         isManga ? "text-black" : "text-white"
       }`}
     >
+      {/* Header with Close */}
+      <div className="flex items-center justify-between shrink-0">
+        <span
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[10px] uppercase tracking-wider font-gilroy-bold opacity-90"
+        >
+          Set Time
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close time picker"
+          className={`h-6 w-6 rounded-lg border flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0 ${
+            isManga
+              ? "bg-white text-black border-black hover:bg-black hover:text-white"
+              : "bg-white/10 text-white/70 hover:text-white border-white/15 hover:bg-white/25"
+          }`}
+        >
+          <i className="ri-close-line text-sm" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-2">
         <div>
           <label
@@ -443,7 +471,7 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
 };
 
 /* ─── Inline Icon Dropdown Popover ─── */
-const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", triggerRef }) => {
   const popoverRef = useRef(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
@@ -471,19 +499,24 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+    const handlePointerDownOutside = (e) => {
+      const trigger = triggerRef?.current;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target) &&
+        !(trigger && trigger.contains(e.target))
+      ) {
         onClose();
       }
     };
     const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("pointerdown", handlePointerDownOutside, true);
     }, 50);
     return () => {
       clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const filteredItems = useMemo(() => {
     return ICON_GRID_ITEMS.filter((item) => {
@@ -544,10 +577,33 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
       }}
       className={`absolute left-0 ${
         openUpwards ? "bottom-full mb-2" : "top-full mt-2"
-      } z-[99999] w-72 h-[270px] max-h-[280px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
+      } z-[99999] w-72 h-[300px] max-h-[310px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
         isManga ? "text-black" : "text-white"
       }`}
     >
+      {/* Header with Close */}
+      <div className="flex items-center justify-between shrink-0">
+        <span
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[10px] uppercase tracking-wider font-gilroy-bold opacity-90"
+        >
+          Select Icon
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close icon picker"
+          className={`h-6 w-6 rounded-lg border flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0 ${
+            isManga
+              ? "bg-white text-black border-black hover:bg-black hover:text-white"
+              : "bg-white/10 text-white/70 hover:text-white border-white/15 hover:bg-white/25"
+          }`}
+        >
+          <i className="ri-close-line text-sm" />
+        </button>
+      </div>
+
       {/* Search Input */}
       <div className="relative w-full shrink-0">
         <i
