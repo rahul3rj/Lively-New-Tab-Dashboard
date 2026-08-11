@@ -1,5 +1,13 @@
 const GITHUB_API = "https://api.github.com";
 
+/** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
+export const extractUsername = (input) => {
+  const raw = String(input ?? "").trim().replace(/^@+/, "");
+  const match = raw.match(/github\.com\/([^/?#]+)/);
+  const candidate = match ? match[1] : raw;
+  return candidate.split(/[/?#]/)[0].trim();
+};
+
 const contributeDeltaForEvent = (event) => {
   switch (event.type) {
     case "PushEvent": {
@@ -26,7 +34,11 @@ const contributeDeltaForEvent = (event) => {
  * `{ "YYYY-MM-DD": count }` map. Uses the public events REST API (no auth,
  * CORS-friendly) which returns roughly the last ~90 days for active users.
  */
-export const fetchGitHubContributions = async (username, pages = 3) => {
+export const fetchGitHubContributions = async (inputUsername, pages = 3) => {
+  const username = extractUsername(inputUsername);
+  if (!username) {
+    throw new Error("Enter a GitHub username or profile link.");
+  }
   const perPage = 100;
   const agg = {};
   let newest = null;

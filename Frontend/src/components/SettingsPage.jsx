@@ -2733,8 +2733,8 @@ const WidgetsTab = ({
                 />
               </div>
               <p className="text-white/40 text-[10px] font-gilroy-medium leading-relaxed">
-                Shows contributions from your public GitHub activity. Updates require an internet
-                connection and the graph reflects roughly the last 90 days of activity.
+                Paste your GitHub username or profile link (e.g. github.com/octocat). Shows
+                contributions from your public activity and reflects roughly the last 90 days.
               </p>
             </div>
           )}

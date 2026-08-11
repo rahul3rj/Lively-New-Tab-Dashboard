@@ -6,7 +6,7 @@ import {
   getActivityMap,
   seedDemoActivityIfEmpty,
 } from "../utils/activityStore";
-import { fetchGitHubContributions } from "../utils/githubActivity";
+import { extractUsername, fetchGitHubContributions } from "../utils/githubActivity";
 
 const RANGE_OPTIONS = [
   { id: "current", label: "Current" },
@@ -142,7 +142,7 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
 
   useEffect(() => {
     let cancelled = false;
-    if (!isGithub || !githubUsername || !githubUsername.trim()) {
+    if (!isGithub || !extractUsername(githubUsername)) {
       setGithubStatus("idle");
       setGithubMap(null);
       setGithubError("");
@@ -150,9 +150,9 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
     }
     setGithubStatus("loading");
     setGithubError("");
-    (async () => {
+    const timer = setTimeout(async () => {
       try {
-        const { map } = await fetchGitHubContributions(githubUsername.trim());
+        const { map } = await fetchGitHubContributions(githubUsername);
         if (cancelled) return;
         setGithubMap(map);
         setGithubStatus("ready");
@@ -162,9 +162,10 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
         setGithubStatus("error");
         setGithubError(err?.message || "Failed to load GitHub contributions.");
       }
-    })();
+    }, 400);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [isGithub, githubUsername, githubRetryKey]);
 
@@ -263,7 +264,7 @@ const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = ""
 
       {/* Heatmap */}
       <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
-        {isGithub && !githubUsername.trim() ? (
+        {isGithub && !extractUsername(githubUsername) ? (
           <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
             <i className="ri-github-line text-3xl text-white/40"></i>
             <p className="text-[11px] text-white/50 font-gilroy-medium max-w-[240px]">
