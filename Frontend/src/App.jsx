@@ -331,6 +331,11 @@ const App = () => {
         if (typeof storedPlaylist === "string") setSongPlaylistUrl(storedPlaylist);
         if (typeof storedAutoPlay === "boolean") setSongAutoPlay(storedAutoPlay);
         if (storedCustomVideo) setSongCustomVideo(storedCustomVideo);
+        let parsedImpTabs = storedImpTabsCfg;
+        if (typeof storedImpTabsCfg === "string") {
+          try { parsedImpTabs = JSON.parse(storedImpTabsCfg); } catch {}
+        }
+        if (Array.isArray(parsedImpTabs)) setImportantTabsConfig(parsedImpTabs);
         if (Array.isArray(storedLofiStations) && storedLofiStations.length > 0) setLofiStations(storedLofiStations);
         if (Array.isArray(storedTimeboxGroups) && storedTimeboxGroups.length > 0) setTimeBoxingGroups(storedTimeboxGroups);
         if (typeof storedUiTheme === "string" && ["default","manga","cyberpunk","pixel"].includes(storedUiTheme)) setUiTheme(storedUiTheme);

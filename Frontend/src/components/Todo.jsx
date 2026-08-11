@@ -23,6 +23,7 @@ const DEFAULT_DEMO_TASKS = [
 const Todo = ({ dragHandleProps }) => {
   const [tasks, setTasks] = useState([]);
   const [newText, setNewText] = useState("");
+  const isHydratedRef = React.useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,16 +32,25 @@ const Todo = ({ dragHandleProps }) => {
       const raw = await storageGet(STORAGE.items);
       if (cancelled) return;
 
-      try {
-        const parsed = JSON.parse(String(raw ?? "[]"));
-        if (Array.isArray(parsed) && parsed.length > 0) {
+      if (raw !== null && raw !== undefined) {
+        let parsed = raw;
+        if (typeof raw === "string") {
+          try {
+            parsed = JSON.parse(raw);
+          } catch {
+            parsed = DEFAULT_DEMO_TASKS;
+          }
+        }
+        if (Array.isArray(parsed)) {
           setTasks(parsed);
         } else {
           setTasks(DEFAULT_DEMO_TASKS);
         }
-      } catch {
+      } else {
         setTasks(DEFAULT_DEMO_TASKS);
+        storageSet(STORAGE.items, DEFAULT_DEMO_TASKS);
       }
+      isHydratedRef.current = true;
     })();
 
     return () => {
@@ -49,9 +59,8 @@ const Todo = ({ dragHandleProps }) => {
   }, []);
 
   useEffect(() => {
-    if (tasks.length > 0) {
-      storageSet(STORAGE.items, JSON.stringify(tasks));
-    }
+    if (!isHydratedRef.current) return;
+    storageSet(STORAGE.items, JSON.stringify(tasks));
   }, [tasks]);
 
   const addTask = () => {
