@@ -459,8 +459,8 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", 
         type="button"
         onClick={handleApply}
         style={{
-          backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-          borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+          backgroundColor: isManga ? "#000000" : "var(--theme)",
+          borderColor: isManga ? "#000000" : "var(--theme)",
         }}
         className="w-full py-2.5 rounded-xl hover:brightness-110 border text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
       >
@@ -725,8 +725,8 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", 
             type="button"
             onClick={handleApplyCustomIcon}
             style={{
-              backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-              borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+              backgroundColor: isManga ? "#000000" : "var(--theme)",
+              borderColor: isManga ? "#000000" : "var(--theme)",
             }}
             className="px-3 h-7.5 rounded-xl border text-white font-gilroy-bold text-[11px] cursor-pointer hover:brightness-110 shrink-0 transition-all active:scale-95 shadow-sm"
           >
