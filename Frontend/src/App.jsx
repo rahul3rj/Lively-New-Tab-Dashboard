@@ -162,7 +162,7 @@ export const DEFAULT_LOFI_STATIONS = [
   },
 ];
 
-const MAX_SHORTCUTS = 7;
+const MAX_SHORTCUTS = 12;
 
 const DEFAULT_THEME_PALETTE = ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
 
@@ -519,10 +519,15 @@ const App = () => {
   const removeShortcut = (id) =>
     setShortcuts((prev) => prev.filter((s) => s.id !== id));
 
-  const addShortcut = () => {
+  const addShortcut = (newShortcut) => {
     setShortcuts((prev) => {
       if (prev.length >= MAX_SHORTCUTS) return prev;
-      return [...prev, { id: makeId(), title: "New", url: "https://" }];
+      const item =
+        newShortcut && typeof newShortcut === "object" && newShortcut.title
+          ? newShortcut
+          : { id: makeId(), title: "New", url: "https://" };
+      if (!item.id) item.id = makeId();
+      return [...prev, item];
     });
   };
 
@@ -642,7 +647,12 @@ const App = () => {
               : "-translate-y-12 opacity-0 scale-95 pointer-events-none"
           }`}
         >
-          <Taskbar shortcuts={shortcuts} />
+          <Taskbar
+            shortcuts={shortcuts}
+            onAddShortcut={addShortcut}
+            onRemoveShortcut={removeShortcut}
+            onUpdateShortcut={updateShortcut}
+          />
         </div>
 
         {/* Dashboard Grid */}

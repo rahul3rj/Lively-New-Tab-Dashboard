@@ -308,32 +308,24 @@ const Timmer = ({ dragHandleProps }) => {
         )}
       </div>
 
-      {/* Bottom Controls Row: Start | Pause | Reset */}
-      <div className="w-full flex items-center justify-center gap-2.5 z-10 relative mt-2">
+      {/* Bottom Controls Row: Start/Pause Toggle + Reset */}
+      <div className="w-full flex items-center justify-center gap-2.5 z-10 relative mt-2 mb-2">
         <button
           type="button"
-          onClick={handleStart}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
+          onClick={status === "running" ? handlePause : handleStart}
+          className="h-8 w-[90px] rounded-full flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
           style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
         >
-          <i className="ri-play-fill text-xs shrink-0 relative z-10" />
-          <span className="relative z-10 leading-none">Start</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handlePause}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
-          style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
-        >
-          <i className="ri-pause-fill text-xs shrink-0 relative z-10" />
-          <span className="relative z-10 leading-none">Pause</span>
+          <i className={`${status === "running" ? "ri-pause-fill" : "ri-play-fill"} text-xs shrink-0 relative z-10`} />
+          <span className="relative z-10 leading-none">
+            {status === "running" ? "Pause" : status === "paused" ? "Resume" : "Start"}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={handleReset}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
+          className="h-8 w-[90px] rounded-full flex items-center justify-center gap-1.5 text-white/80 hover:text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
           style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
         >
           <i className="ri-refresh-line text-xs shrink-0 relative z-10" />
