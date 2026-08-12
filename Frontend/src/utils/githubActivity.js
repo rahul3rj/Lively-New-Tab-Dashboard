@@ -1,7 +1,6 @@
 const JOG_RUBER_API = "https://github-contributions-api.jogruber.de";
 const GITHUB_API = "https://api.github.com";
 const GITHUB_WEB = "https://github.com";
-
 const GITHUB_USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 
 /** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
