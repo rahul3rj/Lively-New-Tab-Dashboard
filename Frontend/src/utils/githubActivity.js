@@ -2,10 +2,15 @@ const JOG_RUBER_API = "https://github-contributions-api.jogruber.de";
 const GITHUB_API = "https://api.github.com";
 const GITHUB_WEB = "https://github.com";
 
+const GITHUB_USERNAME_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+
 /** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
 export const extractUsername = (input) => {
-  let raw = String(input ?? "").trim().replace(/^@+/, "");
+  const raw = String(input ?? "").trim().replace(/^@+/, "");
   if (!raw) return "";
+
+  // If input is a valid bare handle, return immediately
+  if (GITHUB_USERNAME_RE.test(raw)) return raw;
 
   // If input is a URL or contains github.com / slashes
   if (raw.includes("github.com") || raw.includes("/")) {
@@ -14,18 +19,16 @@ export const extractUsername = (input) => {
       const url = new URL(withProto);
       if (/^(www\.)?github\.com$/i.test(url.hostname)) {
         const username = (url.pathname.split("/").filter(Boolean)[0] || "").trim();
-        if (/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(username)) {
+        if (GITHUB_USERNAME_RE.test(username)) {
           return username;
         }
       }
     } catch {
-      // Fall through to bare check below
+      // Invalid URL syntax
     }
   }
 
-  // Bare username check
-  const clean = raw.split("/")[0].trim();
-  return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(clean) ? clean : "";
+  return "";
 };
 
 const levelForCount = (count) =>
