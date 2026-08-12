@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 const DEFAULT_TABS = [
   { id: "tab-1", title: "Study", iconClass: "ri-book-open-line", links: [] },

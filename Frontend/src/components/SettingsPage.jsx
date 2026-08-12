@@ -2,6 +2,44 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_LOFI_STATIONS } from "../App";
 import { UI_THEMES } from "../themes/index.js";
 
+/* ─── Popover positioning helper ───
+   Opens the dropdown toward whichever side of the trigger has room inside the
+   nearest scroll/clip container, and caps the popover height so its top (search
+   header) is never clipped. */
+const fitPopoverInContainer = (el, trigger, setOpenUpwards) => {
+  if (!el) return;
+
+  let clip = el.parentElement;
+  while (clip && clip !== document.body) {
+    const cs = getComputedStyle(clip);
+    if (
+      cs.overflowY === "auto" ||
+      cs.overflowY === "scroll" ||
+      cs.overflowY === "hidden"
+    ) {
+      break;
+    }
+    clip = clip.parentElement;
+  }
+  const clipRect = clip
+    ? clip.getBoundingClientRect()
+    : { top: 0, bottom: window.innerHeight };
+  const triggerRect = trigger
+    ? trigger.getBoundingClientRect()
+    : el.getBoundingClientRect();
+  const gap = 8;
+
+  const spaceBelow = Math.max(0, clipRect.bottom - triggerRect.bottom - gap);
+  const spaceAbove = Math.max(0, triggerRect.top - clipRect.top - gap);
+
+  const openUp = spaceBelow < 240 && spaceAbove >= spaceBelow;
+  setOpenUpwards(openUp);
+
+  const available = openUp ? spaceAbove : spaceBelow;
+  el.style.height = "auto";
+  el.style.maxHeight = `${Math.max(200, Math.min(310, available))}px`;
+};
+
 /* ─── Ringtone helpers ─── */
 const playBeep = () => {
   try {
@@ -309,12 +347,9 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", 
 
   useEffect(() => {
     if (popoverRef.current) {
-      const rect = popoverRef.current.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 20) {
-        setOpenUpwards(true);
-      }
+      fitPopoverInContainer(popoverRef.current, triggerRef?.current, setOpenUpwards);
     }
-  }, []);
+  }, [triggerRef]);
 
   useEffect(() => {
     const handlePointerDownOutside = (e) => {
@@ -491,12 +526,9 @@ const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", 
 
   useEffect(() => {
     if (popoverRef.current) {
-      const rect = popoverRef.current.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 20) {
-        setOpenUpwards(true);
-      }
+      fitPopoverInContainer(popoverRef.current, triggerRef?.current, setOpenUpwards);
     }
-  }, []);
+  }, [triggerRef]);
 
   useEffect(() => {
     const handlePointerDownOutside = (e) => {
@@ -1708,8 +1740,8 @@ const FocusTab = ({
 
 /* ─── TAB 3: Song Player Settings ─── */
 const SongPlayerTab = ({
-  showSongPlayer, onShowSongPlayerChange,
-  songPlaylistUrl, onSongPlaylistUrlChange,
+  _showSongPlayer, _onShowSongPlayerChange,
+  _songPlaylistUrl, _onSongPlaylistUrlChange,
   songAutoPlay, onSongAutoPlayChange,
   songCustomVideo, onSongCustomVideoChange,
   lofiStations, onLofiStationsChange,
@@ -2141,7 +2173,7 @@ const TaskbarTab = ({
 };
 
 /* ─── TAB 4: Important Tabs ─── */
-const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
+const ImportantTabsTab = ({ _showImportantTabs, _onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
   const [iconPickerTabId, setIconPickerTabId] = useState(null);
   const [expandedTabId, setExpandedTabId] = useState(null);
   const buttonRefs = useRef({});
@@ -2382,6 +2414,20 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [draggedSubtask, setDraggedSubtask] = useState(null);
+  const [dragOverSubtask, setDragOverSubtask] = useState(null);
+  const subtaskInputRefs = useRef({});
+  const lastAddedSubtaskRef = useRef(null);
+
+  useEffect(() => {
+    if (lastAddedSubtaskRef.current) {
+      const { id } = lastAddedSubtaskRef.current;
+      if (subtaskInputRefs.current[id]) {
+        subtaskInputRefs.current[id].focus();
+        lastAddedSubtaskRef.current = null;
+      }
+    }
+  }, [timeBoxingGroups]);
 
   const anyPickerOpen = timePickerGroupId !== null || iconPickerGroupId !== null;
 
@@ -2428,7 +2474,9 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
   const addSubtask = (groupId) => {
     const g = timeBoxingGroups.find((g) => g.id === groupId);
     if (!g) return;
-    updateGroup(groupId, { subtasks: [...g.subtasks, { id: makeId(), text: "New Subtask", done: false }] });
+    const id = makeId();
+    lastAddedSubtaskRef.current = { groupId, id };
+    updateGroup(groupId, { subtasks: [...g.subtasks, { id, text: "", done: false }] });
   };
 
   const removeSubtask = (groupId, stId) => {
@@ -2441,6 +2489,47 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
     const g = timeBoxingGroups.find((g) => g.id === groupId);
     if (!g) return;
     updateGroup(groupId, { subtasks: g.subtasks.map((s) => (s.id === stId ? { ...s, text } : s)) });
+  };
+
+  const handleSubtaskDragStart = (e, groupId, idx) => {
+    e.stopPropagation();
+    setDraggedSubtask({ groupId, idx });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleSubtaskDragOver = (e, groupId, idx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = `${groupId}:${idx}`;
+    const cur = dragOverSubtask
+      ? `${dragOverSubtask.groupId}:${dragOverSubtask.idx}`
+      : null;
+    if (cur !== key) setDragOverSubtask({ groupId, idx });
+  };
+
+  const handleSubtaskDrop = (e, groupId, targetIdx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (
+      draggedSubtask &&
+      draggedSubtask.groupId === groupId &&
+      draggedSubtask.idx !== targetIdx
+    ) {
+      const g = timeBoxingGroups.find((g) => g.id === groupId);
+      if (g) {
+        const reordered = [...(g.subtasks || [])];
+        const [moved] = reordered.splice(draggedSubtask.idx, 1);
+        reordered.splice(targetIdx, 0, moved);
+        updateGroup(groupId, { subtasks: reordered });
+      }
+    }
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
+  const handleSubtaskDragEnd = () => {
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
   };
 
   return (
@@ -2577,27 +2666,72 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
                 {expandedGroupId === group.id && (
                   <div className="border-t border-white/10 p-3 bg-black/20 flex flex-col gap-2">
-                    {group.subtasks?.map((st) => (
-                      <div key={st.id} className="flex items-center gap-2.5">
-                        <i className="ri-corner-down-right-line text-white/40 text-sm shrink-0 ml-1.5" />
-                        <div className="flex-1 min-w-0">
-                          <InputField
-                            value={st.text}
-                            onChange={(e) => updateSubtask(group.id, st.id, e.target.value)}
-                            placeholder="Subtask description"
-                            className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeSubtask(group.id, st.id)}
-                          className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
-                          title="Remove Subtask"
+                    {group.subtasks?.map((st, stIdx) => {
+                      const stDragging =
+                        draggedSubtask &&
+                        draggedSubtask.groupId === group.id &&
+                        draggedSubtask.idx === stIdx;
+                      const stDragOver =
+                        dragOverSubtask &&
+                        dragOverSubtask.groupId === group.id &&
+                        dragOverSubtask.idx === stIdx;
+                      return (
+                        <div
+                          key={st.id}
+                          draggable
+                          onDragStart={(e) =>
+                            handleSubtaskDragStart(e, group.id, stIdx)
+                          }
+                          onDragOver={(e) =>
+                            handleSubtaskDragOver(e, group.id, stIdx)
+                          }
+                          onDrop={(e) =>
+                            handleSubtaskDrop(e, group.id, stIdx)
+                          }
+                          onDragEnd={handleSubtaskDragEnd}
+                          className={`flex items-center gap-2.5 rounded-xl transition-all ${
+                            stDragging
+                              ? "opacity-40"
+                              : stDragOver
+                                ? "ring-2 ring-[color:var(--theme)]/40 bg-black/30"
+                                : ""
+                          }`}
                         >
-                          <i className="ri-close-line text-base" />
-                        </button>
-                      </div>
-                    ))}
+                          <i
+                            className="ri-drag-move-fill text-white/25 hover:text-white cursor-grab active:cursor-grabbing text-sm shrink-0"
+                            title="Drag to reorder subtasks"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <input
+                              ref={(el) => {
+                                subtaskInputRefs.current[st.id] = el;
+                              }}
+                              type="text"
+                              value={st.text}
+                              onChange={(e) =>
+                                updateSubtask(group.id, st.id, e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  addSubtask(group.id);
+                                }
+                              }}
+                              placeholder="Subtask description"
+                              className="w-full h-9 rounded-xl bg-black/30 border border-white/10 focus:border-white/40 px-3 text-xs text-white placeholder:text-white/65 focus:placeholder:text-white/40 outline-none transition-all font-gilroy-medium"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeSubtask(group.id, st.id)}
+                            className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
+                            title="Remove Subtask"
+                          >
+                            <i className="ri-close-line text-base" />
+                          </button>
+                        </div>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={() => addSubtask(group.id)}

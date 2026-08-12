@@ -11,7 +11,7 @@ const weatherCodeToEmoji = (code) => {
   return '☀️'
 }
 
-const Clock = ({ isDashboard = false, gridMode = false }) => {
+const Clock = ({ isDashboard = false }) => {
   const [now, setNow] = useState(() => new Date())
   const [weather, setWeather] = useState({ temp: 22, emoji: '☀️', loaded: false })
 

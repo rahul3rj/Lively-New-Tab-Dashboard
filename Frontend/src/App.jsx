@@ -4,7 +4,7 @@ import Clock from "./components/Clock.jsx";
 import DashboardGrid from "./components/DashboardGrid.jsx";
 import HeroView from "./components/HeroView.jsx";
 import SettingsPage from "./components/SettingsPage.jsx";
-import { storageGet, storageGetMultiple, storageSet } from "./utils/storage.js";
+import { storageGetMultiple, storageSet } from "./utils/storage.js";
 import { STORAGE_KEY_UI_THEME } from "./themes/index.js";
 
 const STORAGE = {
@@ -210,7 +210,7 @@ const App = () => {
 
   const [importantTabsConfig, setImportantTabsConfig] = useState(DEFAULT_IMPORTANT_TABS);
   const [timeBoxingGroups, setTimeBoxingGroups] = useState(DEFAULT_TIMEBOX_GROUPS);
-  const [timeboxingLastResetDate, setTimeboxingLastResetDate] = useState(null);
+  const [_timeboxingLastResetDate, setTimeboxingLastResetDate] = useState(null);
   const [uiTheme, setUiTheme] = useState("default");
   const [baseFont, setBaseFont] = useState("Gilroy");
   const [baseFontSize, setBaseFontSize] = useState(16);

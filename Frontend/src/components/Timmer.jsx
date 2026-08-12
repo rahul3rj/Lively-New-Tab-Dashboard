@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { recordActivity } from "../utils/activityStore";
 
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -46,7 +46,7 @@ const Timmer = ({ dragHandleProps }) => {
   const [status, setStatus] = useState("idle");
   const [durationSec, setDurationSec] = useState(25 * 60);
   const [remainingSec, setRemainingSec] = useState(25 * 60);
-  const [todayTotalSec, setTodayTotalSec] = useState(0);
+  const [_todayTotalSec, setTodayTotalSec] = useState(0);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");

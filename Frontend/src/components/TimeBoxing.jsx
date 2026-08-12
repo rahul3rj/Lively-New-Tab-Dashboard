@@ -1,6 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { updateTodayCompletedTasksCount } from "../utils/activityStore";
 
+const makeId = () => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
+    return crypto.randomUUID();
+  return String(Date.now() + Math.random());
+};
+
 
 const DEFAULT_TASK_GROUPS = [
   {
@@ -88,6 +94,12 @@ const getNowMinutes = () => {
 const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
+  const [draggedSubtask, setDraggedSubtask] = useState(null);
+  const [dragOverSubtask, setDragOverSubtask] = useState(null);
+  const [editingSubtask, setEditingSubtask] = useState(null);
+  const [editSubtaskText, setEditSubtaskText] = useState("");
+  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const subtaskInputRefs = useRef({});
   const containerRef = useRef(null);
   const activeTaskRef = useRef(null);
 
@@ -192,6 +204,117 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     ).length;
 
     updateTodayCompletedTasksCount(completedMainCount);
+  };
+
+  const reorderSubtask = (groupId, fromId, toId) => {
+    const nextGroups = groups.map((g) => {
+      if (g.id !== groupId) return g;
+      const subtasks = g.subtasks || [];
+      const fromIdx = subtasks.findIndex((s) => s.id === fromId);
+      const toIdx = subtasks.findIndex((s) => s.id === toId);
+      if (fromIdx === -1 || toIdx === -1) return g;
+      const next = [...subtasks];
+      const [moved] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, moved);
+      return { ...g, subtasks: next };
+    });
+
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+  };
+
+  const addSubtask = (groupId) => {
+    const text = newSubtaskText.trim();
+    if (!text) return;
+    const nextGroups = groups.map((g) =>
+      g.id !== groupId
+        ? g
+        : {
+            ...g,
+            subtasks: [
+              ...(g.subtasks || []),
+              { id: makeId(), text, done: false },
+            ],
+          },
+    );
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+    setNewSubtaskText("");
+  };
+
+  const startEditSubtask = (groupId, subtask) => {
+    setEditingSubtask({ groupId, subtaskId: subtask.id });
+    setEditSubtaskText(subtask.text);
+  };
+
+  const saveEditSubtask = (groupId, subtaskId) => {
+    const text = editSubtaskText.trim();
+    if (text) {
+      const nextGroups = groups.map((g) =>
+        g.id !== groupId
+          ? g
+          : {
+              ...g,
+              subtasks: (g.subtasks || []).map((s) =>
+                s.id === subtaskId ? { ...s, text } : s,
+              ),
+            },
+      );
+      if (typeof onGroupsChange === "function") {
+        onGroupsChange(nextGroups);
+      }
+    }
+    setEditingSubtask(null);
+    setEditSubtaskText("");
+  };
+
+  const cancelEditSubtask = () => {
+    setEditingSubtask(null);
+    setEditSubtaskText("");
+  };
+
+  const handleSubtaskDragStart = (e, groupId, subtaskId) => {
+    if (
+      editingSubtask &&
+      editingSubtask.groupId === groupId &&
+      editingSubtask.subtaskId === subtaskId
+    ) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedSubtask({ groupId, subtaskId });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleSubtaskDragOver = (e, groupId, subtaskId) => {
+    e.preventDefault();
+    if (
+      !dragOverSubtask ||
+      dragOverSubtask.groupId !== groupId ||
+      dragOverSubtask.subtaskId !== subtaskId
+    ) {
+      setDragOverSubtask({ groupId, subtaskId });
+    }
+  };
+
+  const handleSubtaskDrop = (e, groupId, subtaskId) => {
+    e.preventDefault();
+    if (
+      draggedSubtask &&
+      draggedSubtask.groupId === groupId &&
+      draggedSubtask.subtaskId !== subtaskId
+    ) {
+      reorderSubtask(groupId, draggedSubtask.subtaskId, subtaskId);
+    }
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
+  const handleSubtaskDragEnd = () => {
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
   };
 
   return (
@@ -341,10 +464,45 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                         {group.subtasks.map((subtask, subIndex) => {
                           const isLastSubtask =
                             subIndex === group.subtasks.length - 1;
+                          const isDragging =
+                            draggedSubtask &&
+                            draggedSubtask.groupId === group.id &&
+                            draggedSubtask.subtaskId === subtask.id;
+                          const isDragOver =
+                            dragOverSubtask &&
+                            dragOverSubtask.groupId === group.id &&
+                            dragOverSubtask.subtaskId === subtask.id;
                           return (
                             <div
                               key={subtask.id}
-                              className="relative flex items-center gap-2.5 py-[5px] pl-7"
+                              draggable
+                              onDragStart={(e) =>
+                                handleSubtaskDragStart(
+                                  e,
+                                  group.id,
+                                  subtask.id,
+                                )
+                              }
+                              onDragOver={(e) =>
+                                handleSubtaskDragOver(
+                                  e,
+                                  group.id,
+                                  subtask.id,
+                                )
+                              }
+                              onDrop={(e) =>
+                                handleSubtaskDrop(e, group.id, subtask.id)
+                              }
+                              onDragEnd={handleSubtaskDragEnd}
+                              className={`relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all ${
+                                isDragging
+                                  ? "opacity-40"
+                                  : isDragOver
+                                    ? active
+                                      ? "ring-1 ring-black/40 bg-black/10"
+                                      : "ring-1 ring-white/40 bg-white/5"
+                                    : ""
+                              }`}
                             >
                               <span
                                 className={`absolute left-[9px] top-0 w-px ${
@@ -381,32 +539,112 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                                   ></i>
                                 )}
                               </button>
-                              <span
-                                onClick={() =>
-                                  toggleSubtask(group.id, subtask.id)
-                                }
-                                className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-pointer ${
-                                  subtask.done
-                                    ? active
-                                      ? "line-through opacity-50 text-[color:var(--theme-4,#0F172A)]"
-                                      : "line-through text-white/35"
-                                    : active
-                                      ? "text-[color:var(--theme-4,#0F172A)] font-gilroy-bold"
-                                      : "text-white/85"
-                                }`}
-                              >
-                                {subtask.text}
-                              </span>
+                              {editingSubtask?.groupId === group.id &&
+                              editingSubtask?.subtaskId === subtask.id ? (
+                                <input
+                                  autoFocus
+                                  value={editSubtaskText}
+                                  onChange={(e) =>
+                                    setEditSubtaskText(e.target.value)
+                                  }
+                                  onBlur={() =>
+                                    saveEditSubtask(group.id, subtask.id)
+                                  }
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
+                                      saveEditSubtask(group.id, subtask.id);
+                                      const nextSubtask = group.subtasks[subIndex + 1];
+                                      if (nextSubtask) {
+                                        startEditSubtask(group.id, nextSubtask);
+                                      } else {
+                                        setTimeout(() => {
+                                          subtaskInputRefs.current[group.id]?.focus();
+                                        }, 0);
+                                      }
+                                    }
+                                    if (e.key === "Escape")
+                                      cancelEditSubtask();
+                                  }}
+                                  onDragStart={(e) => e.preventDefault()}
+                                  className={`flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium ${
+                                    active
+                                      ? "text-[color:var(--theme-4,#0F172A)]"
+                                      : "text-white"
+                                  }`}
+                                />
+                              ) : (
+                                <span
+                                  onClick={() =>
+                                    startEditSubtask(group.id, subtask)
+                                  }
+                                  title="Click to edit"
+                                  className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-text ${
+                                    subtask.done
+                                      ? active
+                                        ? "line-through opacity-50 text-[color:var(--theme-4,#0F172A)]"
+                                        : "line-through text-white/35"
+                                      : active
+                                        ? "text-[color:var(--theme-4,#0F172A)] font-gilroy-bold"
+                                        : "text-white/85"
+                                  }`}
+                                >
+                                  {subtask.text}
+                                </span>
+                              )}
                             </div>
                           );
                         })}
+
+                        {/* Add New Subtask Row */}
+                        <div className="relative flex items-center gap-2.5 py-[5px] pl-7">
+                          <span
+                            className={`absolute left-[9px] top-0 bottom-0 w-px ${
+                              active ? "bg-black/25" : "bg-white/20"
+                            }`}
+                          />
+                          <span
+                            className={`absolute left-[9px] top-1/2 w-[13px] h-px ${
+                              active ? "bg-black/25" : "bg-white/20"
+                            }`}
+                          />
+                          <i
+                            className={`ri-checkbox-blank-circle-line text-[15px] shrink-0 ${
+                              active
+                                ? "text-[color:var(--theme-4,#0F172A)] opacity-50"
+                                : "text-white/30"
+                            }`}
+                          />
+                          <input
+                            ref={(el) => {
+                              subtaskInputRefs.current[group.id] = el;
+                            }}
+                            value={newSubtaskText}
+                            onChange={(e) => setNewSubtaskText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addSubtask(group.id);
+                                setTimeout(() => {
+                                  subtaskInputRefs.current[group.id]?.focus();
+                                }, 0);
+                              }
+                            }}
+                            placeholder="Add new task..."
+                            className={`flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium transition-colors ${
+                              active
+                                ? "text-[color:var(--theme-4,#0F172A)] placeholder:text-black/65 focus:placeholder:text-black/40"
+                                : "text-white/90 placeholder:text-white/70 focus:placeholder:text-white/45"
+                            }`}
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Timeline Marker */}
-                <div className="relative w-[70px] shrink-0">
+                <div className="relative w-[70px] shrink-0 ml-3.5">
                   <div
                     className={`absolute left-[5px] w-px bg-white/15 ${
                       isFirst

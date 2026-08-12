@@ -29,22 +29,28 @@ const MIN_GRID_ROWS = 6;
 const WIDGET_CONFIGS_LAPTOP = {
   timer: {
     cols: 4,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 4,
+    resizable: true,
     draggable: true,
   },
   waterReminder: {
     cols: 4,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 4,
+    resizable: true,
     draggable: true,
   },
   todo: {
     cols: 3,
+    minCols: 2,
+    maxCols: 5,
     defaultRows: 2,
     minRows: 2,
     maxRows: 6,
@@ -53,6 +59,8 @@ const WIDGET_CONFIGS_LAPTOP = {
   },
   importantTabs: {
     cols: 3,
+    minCols: 2,
+    maxCols: 5,
     defaultRows: 2,
     minRows: 2,
     maxRows: 6,
@@ -61,25 +69,31 @@ const WIDGET_CONFIGS_LAPTOP = {
   },
   streakGrid: {
     cols: 11,
+    minCols: 6,
+    maxCols: 13,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 5,
+    resizable: true,
     draggable: true,
   },
   songPlayer: {
     cols: 5,
+    minCols: 3,
+    maxCols: 8,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 5,
+    resizable: true,
     draggable: true,
   },
   timeBoxing: {
     cols: 4,
+    minCols: 3,
+    maxCols: 7,
     defaultRows: 4,
-    minRows: 4,
-    maxRows: 6,
+    minRows: 2,
+    maxRows: 10,
     resizable: true,
     draggable: true,
   },
@@ -96,22 +110,28 @@ const WIDGET_CONFIGS_LAPTOP = {
 const WIDGET_CONFIGS_DESKTOP = {
   timer: {
     cols: 4,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 4,
+    resizable: true,
     draggable: true,
   },
   waterReminder: {
     cols: 4,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 4,
+    resizable: true,
     draggable: true,
   },
   todo: {
     cols: 4,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
     minRows: 2,
     maxRows: 6,
@@ -120,6 +140,8 @@ const WIDGET_CONFIGS_DESKTOP = {
   },
   importantTabs: {
     cols: 3,
+    minCols: 2,
+    maxCols: 6,
     defaultRows: 2,
     minRows: 2,
     maxRows: 6,
@@ -128,25 +150,31 @@ const WIDGET_CONFIGS_DESKTOP = {
   },
   streakGrid: {
     cols: 11,
+    minCols: 6,
+    maxCols: 13,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 5,
+    resizable: true,
     draggable: true,
   },
   songPlayer: {
     cols: 4,
+    minCols: 3,
+    maxCols: 8,
     defaultRows: 2,
-    minRows: 2,
-    maxRows: 2,
-    resizable: false,
+    minRows: 1,
+    maxRows: 5,
+    resizable: true,
     draggable: true,
   },
   timeBoxing: {
     cols: 5,
+    minCols: 3,
+    maxCols: 8,
     defaultRows: 6,
-    minRows: 6,
-    maxRows: 8,
+    minRows: 2,
+    maxRows: 12,
     resizable: true,
     draggable: true,
   },
@@ -162,6 +190,14 @@ const WIDGET_CONFIGS_DESKTOP = {
 
 const getWidgetConfigs = (tier) =>
   tier === "desktop" ? WIDGET_CONFIGS_DESKTOP : WIDGET_CONFIGS_LAPTOP;
+
+/* Current column span of a widget (clamped to its min/max and its stored cols) */
+const getWidgetCols = (cfg, pos) => {
+  if (!cfg) return 1;
+  const min = cfg.minCols ?? cfg.cols;
+  const max = cfg.maxCols ?? cfg.cols;
+  return Math.max(min, Math.min(max, pos?.cols || cfg.cols || 1));
+};
 
 /* ─── Device Tier Breakpoints & Default Positions ─── */
 const getDeviceTier = (width) => {
@@ -224,7 +260,7 @@ const clampPositionsToGrid = (
     const cfg = widgetConfigs[id];
     if (!cfg || typeof pos?.col !== "number" || typeof pos?.row !== "number")
       continue;
-    const itemCols = cfg.cols;
+    const itemCols = getWidgetCols(cfg, pos);
     const itemRows = cfg.resizable
       ? Math.max(
           cfg.minRows,
@@ -239,6 +275,7 @@ const clampPositionsToGrid = (
       ...pos,
       col: clampedCol,
       row: clampedRow,
+      cols: itemCols,
       rows: itemRows,
     };
   }
@@ -250,6 +287,26 @@ const STORAGE_KEY = "settings_widget_positions_v7";
 const STORAGE_KEY_V5 = "settings_widget_positions_v5";
 
 /* ─── Collision Helpers ─── */
+
+class CustomPointerSensor extends PointerSensor {
+  static activators = [
+    {
+      eventName: "onPointerDown",
+      handler: ({ nativeEvent }) => {
+        if (
+          nativeEvent.target &&
+          typeof nativeEvent.target.closest === "function" &&
+          nativeEvent.target.closest(
+            "[data-resize-handle], [data-resize-handle-cols]",
+          )
+        ) {
+          return false;
+        }
+        return true;
+      },
+    },
+  ];
+}
 
 /** True when two axis-aligned grid rectangles share at least one cell */
 const rectsOverlap = (aCol, aRow, aCols, aRows, bCol, bRow, bCols, bRows) =>
@@ -270,18 +327,19 @@ const canPlace = (
   gridCols,
   gridRows,
   customRows = null,
+  customCols = null,
   widgetConfigs = WIDGET_CONFIGS_LAPTOP,
 ) => {
   const cfg = widgetConfigs[widgetId];
   if (!cfg) return false;
   const currentPos = positions[widgetId];
   const itemRows = customRows || currentPos?.rows || cfg.defaultRows || 1;
+  const itemCols = customCols || getWidgetCols(cfg, currentPos);
 
   if (
     col < 1 ||
     row < 1 ||
-    col + cfg.cols - 1 > gridCols ||
-    row + itemRows - 1 > gridRows
+    col + itemCols - 1 > gridCols
   )
     return false;
 
@@ -289,22 +347,115 @@ const canPlace = (
     if (id === widgetId || !activeWidgets[id] || !pos || typeof pos?.col !== "number" || typeof pos?.row !== "number") continue;
     const oc = widgetConfigs[id];
     const oRows = pos.rows || oc?.defaultRows || 1;
+    const oCols = getWidgetCols(oc, pos);
     if (
       oc &&
       rectsOverlap(
         col,
         row,
-        cfg.cols,
+        itemCols,
         itemRows,
         pos.col,
         pos.row,
-        oc.cols,
+        oCols,
         oRows,
       )
     )
       return false;
   }
   return true;
+};
+
+/**
+ * Checks if dragging `widgetId` to (targetCol, targetRow) can swap with an existing widget.
+ * Returns the target widget ID to swap with if valid, or null otherwise.
+ */
+const findSwapWidget = (
+  widgetId,
+  targetCol,
+  targetRow,
+  positions,
+  activeWidgets,
+  gridCols,
+  gridRows,
+  itemRows,
+  itemCols,
+  widgetConfigs = WIDGET_CONFIGS_LAPTOP,
+) => {
+  const currentPos = positions[widgetId];
+  if (!currentPos) return null;
+
+  if (
+    targetCol < 1 ||
+    targetRow < 1 ||
+    targetCol + itemCols - 1 > gridCols ||
+    targetRow + itemRows - 1 > gridRows
+  ) {
+    return null;
+  }
+
+  const activeIds = Object.keys(activeWidgets).filter(
+    (id) => activeWidgets[id] && positions[id],
+  );
+
+  const overlapping = activeIds.filter((id) => {
+    if (id === widgetId) return false;
+    const pos = positions[id];
+    const oc = widgetConfigs[id];
+    if (!pos || !oc) return false;
+    const oCols = getWidgetCols(oc, pos);
+    const oRows = pos.rows || oc.defaultRows || 1;
+
+    return rectsOverlap(
+      targetCol,
+      targetRow,
+      itemCols,
+      itemRows,
+      pos.col,
+      pos.row,
+      oCols,
+      oRows,
+    );
+  });
+
+  if (overlapping.length !== 1) return null;
+
+  const swapId = overlapping[0];
+  const swapPos = positions[swapId];
+  const swapCfg = widgetConfigs[swapId];
+  if (!swapPos || !swapCfg) return null;
+
+  const swapCols = getWidgetCols(swapCfg, swapPos);
+  const swapRows = swapPos.rows || swapCfg.defaultRows || 1;
+
+  if (swapCols !== itemCols || swapRows !== itemRows) return null;
+  if (swapPos.col !== targetCol || swapPos.row !== targetRow) return null;
+
+  for (const otherId of activeIds) {
+    if (otherId === widgetId || otherId === swapId) continue;
+    const pos = positions[otherId];
+    const oc = widgetConfigs[otherId];
+    if (!pos || !oc) continue;
+    const oCols = getWidgetCols(oc, pos);
+    const oRows = pos.rows || oc.defaultRows || 1;
+
+    if (
+      rectsOverlap(
+        currentPos.col,
+        currentPos.row,
+        swapCols,
+        swapRows,
+        pos.col,
+        pos.row,
+        oCols,
+        oRows,
+      )
+    ) {
+      return null;
+    }
+  }
+
+  return swapId;
 };
 
 /** Convert initial bounding rect + delta → 1-indexed grid cell */
@@ -316,6 +467,7 @@ const cellFromTranslatedRect = (
   gridCols,
   gridRows,
   itemRows = null,
+  itemCols = null,
   widgetConfigs = WIDGET_CONFIGS_LAPTOP,
 ) => {
   if (!gridEl || !initialRect || !delta) return null;
@@ -333,9 +485,10 @@ const cellFromTranslatedRect = (
   const cellHeight = gridRect.height / gridRows;
 
   const activeItemRows = itemRows || cfg.defaultRows || 2;
+  const activeItemCols = itemCols || cfg.cols || 1;
 
   const targetCol = Math.min(
-    gridCols - cfg.cols + 1,
+    gridCols - activeItemCols + 1,
     Math.max(1, Math.round(relLeft / cellWidth) + 1),
   );
   const targetRow = Math.min(
@@ -347,13 +500,22 @@ const cellFromTranslatedRect = (
 };
 
 /* ─── Draggable Widget Wrapper Component ─── */
-const DraggableWidget = ({ id, config, pos, onStartResize, renderWidget }) => {
+const DraggableWidget = ({
+  id,
+  config,
+  pos,
+  onStartResizeRows,
+  onStartResizeCols,
+  renderWidget,
+}) => {
   const currentRows = config.resizable
     ? Math.max(
         config.minRows,
         Math.min(config.maxRows, pos.rows || config.defaultRows),
       )
     : config.defaultRows;
+  const currentCols = getWidgetCols(config, pos);
+
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id,
@@ -361,7 +523,7 @@ const DraggableWidget = ({ id, config, pos, onStartResize, renderWidget }) => {
     });
 
   const style = {
-    gridColumn: `${pos.col} / span ${config.cols}`,
+    gridColumn: `${pos.col} / span ${currentCols}`,
     gridRow: `${pos.row} / span ${currentRows}`,
     ...(transform
       ? {
@@ -379,20 +541,32 @@ const DraggableWidget = ({ id, config, pos, onStartResize, renderWidget }) => {
   return (
     <div
       ref={setNodeRef}
-      className={`grid-widget ${isDragging ? "grid-widget--dragging" : ""}`}
+      className={`grid-widget group/widget ${isDragging ? "grid-widget--dragging" : ""}`}
       style={style}
     >
       {renderWidget(id, dragHandleProps)}
 
-      {/* Bottom Resizable Handle */}
-      {config.resizable && (
+      {/* Bottom Resizable Handle (Height / Rows) */}
+      {config.resizable && config.minRows !== config.maxRows && (
         <div
           data-resize-handle
-          onPointerDown={(e) => onStartResize(id, e)}
-          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-white/20 hover:bg-white/60 active:bg-white/90 transition-all cursor-ns-resize z-30 flex items-center justify-center group"
+          onPointerDown={(e) => onStartResizeRows(id, e)}
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ns-resize z-30 flex items-center justify-center group/handle"
           title="Drag down to expand height"
         >
-          <div className="w-4 h-0.5 rounded-full bg-white/50 group-hover:bg-white" />
+          <div className="w-4 h-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
+        </div>
+      )}
+
+      {/* Right Resizable Handle (Width / Cols) */}
+      {config.resizable && (config.minCols ?? config.cols) !== (config.maxCols ?? config.cols) && (
+        <div
+          data-resize-handle-cols
+          onPointerDown={(e) => onStartResizeCols(id, e)}
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-12 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
+          title="Drag right to expand width"
+        >
+          <div className="h-4 w-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
         </div>
       )}
     </div>
@@ -441,7 +615,7 @@ const DashboardGrid = ({
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(CustomPointerSensor, {
       activationConstraint: {
         distance: 3,
       },
@@ -507,7 +681,7 @@ const DashboardGrid = ({
         const currentConfigs = getWidgetConfigs(deviceTier);
 
         if (stored && typeof stored === "object") {
-          setPositions((prev) => {
+          setPositions(() => {
             const merged = { ...defaults };
             for (const [id, pos] of Object.entries(stored)) {
               if (
@@ -535,12 +709,24 @@ const DashboardGrid = ({
                         ),
                       )
                     : cfg.defaultRows;
+                  const validCols = cfg.resizable
+                    ? Math.max(
+                        cfg.minCols ?? cfg.cols,
+                        Math.min(
+                          cfg.maxCols ?? cfg.cols,
+                          typeof pos?.cols === "number"
+                            ? pos.cols
+                            : cfg.cols,
+                        ),
+                      )
+                    : cfg.cols;
 
                   merged[id] = {
                     ...merged[id],
                     col: pos.col,
                     row: pos.row,
                     rows: validRows,
+                    cols: validCols,
                   };
                 }
               }
@@ -575,13 +761,25 @@ const DashboardGrid = ({
     storageSet(tierKey, positions);
   }, [positions, deviceTier]);
 
-  /* ── Vertical Resizing Logic ── */
-  const handleStartResize = useCallback(
+  /* ── Vertical Resizing Logic (Rows) ── */
+  const handleStartResizeRows = useCallback(
     (widgetId, e) => {
       e.preventDefault();
       e.stopPropagation();
+      if (e.nativeEvent && typeof e.nativeEvent.stopImmediatePropagation === "function") {
+        e.nativeEvent.stopImmediatePropagation();
+      }
 
-      const widgetEl = e.currentTarget.closest(".grid-widget");
+      const handleEl = e.currentTarget;
+      if (handleEl && typeof handleEl.setPointerCapture === "function") {
+        try {
+          handleEl.setPointerCapture(e.pointerId);
+        } catch {
+          // fallback
+        }
+      }
+
+      const widgetEl = handleEl.closest(".grid-widget");
       if (!widgetEl || !gridRef.current) return;
       const widgetRect = widgetEl.getBoundingClientRect();
       const gridRect = gridRef.current.getBoundingClientRect();
@@ -608,6 +806,7 @@ const DashboardGrid = ({
             gridCols,
             gridRows,
             targetRows,
+            getWidgetCols(cfg, currentPos),
             widgetConfigs,
           )
         ) {
@@ -618,7 +817,90 @@ const DashboardGrid = ({
         }
       };
 
-      const onUp = () => {
+      const onUp = (upEv) => {
+        if (handleEl && typeof handleEl.releasePointerCapture === "function") {
+          try {
+            handleEl.releasePointerCapture(upEv.pointerId);
+          } catch {
+            // fallback
+          }
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    },
+    [gridCols, gridRows, widgetConfigs],
+  );
+
+  /* ── Horizontal Resizing Logic (Cols) ── */
+  const handleStartResizeCols = useCallback(
+    (widgetId, e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.nativeEvent && typeof e.nativeEvent.stopImmediatePropagation === "function") {
+        e.nativeEvent.stopImmediatePropagation();
+      }
+
+      const handleEl = e.currentTarget;
+      if (handleEl && typeof handleEl.setPointerCapture === "function") {
+        try {
+          handleEl.setPointerCapture(e.pointerId);
+        } catch {
+          // fallback
+        }
+      }
+
+      const widgetEl = handleEl.closest(".grid-widget");
+      if (!widgetEl || !gridRef.current) return;
+      const widgetRect = widgetEl.getBoundingClientRect();
+      const gridRect = gridRef.current.getBoundingClientRect();
+      const cellWidth = gridRect.width / gridCols;
+
+      const onMove = (moveEv) => {
+        const currentX = moveEv.clientX;
+        const relX = currentX - widgetRect.left;
+        const cfg = widgetConfigs[widgetId];
+        const minC = cfg.minCols ?? cfg.cols;
+        const maxC = cfg.maxCols ?? cfg.cols;
+        const targetCols = Math.max(
+          minC,
+          Math.min(maxC, Math.max(1, Math.round(relX / cellWidth))),
+        );
+
+        const currentPos = positionsRef.current[widgetId];
+        if (
+          currentPos &&
+          canPlace(
+            widgetId,
+            currentPos.col,
+            currentPos.row,
+            positionsRef.current,
+            activeRef.current,
+            gridCols,
+            gridRows,
+            currentPos.rows,
+            targetCols,
+            widgetConfigs,
+          )
+        ) {
+          setPositions((prev) => ({
+            ...prev,
+            [widgetId]: { ...prev[widgetId], cols: targetCols },
+          }));
+        }
+      };
+
+      const onUp = (upEv) => {
+        if (handleEl && typeof handleEl.releasePointerCapture === "function") {
+          try {
+            handleEl.releasePointerCapture(upEv.pointerId);
+          } catch {
+            // fallback
+          }
+        }
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
       };
@@ -637,6 +919,7 @@ const DashboardGrid = ({
     if (!cfg) return;
 
     const currentRows = positions[active.id]?.rows || cfg.defaultRows || 2;
+    const currentCols = getWidgetCols(cfg, positions[active.id]);
     const initialRect = active.rect.current.initial;
     const target = cellFromTranslatedRect(
       initialRect,
@@ -646,11 +929,12 @@ const DashboardGrid = ({
       gridCols,
       gridRows,
       currentRows,
+      currentCols,
       widgetConfigs,
     );
     if (!target) return;
 
-    const valid = canPlace(
+    const canDirectPlace = canPlace(
       active.id,
       target.col,
       target.row,
@@ -659,15 +943,34 @@ const DashboardGrid = ({
       gridCols,
       gridRows,
       currentRows,
+      currentCols,
       widgetConfigs,
     );
+
+    const swapTargetId = !canDirectPlace
+      ? findSwapWidget(
+          active.id,
+          target.col,
+          target.row,
+          positions,
+          activeWidgets,
+          gridCols,
+          gridRows,
+          currentRows,
+          currentCols,
+          widgetConfigs,
+        )
+      : null;
+
+    const valid = canDirectPlace || Boolean(swapTargetId);
 
     setGhostInfo({
       col: target.col,
       row: target.row,
-      cols: cfg.cols,
+      cols: currentCols,
       rows: currentRows,
       valid,
+      isSwap: Boolean(swapTargetId),
     });
   };
 
@@ -678,6 +981,7 @@ const DashboardGrid = ({
     if (!cfg) return;
 
     const currentRows = positions[active.id]?.rows || cfg.defaultRows || 2;
+    const currentCols = getWidgetCols(cfg, positions[active.id]);
     const initialRect = active.rect.current.initial;
     const target = cellFromTranslatedRect(
       initialRect,
@@ -687,6 +991,7 @@ const DashboardGrid = ({
       gridCols,
       gridRows,
       currentRows,
+      currentCols,
       widgetConfigs,
     );
     if (!target) {
@@ -694,7 +999,7 @@ const DashboardGrid = ({
       return;
     }
 
-    const valid = canPlace(
+    const canDirectPlace = canPlace(
       active.id,
       target.col,
       target.row,
@@ -703,15 +1008,34 @@ const DashboardGrid = ({
       gridCols,
       gridRows,
       currentRows,
+      currentCols,
       widgetConfigs,
     );
+
+    const swapTargetId = !canDirectPlace
+      ? findSwapWidget(
+          active.id,
+          target.col,
+          target.row,
+          positions,
+          activeWidgets,
+          gridCols,
+          gridRows,
+          currentRows,
+          currentCols,
+          widgetConfigs,
+        )
+      : null;
+
+    const valid = canDirectPlace || Boolean(swapTargetId);
 
     setGhostInfo({
       col: target.col,
       row: target.row,
-      cols: cfg.cols,
+      cols: currentCols,
       rows: currentRows,
       valid,
+      isSwap: Boolean(swapTargetId),
     });
   };
 
@@ -720,6 +1044,7 @@ const DashboardGrid = ({
     if (active) {
       const cfg = widgetConfigs[active.id];
       const currentRows = positions[active.id]?.rows || cfg?.defaultRows || 2;
+      const currentCols = getWidgetCols(cfg, positions[active.id]);
       const initialRect = active.rect.current.initial;
       const target = cellFromTranslatedRect(
         initialRect,
@@ -729,12 +1054,12 @@ const DashboardGrid = ({
         gridCols,
         gridRows,
         currentRows,
+        currentCols,
         widgetConfigs,
       );
 
-      if (
-        target &&
-        canPlace(
+      if (target) {
+        const canDirectPlace = canPlace(
           active.id,
           target.col,
           target.row,
@@ -743,13 +1068,37 @@ const DashboardGrid = ({
           gridCols,
           gridRows,
           currentRows,
+          currentCols,
           widgetConfigs,
-        )
-      ) {
-        setPositions((p) => ({
-          ...p,
-          [active.id]: { ...p[active.id], col: target.col, row: target.row },
-        }));
+        );
+
+        if (canDirectPlace) {
+          setPositions((p) => ({
+            ...p,
+            [active.id]: { ...p[active.id], col: target.col, row: target.row },
+          }));
+        } else {
+          const swapId = findSwapWidget(
+            active.id,
+            target.col,
+            target.row,
+            positions,
+            activeWidgets,
+            gridCols,
+            gridRows,
+            currentRows,
+            currentCols,
+            widgetConfigs,
+          );
+          if (swapId && positions[swapId]) {
+            const origPosA = positions[active.id];
+            setPositions((p) => ({
+              ...p,
+              [active.id]: { ...p[active.id], col: target.col, row: target.row },
+              [swapId]: { ...p[swapId], col: origPosA.col, row: origPosA.row },
+            }));
+          }
+        }
       }
     }
     setGhostInfo(null);
@@ -828,7 +1177,8 @@ const DashboardGrid = ({
               id={id}
               config={config}
               pos={pos}
-              onStartResize={handleStartResize}
+              onStartResizeRows={handleStartResizeRows}
+              onStartResizeCols={handleStartResizeCols}
               renderWidget={renderWidget}
             />
           );
