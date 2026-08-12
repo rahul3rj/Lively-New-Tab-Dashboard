@@ -252,10 +252,10 @@ const Taskbar = ({
       <button
         type='button'
         onClick={openAddModal}
-        className='figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all opacity-0 group-hover/taskbar:opacity-100 shrink-0'
+        className='figma-glass-card h-[6.5vh] w-[6.5vh] min-h-[42px] min-w-[42px] rounded-full flex items-center justify-center text-white cursor-pointer transition-all duration-300 ease-out opacity-0 scale-75 pointer-events-none group-hover/taskbar:opacity-100 group-hover/taskbar:scale-100 group-hover/taskbar:pointer-events-auto shrink-0 hover:scale-105 active:scale-95'
         title='Add Quick Launcher'
       >
-        <i className='ri-add-line text-[2.8vh] text-white relative z-10' />
+        <i className='ri-add-line text-[2.8vh] text-white relative z-10 transition-transform duration-300 hover:rotate-90' />
       </button>
 
       {/* Context Menu for Edit / Delete */}

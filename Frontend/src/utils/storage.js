@@ -161,3 +161,110 @@ export const storageSet = (key, value) => {
   setToLocalStorage(key, value);
   return Promise.resolve();
 };
+
+/**
+ * Export all app data into a JS object.
+ * Reads everything from chrome.storage.local (if available) and localStorage.
+ */
+export const exportAllStorageData = async () => {
+  const result = {};
+
+  if (checkHasChromeStorage()) {
+    await new Promise((resolve) => {
+      try {
+        globalThis.chrome.storage.local.get(null, (items) => {
+          if (items && typeof items === "object") {
+            for (const [k, v] of Object.entries(items)) {
+              result[k] = parseIfJsonString(v);
+            }
+          }
+          resolve();
+        });
+      } catch {
+        resolve();
+      }
+    });
+  }
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && result[key] === undefined) {
+          const raw = localStorage.getItem(key);
+          if (raw !== null && raw !== undefined) {
+            result[key] = parseIfJsonString(raw);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("localStorage export error:", err);
+  }
+
+  return result;
+};
+
+/**
+ * Import and restore all data into storage.
+ * Writes to chrome.storage.local and localStorage.
+ */
+export const importAllStorageData = async (dataObj) => {
+  if (!dataObj || typeof dataObj !== "object" || Array.isArray(dataObj)) {
+    throw new Error("Invalid backup payload. Expected a valid JSON object.");
+  }
+
+  if (checkHasChromeStorage()) {
+    await new Promise((resolve) => {
+      try {
+        globalThis.chrome.storage.local.set(dataObj, () => {
+          resolve();
+        });
+      } catch {
+        resolve();
+      }
+    });
+  }
+
+  try {
+    if (typeof localStorage !== "undefined") {
+      for (const [key, val] of Object.entries(dataObj)) {
+        if (val === undefined || val === null) {
+          localStorage.removeItem(key);
+        } else {
+          localStorage.setItem(
+            key,
+            typeof val === "string" ? val : JSON.stringify(val)
+          );
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("localStorage import error:", err);
+  }
+};
+
+/**
+ * Clears all dashboard data from storage.
+ */
+export const clearAllStorageData = async () => {
+  if (checkHasChromeStorage()) {
+    await new Promise((resolve) => {
+      try {
+        globalThis.chrome.storage.local.clear(() => {
+          resolve();
+        });
+      } catch {
+        resolve();
+      }
+    });
+  }
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.clear();
+    }
+  } catch (err) {
+    console.warn("localStorage clear error:", err);
+  }
+};
+
