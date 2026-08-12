@@ -4,19 +4,28 @@ const GITHUB_WEB = "https://github.com";
 
 /** Extracts a plain GitHub username from raw input (URL, @handle, or bare name). */
 export const extractUsername = (input) => {
-  const raw = String(input ?? "").trim().replace(/^@+/, "");
+  let raw = String(input ?? "").trim().replace(/^@+/, "");
   if (!raw) return "";
 
-  const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-
-  try {
-    const url = new URL(withProto);
-    if (!/^(www\.)?github\.com$/i.test(url.hostname)) return "";
-    const username = (url.pathname.split("/").filter(Boolean)[0] || "").trim();
-    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(username) ? username : "";
-  } catch {
-    return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(raw) ? raw : "";
+  // If input is a URL or contains github.com / slashes
+  if (raw.includes("github.com") || raw.includes("/")) {
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    try {
+      const url = new URL(withProto);
+      if (/^(www\.)?github\.com$/i.test(url.hostname)) {
+        const username = (url.pathname.split("/").filter(Boolean)[0] || "").trim();
+        if (/^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(username)) {
+          return username;
+        }
+      }
+    } catch {
+      // Fall through to bare check below
+    }
   }
+
+  // Bare username check
+  const clean = raw.split("/")[0].trim();
+  return /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(clean) ? clean : "";
 };
 
 const levelForCount = (count) =>

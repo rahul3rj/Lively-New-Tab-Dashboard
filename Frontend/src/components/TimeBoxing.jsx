@@ -206,6 +206,28 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     updateTodayCompletedTasksCount(completedMainCount);
   };
 
+  const removeSubtask = (groupId, subtaskId) => {
+    const nextGroups = groups.map((g) =>
+      g.id !== groupId
+        ? g
+        : {
+            ...g,
+            subtasks: (g.subtasks || []).filter((s) => s.id !== subtaskId),
+          },
+    );
+
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+
+    const completedMainCount = nextGroups.filter(
+      (g) => g.subtasks && g.subtasks.length > 0 && g.subtasks.every((s) => s.done),
+    ).length;
+
+    updateTodayCompletedTasksCount(completedMainCount);
+  };
+
+
   const reorderSubtask = (groupId, fromId, toId) => {
     const nextGroups = groups.map((g) => {
       if (g.id !== groupId) return g;
@@ -318,7 +340,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   };
 
   return (
-    <div className="figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col shadow-2xl relative overflow-hidden">
+    <div className="group/widget figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col shadow-2xl relative overflow-hidden">
       {/* Header Row */}
       <div className="w-full flex items-center justify-between z-10 relative shrink-0 mb-3">
         <div
@@ -494,7 +516,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                                 handleSubtaskDrop(e, group.id, subtask.id)
                               }
                               onDragEnd={handleSubtaskDragEnd}
-                              className={`relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all ${
+                              className={`group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all ${
                                 isDragging
                                   ? "opacity-40"
                                   : isDragOver
@@ -592,12 +614,31 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                                   {subtask.text}
                                 </span>
                               )}
+
+                              {/* Delete Subtask Action */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeSubtask(group.id, subtask.id);
+                                }}
+                                className={`opacity-0 group-hover/subtask:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0 ${
+                                  active
+                                    ? "text-[color:var(--theme-4,#0F172A)]/40 hover:text-[color:var(--theme-4,#0F172A)]"
+                                    : "text-white/30 hover:text-white/80"
+                                }`}
+                                title="Delete subtask"
+                              >
+                                <i className="ri-close-line text-xs"></i>
+                              </button>
                             </div>
                           );
                         })}
 
                         {/* Add New Subtask Row */}
-                        <div className="relative flex items-center gap-2.5 py-[5px] pl-7">
+                        <div className={`relative flex items-center gap-2.5 py-[5px] pl-7 transition-opacity duration-200 ${
+                          newSubtaskText ? "opacity-100" : "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
+                        }`}>
                           <span
                             className={`absolute left-[9px] top-0 bottom-0 w-px ${
                               active ? "bg-black/25" : "bg-white/20"

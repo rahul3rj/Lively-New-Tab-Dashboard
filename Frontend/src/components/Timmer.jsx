@@ -240,9 +240,9 @@ const Timmer = ({ dragHandleProps }) => {
   };
 
   return (
-    <div className="figma-glass-static focus-widget rounded-[26px] px-[20px] py-[13px] text-white font-gilroy-medium w-full select-none flex flex-col">
+    <div className="figma-glass-static focus-widget rounded-[26px] px-[20px] py-[13px] text-white font-gilroy-medium w-full h-full select-none flex flex-col justify-between shadow-2xl relative overflow-hidden">
       {/* Header Row: Drag Icon + Title & Segmented Toggle */}
-      <div className="w-full flex items-center justify-between z-10 relative mb-1">
+      <div className="w-full flex items-center justify-between z-10 relative mb-1 shrink-0">
         <div
           className="flex items-center gap-2 text-white/80 text-xs font-gilroy-medium cursor-grab active:cursor-grabbing select-none"
           data-drag-handle
@@ -283,7 +283,7 @@ const Timmer = ({ dragHandleProps }) => {
       </div>
 
       {/* Center Giant Heathergreen Timer Display */}
-      <div className="w-full flex items-center justify-center z-10 relative">
+      <div className="w-full flex-1 min-h-0 flex items-center justify-center z-10 relative">
         {isEditing ? (
           <input
             value={editValue}

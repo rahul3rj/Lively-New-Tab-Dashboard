@@ -152,7 +152,7 @@ const Todo = ({ dragHandleProps }) => {
   };
 
   return (
-    <div className="figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col justify-between shadow-2xl relative overflow-hidden">
+    <div className="group/widget figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col justify-between shadow-2xl relative overflow-hidden">
       {/* Header Row */}
       <div className="w-full flex items-center justify-between z-10 relative shrink-0 mb-3">
         <div
@@ -246,7 +246,9 @@ const Todo = ({ dragHandleProps }) => {
         })}
 
         {/* Inline Add Task Row (matching mockup screenshot) */}
-        <div className="flex items-center gap-2.5 text-xs sm:text-sm py-0.5">
+        <div className={`flex items-center gap-2.5 text-xs sm:text-sm py-0.5 transition-opacity duration-200 ${
+          newText ? "opacity-100" : "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
+        }`}>
           <i className="ri-checkbox-blank-circle-line text-base text-white/30 shrink-0"></i>
           <input
             ref={addInputRef}
