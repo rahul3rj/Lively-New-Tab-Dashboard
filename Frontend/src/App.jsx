@@ -519,6 +519,18 @@ const App = () => {
   const removeShortcut = (id) =>
     setShortcuts((prev) => prev.filter((s) => s.id !== id));
 
+  const reorderShortcuts = (fromId, toId) =>
+    setShortcuts((prev) => {
+      const keyOf = (s) => s.id || s.url;
+      const fromIndex = prev.findIndex((s) => keyOf(s) === fromId);
+      const toIndex = prev.findIndex((s) => keyOf(s) === toId);
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next;
+    });
+
   const addShortcut = (newShortcut) => {
     setShortcuts((prev) => {
       if (prev.length >= MAX_SHORTCUTS) return prev;
@@ -652,6 +664,7 @@ const App = () => {
             onAddShortcut={addShortcut}
             onRemoveShortcut={removeShortcut}
             onUpdateShortcut={updateShortcut}
+            onReorderShortcuts={reorderShortcuts}
           />
         </div>
 
