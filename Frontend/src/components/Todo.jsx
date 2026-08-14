@@ -115,6 +115,8 @@ const Todo = ({ dragHandleProps }) => {
     const text = editText.trim();
     if (text) {
       setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, text } : t)));
+    } else {
+      removeTask(id);
     }
     setEditingId(null);
     setEditText("");
