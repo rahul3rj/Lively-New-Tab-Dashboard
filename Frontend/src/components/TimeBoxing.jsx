@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { updateTodayCompletedTasksCount } from "../utils/activityStore";
 import { IconDropdownPopover } from "./IconPicker.jsx";
+import { TimeDropdownPopover } from "./TimePicker.jsx";
 
 const makeId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -105,10 +106,12 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const [editingGroup, setEditingGroup] = useState(null);
   const [editGroupTitle, setEditGroupTitle] = useState("");
   const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
+  const [timePickerGroupId, setTimePickerGroupId] = useState(null);
   const [newMainTaskText, setNewMainTaskText] = useState("");
   const [atBottom, setAtBottom] = useState(true);
   const subtaskInputRefs = useRef({});
   const iconTriggerRefs = useRef({});
+  const timeTriggerRefs = useRef({});
   const newMainTaskRef = useRef(null);
   const containerRef = useRef(null);
   const activeTaskRef = useRef(null);
@@ -339,6 +342,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
 
     if (expandedId === groupId) setExpandedId(null);
     if (iconPickerGroupId === groupId) setIconPickerGroupId(null);
+    if (timePickerGroupId === groupId) setTimePickerGroupId(null);
 
     const completedMainCount = nextGroups.filter(
       (g) => g.subtasks && g.subtasks.length > 0 && g.subtasks.every((s) => s.done),
@@ -370,11 +374,22 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
 
   const updateGroupIcon = (groupId, iconClass) => {
     const nextGroups = groups.map((g) =>
-      g.id === groupId ? { ...g, iconClass } : g,
+      g.id === groupId ? { ...g, icon: iconClass } : g,
     );
     if (typeof onGroupsChange === "function") {
       onGroupsChange(nextGroups);
     }
+    setIconPickerGroupId(null);
+  };
+
+  const updateGroupTime = (groupId, time) => {
+    const nextGroups = groups.map((g) =>
+      g.id === groupId ? { ...g, time } : g,
+    );
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+    setTimePickerGroupId(null);
   };
 
   const addGroup = () => {
@@ -538,7 +553,9 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                 <div className={`flex-1 min-w-0 ${isLast ? "" : "pb-5"}`}>
                   <div
                     className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 ${
-                      iconPickerGroupId === group.id ? "overflow-visible" : "overflow-hidden"
+                      iconPickerGroupId === group.id || timePickerGroupId === group.id
+                        ? "overflow-visible"
+                        : "overflow-hidden"
                     } shadow-lg transition-all duration-300 ${
                       isDraggingGroup
                         ? "opacity-40"
@@ -941,7 +958,36 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                       active ? "text-white font-gilroy-bold" : "text-white/55"
                     }`}
                   >
-                    {group.time}
+                    {expanded ? (
+                      <>
+                        <button
+                          ref={(el) => {
+                            timeTriggerRefs.current[group.id] = el;
+                          }}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTimePickerGroupId(
+                              timePickerGroupId === group.id ? null : group.id,
+                            );
+                          }}
+                          title="Edit time"
+                          className="cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none hover:underline underline-offset-2 transition-all active:scale-95"
+                        >
+                          {group.time}
+                        </button>
+                        {timePickerGroupId === group.id && (
+                          <TimeDropdownPopover
+                            triggerRef={{ current: timeTriggerRefs.current[group.id] }}
+                            current={group.time}
+                            onSelect={(newTime) => updateGroupTime(group.id, newTime)}
+                            onClose={() => setTimePickerGroupId(null)}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      group.time
+                    )}
                   </span>
                 </div>
               </div>
