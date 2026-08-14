@@ -446,8 +446,12 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const reorderGroups = (fromIndex, toIndex) => {
     if (fromIndex === toIndex) return;
     const next = [...groups];
+    const fromTime = next[fromIndex]?.time;
+    const toTime = next[toIndex]?.time;
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
+    if (fromTime !== undefined) next[fromIndex] = { ...next[fromIndex], time: fromTime };
+    if (toTime !== undefined) next[toIndex] = { ...next[toIndex], time: toTime };
     if (typeof onGroupsChange === "function") {
       onGroupsChange(next);
     }
