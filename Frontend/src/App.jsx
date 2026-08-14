@@ -4,7 +4,7 @@ import Clock from "./components/Clock.jsx";
 import DashboardGrid from "./components/DashboardGrid.jsx";
 import HeroView from "./components/HeroView.jsx";
 import SettingsPage from "./components/SettingsPage.jsx";
-import { storageGet, storageGetMultiple, storageSet } from "./utils/storage.js";
+import { storageGetMultiple, storageSet } from "./utils/storage.js";
 import { STORAGE_KEY_UI_THEME } from "./themes/index.js";
 
 const STORAGE = {
@@ -12,6 +12,8 @@ const STORAGE = {
   showTimer: "settings_show_timer_v1",
   showTodo: "settings_show_todo_v1",
   showStreakGrid: "settings_show_streak_grid_v1",
+  streakDataSource: "settings_streak_data_source_v1",
+  githubUsername: "settings_github_username_v1",
   showSongPlayer: "settings_show_song_player_v1",
   themeColor: "settings_theme_color_v1",
   shortcuts: "settings_shortcuts_v1",
@@ -160,7 +162,7 @@ export const DEFAULT_LOFI_STATIONS = [
   },
 ];
 
-const MAX_SHORTCUTS = 7;
+const MAX_SHORTCUTS = 12;
 
 const DEFAULT_THEME_PALETTE = ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
 
@@ -180,6 +182,8 @@ const App = () => {
   const [showTimer, setShowTimer] = useState(true);
   const [showTodo, setShowTodo] = useState(true);
   const [showStreakGrid, setShowStreakGrid] = useState(true);
+  const [streakDataSource, setStreakDataSource] = useState("local");
+  const [githubUsername, setGithubUsername] = useState("");
   const [showSongPlayer, setShowSongPlayer] = useState(true);
   const [themeColor, setThemeColor] = useState(DEFAULT_THEME_PALETTE);
   const [themeColorsMap, setThemeColorsMap] = useState(DEFAULT_THEME_PALETTES);
@@ -206,7 +210,7 @@ const App = () => {
 
   const [importantTabsConfig, setImportantTabsConfig] = useState(DEFAULT_IMPORTANT_TABS);
   const [timeBoxingGroups, setTimeBoxingGroups] = useState(DEFAULT_TIMEBOX_GROUPS);
-  const [timeboxingLastResetDate, setTimeboxingLastResetDate] = useState(null);
+  const [_timeboxingLastResetDate, setTimeboxingLastResetDate] = useState(null);
   const [uiTheme, setUiTheme] = useState("default");
   const [baseFont, setBaseFont] = useState("Gilroy");
   const [baseFontSize, setBaseFontSize] = useState(16);
@@ -250,6 +254,8 @@ const App = () => {
         const storedCustomVideo = data[STORAGE.songCustomVideo];
         const storedLofiStations = data[STORAGE.lofiStations];
         const storedImpTabsCfg = data[STORAGE.importantTabsConfig];
+        const storedStreakDataSource = data[STORAGE.streakDataSource];
+        const storedGithubUsername = data[STORAGE.githubUsername];
         let storedTimeboxGroups = data[STORAGE.timeBoxingGroups];
         const storedThemeTextIdx = data[STORAGE.themeTextColorIndex];
         const storedResetDate = data[STORAGE.timeboxingLastResetDate];
@@ -285,6 +291,8 @@ const App = () => {
         if (typeof storedShowTimer === "boolean") setShowTimer(storedShowTimer);
         if (typeof storedShowTodo === "boolean") setShowTodo(storedShowTodo);
         if (typeof storedShowStreakGrid === "boolean") setShowStreakGrid(storedShowStreakGrid);
+        if (storedStreakDataSource === "local" || storedStreakDataSource === "github") setStreakDataSource(storedStreakDataSource);
+        if (typeof storedGithubUsername === "string") setGithubUsername(storedGithubUsername);
         if (typeof storedShowSongPlayer === "boolean") setShowSongPlayer(storedShowSongPlayer);
         const storedThemeColorsMap = data[STORAGE.themeColorsMap];
         let activeThemeMap = { ...DEFAULT_THEME_PALETTES };
@@ -331,13 +339,13 @@ const App = () => {
         if (typeof storedPlaylist === "string") setSongPlaylistUrl(storedPlaylist);
         if (typeof storedAutoPlay === "boolean") setSongAutoPlay(storedAutoPlay);
         if (storedCustomVideo) setSongCustomVideo(storedCustomVideo);
-        let parsedImpTabs = storedImpTabsCfg;
-        if (typeof storedImpTabsCfg === "string") {
-          try { parsedImpTabs = JSON.parse(storedImpTabsCfg); } catch {}
-        }
-        if (Array.isArray(parsedImpTabs)) setImportantTabsConfig(parsedImpTabs);
         if (Array.isArray(storedLofiStations) && storedLofiStations.length > 0) setLofiStations(storedLofiStations);
         if (Array.isArray(storedTimeboxGroups) && storedTimeboxGroups.length > 0) setTimeBoxingGroups(storedTimeboxGroups);
+        let parsedImpTabs = storedImpTabsCfg;
+        if (typeof storedImpTabsCfg === "string") {
+          try { parsedImpTabs = JSON.parse(storedImpTabsCfg); } catch { parsedImpTabs = null; }
+        }
+        if (Array.isArray(parsedImpTabs)) setImportantTabsConfig(parsedImpTabs);
         if (typeof storedUiTheme === "string" && ["default","manga","cyberpunk","pixel"].includes(storedUiTheme)) setUiTheme(storedUiTheme);
         if (typeof storedBaseFont === "string" && storedBaseFont.trim()) setBaseFont(storedBaseFont);
         if (typeof storedBaseFontSize === "number" && storedBaseFontSize >= 12 && storedBaseFontSize <= 24) setBaseFontSize(storedBaseFontSize);
@@ -361,6 +369,8 @@ const App = () => {
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTimer, showTimer); }, [showTimer]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showTodo, showTodo); }, [showTodo]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showStreakGrid, showStreakGrid); }, [showStreakGrid]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.streakDataSource, streakDataSource); }, [streakDataSource]);
+  useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.githubUsername, githubUsername); }, [githubUsername]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.showSongPlayer, showSongPlayer); }, [showSongPlayer]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColor, themeColor); }, [themeColor]);
   useEffect(() => { if (!hydratedRef.current) return; storageSet(STORAGE.themeColorsMap, themeColorsMap); }, [themeColorsMap]);
@@ -509,10 +519,15 @@ const App = () => {
   const removeShortcut = (id) =>
     setShortcuts((prev) => prev.filter((s) => s.id !== id));
 
-  const addShortcut = () => {
+  const addShortcut = (newShortcut) => {
     setShortcuts((prev) => {
       if (prev.length >= MAX_SHORTCUTS) return prev;
-      return [...prev, { id: makeId(), title: "New", url: "https://" }];
+      const item =
+        newShortcut && typeof newShortcut === "object" && newShortcut.title
+          ? newShortcut
+          : { id: makeId(), title: "New", url: "https://" };
+      if (!item.id) item.id = makeId();
+      return [...prev, item];
     });
   };
 
@@ -632,7 +647,12 @@ const App = () => {
               : "-translate-y-12 opacity-0 scale-95 pointer-events-none"
           }`}
         >
-          <Taskbar shortcuts={shortcuts} />
+          <Taskbar
+            shortcuts={shortcuts}
+            onAddShortcut={addShortcut}
+            onRemoveShortcut={removeShortcut}
+            onUpdateShortcut={updateShortcut}
+          />
         </div>
 
         {/* Dashboard Grid */}
@@ -657,6 +677,8 @@ const App = () => {
             songCustomVideo={songCustomVideo}
             lofiStations={lofiStations}
             waterGoalMl={waterGoalMl}
+            streakDataSource={streakDataSource}
+            githubUsername={githubUsername}
           />
         </div>
 
@@ -762,6 +784,10 @@ const App = () => {
           // Streak
           showStreakGrid={showStreakGrid}
           onShowStreakGridChange={setShowStreakGrid}
+          streakDataSource={streakDataSource}
+          onStreakDataSourceChange={setStreakDataSource}
+          githubUsername={githubUsername}
+          onGithubUsernameChange={setGithubUsername}
         />
       </div>
     </div>

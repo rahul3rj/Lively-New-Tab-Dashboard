@@ -150,10 +150,6 @@ const SongPlayer = ({ dragHandleProps, playlistUrl, autoPlay, customVideo, stati
   };
 
   const videoSrc = typeof customVideo === "string" ? customVideo : customVideo?.dataUrl;
-  const isVideoFormat =
-    customVideo?.type?.startsWith("video/") ||
-    Boolean(videoSrc && videoSrc.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) ||
-    Boolean(videoSrc && videoSrc.startsWith("data:video/"));
 
   const stationTitle = isCustomStream ? "Custom Audio Stream" : activeStation.name;
   const stationBadge = isCustomStream ? "Custom Lofi Stream" : (activeStation.badge || activeStation.name);

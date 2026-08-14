@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { recordActivity } from "../utils/activityStore";
 
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -46,7 +46,7 @@ const Timmer = ({ dragHandleProps }) => {
   const [status, setStatus] = useState("idle");
   const [durationSec, setDurationSec] = useState(25 * 60);
   const [remainingSec, setRemainingSec] = useState(25 * 60);
-  const [todayTotalSec, setTodayTotalSec] = useState(0);
+  const [_todayTotalSec, setTodayTotalSec] = useState(0);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState("");
@@ -240,9 +240,9 @@ const Timmer = ({ dragHandleProps }) => {
   };
 
   return (
-    <div className="figma-glass-static focus-widget rounded-[26px] px-[20px] py-[13px] text-white font-gilroy-medium w-full select-none flex flex-col">
+    <div className="figma-glass-static focus-widget rounded-[26px] px-[20px] py-[13px] text-white font-gilroy-medium w-full h-full select-none flex flex-col justify-between shadow-2xl relative overflow-hidden">
       {/* Header Row: Drag Icon + Title & Segmented Toggle */}
-      <div className="w-full flex items-center justify-between z-10 relative mb-1">
+      <div className="w-full flex items-center justify-between z-10 relative mb-1 shrink-0">
         <div
           className="flex items-center gap-2 text-white/80 text-xs font-gilroy-medium cursor-grab active:cursor-grabbing select-none"
           data-drag-handle
@@ -283,7 +283,7 @@ const Timmer = ({ dragHandleProps }) => {
       </div>
 
       {/* Center Giant Heathergreen Timer Display */}
-      <div className="w-full flex items-center justify-center z-10 relative">
+      <div className="w-full flex-1 min-h-0 flex items-center justify-center z-10 relative">
         {isEditing ? (
           <input
             value={editValue}
@@ -308,32 +308,24 @@ const Timmer = ({ dragHandleProps }) => {
         )}
       </div>
 
-      {/* Bottom Controls Row: Start | Pause | Reset */}
-      <div className="w-full flex items-center justify-center gap-2.5 z-10 relative mt-2">
+      {/* Bottom Controls Row: Start/Pause Toggle + Reset */}
+      <div className="w-full flex items-center justify-center gap-2.5 z-10 relative mt-2 mb-2">
         <button
           type="button"
-          onClick={handleStart}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
+          onClick={status === "running" ? handlePause : handleStart}
+          className="h-8 w-[90px] rounded-full flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
           style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
         >
-          <i className="ri-play-fill text-xs shrink-0 relative z-10" />
-          <span className="relative z-10 leading-none">Start</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handlePause}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
-          style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
-        >
-          <i className="ri-pause-fill text-xs shrink-0 relative z-10" />
-          <span className="relative z-10 leading-none">Pause</span>
+          <i className={`${status === "running" ? "ri-pause-fill" : "ri-play-fill"} text-xs shrink-0 relative z-10`} />
+          <span className="relative z-10 leading-none">
+            {status === "running" ? "Pause" : status === "paused" ? "Resume" : "Start"}
+          </span>
         </button>
 
         <button
           type="button"
           onClick={handleReset}
-          className="h-8 rounded-full px-4 flex items-center justify-center gap-1.5 text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap"
+          className="h-8 w-[90px] rounded-full flex items-center justify-center gap-1.5 text-white/80 hover:text-white font-gilroy-bold text-xs transition-all duration-200 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
           style={{ backgroundColor: "var(--theme-4, #0F172A)" }}
         >
           <i className="ri-refresh-line text-xs shrink-0 relative z-10" />

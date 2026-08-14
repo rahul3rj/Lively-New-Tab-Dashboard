@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_LOFI_STATIONS } from "../App";
 import { UI_THEMES } from "../themes/index.js";
+import {
+  exportAllStorageData,
+  importAllStorageData,
+  clearAllStorageData,
+} from "../utils/storage.js";
+import {
+  fitPopoverInContainer,
+  ICON_CATEGORIES,
+  ICON_GRID_ITEMS,
+} from "./iconData.js";
+import { IconDropdownPopover } from "./IconPicker.jsx";
 
 /* ─── Ringtone helpers ─── */
 const playBeep = () => {
@@ -62,115 +73,6 @@ const WATER_GOALS = [
   { label: "6.0 L", value: 6000 },
 ];
 
-const ICON_CATEGORIES = [
-  { id: "all", label: "All Icons", icon: "ri-grid-fill" },
-  { id: "daily", label: "Daily Life", icon: "ri-sun-line" },
-  { id: "fitness", label: "Fitness", icon: "ri-heart-pulse-line" },
-  { id: "work", label: "Work & Code", icon: "ri-code-s-slash-line" },
-  { id: "study", label: "Study", icon: "ri-book-open-line" },
-  { id: "leisure", label: "Hobbies & Leisure", icon: "ri-gamepad-line" },
-  { id: "social", label: "Social & Apps", icon: "ri-chat-3-line" },
-];
-
-const ICON_GRID_ITEMS = [
-  // Daily & Routine
-  { class: "ri-hotel-bed-line", category: "daily", keywords: "bed sleep rest night lie down routine" },
-  { class: "ri-moon-line", category: "daily", keywords: "moon night sleep rest dark evening" },
-  { class: "ri-zzz-line", category: "daily", keywords: "zzz sleep rest nap snooze" },
-  { class: "ri-rest-time-line", category: "daily", keywords: "rest time relax break chill" },
-  { class: "ri-shower-line", category: "daily", keywords: "shower bath clean hygiene wash bath routine" },
-  { class: "ri-coffee-line", category: "daily", keywords: "coffee tea cup drink morning mug cafe espresso" },
-  { class: "ri-cup-line", category: "daily", keywords: "cup drink tea beverage matcha" },
-  { class: "ri-restaurant-line", category: "daily", keywords: "restaurant food eating meal lunch dinner fork knife" },
-  { class: "ri-restaurant-2-line", category: "daily", keywords: "food meal dinner plate dish" },
-  { class: "ri-cake-line", category: "daily", keywords: "cake dessert food sweet treat" },
-  { class: "ri-apple-line", category: "daily", keywords: "apple fruit healthy food snack diet" },
-  { class: "ri-drop-line", category: "daily", keywords: "water hydration drop drink liquid" },
-  { class: "ri-t-shirt-line", category: "daily", keywords: "t-shirt clothes laundry dress wear outfit" },
-  { class: "ri-alarm-line", category: "daily", keywords: "alarm clock morning wake up timer" },
-  { class: "ri-time-line", category: "daily", keywords: "time clock schedule hour duration" },
-  { class: "ri-home-2-line", category: "daily", keywords: "home house routine chores cleaning" },
-  { class: "ri-home-gear-line", category: "daily", keywords: "home chores maintenance repair fix" },
-  { class: "ri-shopping-cart-line", category: "daily", keywords: "shopping cart buy groceries store market" },
-  { class: "ri-shopping-bag-line", category: "daily", keywords: "shopping bag store buy retail" },
-  { class: "ri-sun-line", category: "daily", keywords: "sun morning day sunshine wake up rise" },
-
-  // Fitness & Health
-  { class: "ri-run-line", category: "fitness", keywords: "run running exercise cardio jog track" },
-  { class: "ri-walk-line", category: "fitness", keywords: "walk walking steps exercise movement outdoor" },
-  { class: "ri-riding-line", category: "fitness", keywords: "bike bicycle riding cycling workout ride" },
-  { class: "ri-boxing-line", category: "fitness", keywords: "boxing dumbbell gym workout fight exercise strength heavy" },
-  { class: "ri-dribbble-line", category: "fitness", keywords: "exercise sports workout gym fitness" },
-  { class: "ri-basketball-line", category: "fitness", keywords: "basketball sports game play court" },
-  { class: "ri-football-line", category: "fitness", keywords: "football soccer sports play match" },
-  { class: "ri-ping-pong-line", category: "fitness", keywords: "ping pong table tennis sports match" },
-  { class: "ri-heart-pulse-line", category: "fitness", keywords: "heart pulse fitness health cardio vitals" },
-  { class: "ri-mental-health-line", category: "fitness", keywords: "meditation mental health brain calm relax yoga zen" },
-  { class: "ri-capsule-line", category: "fitness", keywords: "medication medicine pills vitamins health supplement" },
-  { class: "ri-stethoscope-line", category: "fitness", keywords: "doctor health medical checkup clinic" },
-  { class: "ri-shield-cross-line", category: "fitness", keywords: "health care medical safety protection" },
-  { class: "ri-footprint-line", category: "fitness", keywords: "footprint steps walking distance health goal" },
-  { class: "ri-fire-line", category: "fitness", keywords: "fire burn calories workout streak hot" },
-
-  // Work & Code
-  { class: "ri-briefcase-line", category: "work", keywords: "work briefcase job office business corporate" },
-  { class: "ri-laptop-line", category: "work", keywords: "laptop computer work coding dev machine" },
-  { class: "ri-computer-line", category: "work", keywords: "desktop computer pc work setup screen" },
-  { class: "ri-code-s-slash-line", category: "work", keywords: "code coding developer programming leetcode html js" },
-  { class: "ri-terminal-box-line", category: "work", keywords: "terminal bash command line shell code cli" },
-  { class: "ri-code-box-line", category: "work", keywords: "code box dev script component" },
-  { class: "ri-bug-line", category: "work", keywords: "bug debugging fix code error issue" },
-  { class: "ri-git-branch-line", category: "work", keywords: "git github branch commit push repo pr" },
-  { class: "ri-database-line", category: "work", keywords: "database sql backend server storage data" },
-  { class: "ri-cpu-line", category: "work", keywords: "cpu hardware processing tech chip" },
-  { class: "ri-robot-2-line", category: "work", keywords: "robot ai bot automation prompt" },
-  { class: "ri-gemini-fill", category: "work", keywords: "gemini ai google model assistant prompt" },
-  { class: "ri-github-fill", category: "work", keywords: "github code open source repo git" },
-  { class: "ri-task-line", category: "work", keywords: "task check todo work done checklist" },
-  { class: "ri-file-list-3-line", category: "work", keywords: "file list documents tasks notes specs" },
-  { class: "ri-presentation-line", category: "work", keywords: "presentation slides meeting demo pitch decks" },
-  { class: "ri-building-line", category: "work", keywords: "building office company workplace headquarters" },
-
-  // Study & Learn
-  { class: "ri-book-open-line", category: "study", keywords: "book reading study learn pages literature" },
-  { class: "ri-book-read-line", category: "study", keywords: "read reading education study textbook" },
-  { class: "ri-graduation-cap-line", category: "study", keywords: "graduation cap college university course school degree" },
-  { class: "ri-pencil-ruler-line", category: "study", keywords: "design draw pencil ruler craft geometry" },
-  { class: "ri-quill-pen-line", category: "study", keywords: "quill pen writing journal blog article essay" },
-  { class: "ri-lightbulb-line", category: "study", keywords: "idea lightbulb solution brain insight spark" },
-  { class: "ri-brain-line", category: "study", keywords: "brain thinking focus mind puzzle memory intelligence" },
-  { class: "ri-microscope-line", category: "study", keywords: "science research lab study microscope biology" },
-  { class: "ri-flask-line", category: "study", keywords: "flask experiment chemistry lab test science" },
-  { class: "ri-notion-fill", category: "study", keywords: "notion notes workspace docs study summary" },
-
-  // Hobbies & Leisure
-  { class: "ri-gamepad-line", category: "leisure", keywords: "game gaming gamepad arcade play console ps5 steam" },
-  { class: "ri-headphone-line", category: "leisure", keywords: "music headphones audio stream podcast listen" },
-  { class: "ri-music-2-line", category: "leisure", keywords: "music song lofi audio sound track playlist" },
-  { class: "ri-film-line", category: "leisure", keywords: "film movie cinema video watch netflix show" },
-  { class: "ri-palette-line", category: "leisure", keywords: "art palette paint drawing creative hobby paint" },
-  { class: "ri-camera-line", category: "leisure", keywords: "camera photography photo picture snapshot record" },
-  { class: "ri-tv-line", category: "leisure", keywords: "tv television show watch stream anime" },
-  { class: "ri-brush-line", category: "leisure", keywords: "brush paint art creative studio canvas" },
-  { class: "ri-trophy-line", category: "leisure", keywords: "trophy winner achievement reward streak goal cup" },
-  { class: "ri-star-line", category: "leisure", keywords: "star favorite priority bookmark highlight key" },
-  { class: "ri-heart-line", category: "leisure", keywords: "heart love care passion favorite like" },
-  { class: "ri-youtube-fill", category: "leisure", keywords: "youtube video stream watch music channel" },
-  { class: "ri-wallet-line", category: "leisure", keywords: "wallet money finance budget gold savings" },
-
-  // Social & Apps
-  { class: "ri-chat-3-line", category: "social", keywords: "chat message talk communication social discuss" },
-  { class: "ri-mail-line", category: "social", keywords: "mail email message inbox contact newsletter" },
-  { class: "ri-discord-fill", category: "social", keywords: "discord chat community voice server hang out" },
-  { class: "ri-twitter-x-fill", category: "social", keywords: "twitter x social news feed posts" },
-  { class: "ri-instagram-line", category: "social", keywords: "instagram social media photos story reels" },
-  { class: "ri-linkedin-fill", category: "social", keywords: "linkedin network professional jobs career" },
-  { class: "ri-reddit-line", category: "social", keywords: "reddit social forum community posts threads" },
-  { class: "ri-globe-line", category: "social", keywords: "web globe internet online browsing world" },
-  { class: "ri-map-pin-line", category: "social", keywords: "map pin location travel trip spot vacation" },
-  { class: "ri-team-line", category: "social", keywords: "team group people friends meeting hang" },
-  { class: "ri-user-smile-line", category: "social", keywords: "user profile me person avatar happy" },
-];
 
 const NAV_TABS = [
   { id: "appearance", label: "Appearance & Theme", icon: "ri-palette-line" },
@@ -180,6 +82,7 @@ const NAV_TABS = [
   { id: "tabs", label: "Important Tabs", icon: "ri-bookmark-3-line" },
   { id: "timebox", label: "Time Boxing", icon: "ri-time-line" },
   { id: "widgets", label: "Widget Visibility", icon: "ri-layout-grid-line" },
+  { id: "backup", label: "Export & Restore Data", icon: "ri-save-3-line" },
 ];
 
 const makeId = () => {
@@ -231,8 +134,11 @@ const Pill = ({ active, onClick, children }) => (
   </button>
 );
 
-const CardContainer = ({ title, description, children, action }) => (
-  <div className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm">
+const CardContainer = ({ title, description, children, action, overflowVisible = false }) => (
+  <div
+    className="card-glass-bg bg-black/30 border border-white/10 rounded-[24px] p-6 flex flex-col gap-5 relative text-white font-gilroy-medium shadow-xl backdrop-blur-sm"
+    style={overflowVisible ? { overflow: "visible" } : undefined}
+  >
     <div className="flex items-start justify-between gap-4 z-10 relative">
       <div>
         <h3 className="text-white text-base font-gilroy-bold">{title}</h3>
@@ -283,7 +189,7 @@ const RingtoneRow = ({ label, value, onChange }) => {
 };
 
 /* ─── Custom Time Dropdown Popover ─── */
-const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
+const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default", triggerRef }) => {
   const popoverRef = useRef(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
@@ -306,27 +212,29 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
 
   useEffect(() => {
     if (popoverRef.current) {
-      const rect = popoverRef.current.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 20) {
-        setOpenUpwards(true);
-      }
+      fitPopoverInContainer(popoverRef.current, triggerRef?.current, setOpenUpwards);
     }
-  }, []);
+  }, [triggerRef]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+    const handlePointerDownOutside = (e) => {
+      const trigger = triggerRef?.current;
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(e.target) &&
+        !(trigger && trigger.contains(e.target))
+      ) {
         onClose();
       }
     };
     const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("pointerdown", handlePointerDownOutside, true);
     }, 50);
     return () => {
       clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("pointerdown", handlePointerDownOutside, true);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const handleApply = () => {
     const formatted = `${timeState.hour}:${String(timeState.minute).padStart(2, "0")} ${timeState.period.toLowerCase()}`;
@@ -356,6 +264,29 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         isManga ? "text-black" : "text-white"
       }`}
     >
+      {/* Header with Close */}
+      <div className="flex items-center justify-between shrink-0">
+        <span
+          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+          className="text-[10px] uppercase tracking-wider font-gilroy-bold opacity-90"
+        >
+          Set Time
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          title="Close"
+          aria-label="Close time picker"
+          className={`h-6 w-6 rounded-lg border flex items-center justify-center cursor-pointer transition-all active:scale-95 shrink-0 ${
+            isManga
+              ? "bg-white text-black border-black hover:bg-black hover:text-white"
+              : "bg-white/10 text-white/70 hover:text-white border-white/15 hover:bg-white/25"
+          }`}
+        >
+          <i className="ri-close-line text-sm" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-2">
         <div>
           <label
@@ -428,8 +359,8 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
         type="button"
         onClick={handleApply}
         style={{
-          backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-          borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
+          backgroundColor: isManga ? "#000000" : "var(--theme)",
+          borderColor: isManga ? "#000000" : "var(--theme)",
         }}
         className="w-full py-2.5 rounded-xl hover:brightness-110 border text-white font-gilroy-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
       >
@@ -439,245 +370,6 @@ const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }
   );
 };
 
-/* ─── Inline Icon Dropdown Popover ─── */
-const IconDropdownPopover = ({ current, onSelect, onClose, uiTheme = "default" }) => {
-  const popoverRef = useRef(null);
-  const [openUpwards, setOpenUpwards] = useState(false);
-
-  const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [customIconInput, setCustomIconInput] = useState(() => {
-    if (typeof current === "string") {
-      if (current.startsWith("img:") || current.startsWith("http") || current.startsWith("data:")) {
-        return current.replace(/^img:/, "");
-      }
-      if (current.startsWith("ri-")) {
-        return current.slice(3).replace(/-/g, " ");
-      }
-    }
-    return "";
-  });
-
-  useEffect(() => {
-    if (popoverRef.current) {
-      const rect = popoverRef.current.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight - 20) {
-        setOpenUpwards(true);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
-        onClose();
-      }
-    };
-    const timerId = setTimeout(() => {
-      document.addEventListener("click", handleClickOutside);
-    }, 50);
-    return () => {
-      clearTimeout(timerId);
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [onClose]);
-
-  const filteredItems = useMemo(() => {
-    return ICON_GRID_ITEMS.filter((item) => {
-      const matchesCategory = activeCategory === "all" || item.category === activeCategory;
-      const q = search.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        item.class.toLowerCase().includes(q) ||
-        (item.keywords && item.keywords.toLowerCase().includes(q));
-      return matchesCategory && matchesSearch;
-    });
-  }, [activeCategory, search]);
-
-  const handleApplyCustomIcon = () => {
-    const trimmed = customIconInput.trim();
-    if (!trimmed) return;
-
-    if (trimmed.startsWith("img:") || trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
-      const imgVal = trimmed.startsWith("img:") ? trimmed : `img:${trimmed}`;
-      onSelect(imgVal);
-      onClose();
-      return;
-    }
-
-    let val = trimmed;
-    const classMatch = /class(?:Name)?=["']([^"']+)["']/i.exec(val);
-    if (classMatch) {
-      val = classMatch[1].trim();
-    } else {
-      val = val.replace(/<[^>]*>/g, "").trim();
-    }
-
-    let formattedClass = val.toLowerCase().replace(/\s+/g, "-");
-    if (!formattedClass.startsWith("ri-")) {
-      formattedClass = `ri-${formattedClass}`;
-    }
-
-    onSelect(formattedClass);
-    onClose();
-  };
-
-  const isManga = uiTheme === "manga";
-
-  return (
-    <div
-      ref={popoverRef}
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        backgroundColor: isManga
-          ? "#FFFFFF"
-          : "color-mix(in srgb, var(--theme-4, #0F172A) 96%, #000000)",
-        borderColor: isManga
-          ? "#000000"
-          : "color-mix(in srgb, var(--theme-1, var(--theme)) 45%, transparent)",
-        boxShadow: isManga
-          ? "4px 4px 0px #000"
-          : "0 10px 40px rgba(0,0,0,0.9), 0 0 20px color-mix(in srgb, var(--theme-1, var(--theme)) 25%, transparent)",
-      }}
-      className={`absolute left-0 ${
-        openUpwards ? "bottom-full mb-2" : "top-full mt-2"
-      } z-[99999] w-72 h-[270px] max-h-[280px] rounded-2xl p-3 flex flex-col gap-2 shadow-2xl animate-fade-in border backdrop-blur-2xl ${
-        isManga ? "text-black" : "text-white"
-      }`}
-    >
-      {/* Search Input */}
-      <div className="relative w-full shrink-0">
-        <i
-          style={{ color: isManga ? "#000000" : "var(--theme-1, var(--theme))" }}
-          className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-xs"
-        />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search icons (bed, exercise, coffee)..."
-          style={{
-            borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
-          }}
-          className="w-full h-8 pl-8 pr-3 rounded-xl bg-black/60 border text-xs text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
-        />
-      </div>
-
-      {/* Category Pills */}
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5 shrink-0">
-        {ICON_CATEGORIES.map((cat) => {
-          const isActive = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setActiveCategory(cat.id)}
-              style={{
-                backgroundColor: isActive
-                  ? isManga ? "#000000" : "var(--theme-1, var(--theme))"
-                  : "transparent",
-                borderColor: isManga
-                  ? "#000000"
-                  : isActive
-                  ? "var(--theme-1, var(--theme))"
-                  : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
-                color: isActive ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
-              }}
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-gilroy-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 border ${
-                isActive
-                  ? "font-gilroy-bold shadow-sm"
-                  : "bg-black/50 hover:brightness-125"
-              }`}
-            >
-              <i className={`${cat.icon} text-[10px]`} />
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Icon Grid */}
-      <div className="flex-1 min-h-0 grid grid-cols-6 gap-1.5 overflow-y-auto scrollbar-hide pr-0.5 z-10 relative">
-        {filteredItems.map((item) => {
-          const isSelected = item.class === current;
-          return (
-            <button
-              key={item.class}
-              type="button"
-              onClick={() => {
-                onSelect(item.class);
-                onClose();
-              }}
-              style={{
-                backgroundColor: isSelected
-                  ? isManga ? "#000000" : "var(--theme-1, var(--theme))"
-                  : "transparent",
-                borderColor: isManga
-                  ? "#000000"
-                  : isSelected
-                  ? "var(--theme-1, var(--theme))"
-                  : "color-mix(in srgb, var(--theme-1, var(--theme)) 30%, transparent)",
-                color: isSelected ? "#ffffff" : isManga ? "#000000" : "var(--theme-1, var(--theme))",
-              }}
-              className={`h-8 w-8 rounded-lg flex items-center justify-center text-base transition-all cursor-pointer border ${
-                isSelected
-                  ? "font-bold shadow-md scale-105"
-                  : "bg-black/50 hover:scale-105 hover:brightness-125"
-              }`}
-              title={`${item.class}`}
-            >
-              <i className={`${item.class}`} />
-            </button>
-          );
-        })}
-        {filteredItems.length === 0 && (
-          <div className="col-span-6 py-4 text-center text-xs opacity-50 font-gilroy-medium">
-            No icons found
-          </div>
-        )}
-      </div>
-
-      {/* Custom Remix Icon Name / Class Input */}
-      <div className="pt-2 border-t border-white/10 flex flex-col gap-1 shrink-0">
-        <label
-          style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
-          className="text-[9px] uppercase tracking-wider block font-gilroy-bold opacity-90"
-        >
-          Or Custom Remix Icon Name / CDN Link
-        </label>
-        <div className="flex items-center gap-1.5">
-          <input
-            type="text"
-            value={customIconInput}
-            onChange={(e) => setCustomIconInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleApplyCustomIcon();
-              }
-            }}
-            placeholder="Type icon name (e.g. openai fill)..."
-            style={{
-              borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
-            }}
-            className="flex-1 h-7.5 px-2.5 rounded-xl bg-black/60 border text-[11px] text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
-          />
-          <button
-            type="button"
-            onClick={handleApplyCustomIcon}
-            style={{
-              backgroundColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-              borderColor: isManga ? "#000000" : "var(--theme-1, var(--theme))",
-            }}
-            className="px-3 h-7.5 rounded-xl border text-white font-gilroy-bold text-[11px] cursor-pointer hover:brightness-110 shrink-0 transition-all active:scale-95 shadow-sm"
-          >
-            Apply
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /* ─── Unified Icon Picker Modal ─── */
 const IconPickerModal = ({ current, onSelect, onClose }) => {
@@ -1649,8 +1341,8 @@ const FocusTab = ({
 
 /* ─── TAB 3: Song Player Settings ─── */
 const SongPlayerTab = ({
-  showSongPlayer, onShowSongPlayerChange,
-  songPlaylistUrl, onSongPlaylistUrlChange,
+  _showSongPlayer, _onShowSongPlayerChange,
+  _songPlaylistUrl, _onSongPlaylistUrlChange,
   songAutoPlay, onSongAutoPlayChange,
   songCustomVideo, onSongCustomVideoChange,
   lofiStations, onLofiStationsChange,
@@ -1911,6 +1603,8 @@ const TaskbarTab = ({
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
+  const anyPickerOpen = iconPickerShortcutId !== null;
+
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
     e.dataTransfer.effectAllowed = "move";
@@ -1948,13 +1642,14 @@ const TaskbarTab = ({
     <div className="flex flex-col gap-6">
       {/* Taskbar Shortcuts */}
       <CardContainer
+        overflowVisible={anyPickerOpen}
         title="Taskbar Quick Launchers"
         description="Customize AI tools, developer bookmarks, and custom web links in your top taskbar. Drag shortcut cards up or down to reorder them."
         action={
           <button
             type="button"
             onClick={onShortcutAdd}
-            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+            className="px-3.5 py-2 rounded-2xl bg-[color:var(--theme)] hover:brightness-110 text-white font-gilroy-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md whitespace-nowrap shrink-0"
           >
             <i className="ri-add-line text-sm relative z-10" />
             <span className="relative z-10">Add Shortcut</span>
@@ -2079,13 +1774,15 @@ const TaskbarTab = ({
 };
 
 /* ─── TAB 4: Important Tabs ─── */
-const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
+const ImportantTabsTab = ({ _showImportantTabs, _onShowImportantTabsChange, importantTabsConfig, onImportantTabsConfigChange, uiTheme = "default" }) => {
   const [iconPickerTabId, setIconPickerTabId] = useState(null);
   const [expandedTabId, setExpandedTabId] = useState(null);
   const buttonRefs = useRef({});
 
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const anyPickerOpen = iconPickerTabId !== null;
 
   const handleDragStart = (e, index) => {
     setDraggedIdx(index);
@@ -2153,6 +1850,7 @@ const ImportantTabsTab = ({ showImportantTabs, onShowImportantTabsChange, import
 
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Important Tabs Bundles"
       description="Organize multiple website links into one-click tab groups. Drag tab cards up or down to reorder them."
     >
@@ -2317,6 +2015,22 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
   const [draggedIdx, setDraggedIdx] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
+  const [draggedSubtask, setDraggedSubtask] = useState(null);
+  const [dragOverSubtask, setDragOverSubtask] = useState(null);
+  const subtaskInputRefs = useRef({});
+  const lastAddedSubtaskRef = useRef(null);
+
+  useEffect(() => {
+    if (lastAddedSubtaskRef.current) {
+      const { id } = lastAddedSubtaskRef.current;
+      if (subtaskInputRefs.current[id]) {
+        subtaskInputRefs.current[id].focus();
+        lastAddedSubtaskRef.current = null;
+      }
+    }
+  }, [timeBoxingGroups]);
+
+  const anyPickerOpen = timePickerGroupId !== null || iconPickerGroupId !== null;
 
   const addGroup = () => {
     const g = { id: makeId(), title: "New Routine", iconClass: "ri-briefcase-line", time: "9:00 am", streak: 0, subtasks: [] };
@@ -2361,7 +2075,9 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
   const addSubtask = (groupId) => {
     const g = timeBoxingGroups.find((g) => g.id === groupId);
     if (!g) return;
-    updateGroup(groupId, { subtasks: [...g.subtasks, { id: makeId(), text: "New Subtask", done: false }] });
+    const id = makeId();
+    lastAddedSubtaskRef.current = { groupId, id };
+    updateGroup(groupId, { subtasks: [...g.subtasks, { id, text: "", done: false }] });
   };
 
   const removeSubtask = (groupId, stId) => {
@@ -2376,8 +2092,50 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
     updateGroup(groupId, { subtasks: g.subtasks.map((s) => (s.id === stId ? { ...s, text } : s)) });
   };
 
+  const handleSubtaskDragStart = (e, groupId, idx) => {
+    e.stopPropagation();
+    setDraggedSubtask({ groupId, idx });
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleSubtaskDragOver = (e, groupId, idx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const key = `${groupId}:${idx}`;
+    const cur = dragOverSubtask
+      ? `${dragOverSubtask.groupId}:${dragOverSubtask.idx}`
+      : null;
+    if (cur !== key) setDragOverSubtask({ groupId, idx });
+  };
+
+  const handleSubtaskDrop = (e, groupId, targetIdx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (
+      draggedSubtask &&
+      draggedSubtask.groupId === groupId &&
+      draggedSubtask.idx !== targetIdx
+    ) {
+      const g = timeBoxingGroups.find((g) => g.id === groupId);
+      if (g) {
+        const reordered = [...(g.subtasks || [])];
+        const [moved] = reordered.splice(draggedSubtask.idx, 1);
+        reordered.splice(targetIdx, 0, moved);
+        updateGroup(groupId, { subtasks: reordered });
+      }
+    }
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
+  const handleSubtaskDragEnd = () => {
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
   return (
     <CardContainer
+      overflowVisible={anyPickerOpen}
       title="Time Boxing Routine Editor"
       description="Structure your daily routines into scheduled task blocks with subtask checklists. Drag task cards up or down to reorder them."
     >
@@ -2509,27 +2267,72 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
                 {expandedGroupId === group.id && (
                   <div className="border-t border-white/10 p-3 bg-black/20 flex flex-col gap-2">
-                    {group.subtasks?.map((st) => (
-                      <div key={st.id} className="flex items-center gap-2.5">
-                        <i className="ri-corner-down-right-line text-white/40 text-sm shrink-0 ml-1.5" />
-                        <div className="flex-1 min-w-0">
-                          <InputField
-                            value={st.text}
-                            onChange={(e) => updateSubtask(group.id, st.id, e.target.value)}
-                            placeholder="Subtask description"
-                            className="w-full h-9 rounded-xl text-xs bg-black/30 border-white/10"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeSubtask(group.id, st.id)}
-                          className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
-                          title="Remove Subtask"
+                    {group.subtasks?.map((st, stIdx) => {
+                      const stDragging =
+                        draggedSubtask &&
+                        draggedSubtask.groupId === group.id &&
+                        draggedSubtask.idx === stIdx;
+                      const stDragOver =
+                        dragOverSubtask &&
+                        dragOverSubtask.groupId === group.id &&
+                        dragOverSubtask.idx === stIdx;
+                      return (
+                        <div
+                          key={st.id}
+                          draggable
+                          onDragStart={(e) =>
+                            handleSubtaskDragStart(e, group.id, stIdx)
+                          }
+                          onDragOver={(e) =>
+                            handleSubtaskDragOver(e, group.id, stIdx)
+                          }
+                          onDrop={(e) =>
+                            handleSubtaskDrop(e, group.id, stIdx)
+                          }
+                          onDragEnd={handleSubtaskDragEnd}
+                          className={`flex items-center gap-2.5 rounded-xl transition-all ${
+                            stDragging
+                              ? "opacity-40"
+                              : stDragOver
+                                ? "ring-2 ring-[color:var(--theme)]/40 bg-black/30"
+                                : ""
+                          }`}
                         >
-                          <i className="ri-close-line text-base" />
-                        </button>
-                      </div>
-                    ))}
+                          <i
+                            className="ri-drag-move-fill text-white/25 hover:text-white cursor-grab active:cursor-grabbing text-sm shrink-0"
+                            title="Drag to reorder subtasks"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <input
+                              ref={(el) => {
+                                subtaskInputRefs.current[st.id] = el;
+                              }}
+                              type="text"
+                              value={st.text}
+                              onChange={(e) =>
+                                updateSubtask(group.id, st.id, e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  addSubtask(group.id);
+                                }
+                              }}
+                              placeholder="Subtask description"
+                              className="w-full h-9 rounded-xl bg-black/30 border border-white/10 focus:border-white/40 px-3 text-xs text-white placeholder:text-white/65 focus:placeholder:text-white/40 outline-none transition-all font-gilroy-medium"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeSubtask(group.id, st.id)}
+                            className="h-9 w-9 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 cursor-pointer flex items-center justify-center shrink-0 transition-all active:scale-95"
+                            title="Remove Subtask"
+                          >
+                            <i className="ri-close-line text-base" />
+                          </button>
+                        </div>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={() => addSubtask(group.id)}
@@ -2560,6 +2363,7 @@ const TimeBoxingTab = ({ timeBoxingGroups, onTimeBoxingGroupsChange, uiTheme = "
 
 /* ─── TAB 6: Widget Visibility ─── */
 const WidgetsTab = ({
+  uiTheme,
   showTimer, onShowTimerChange,
   showWaterReminder, onShowWaterReminderChange,
   showSongPlayer, onShowSongPlayerChange,
@@ -2567,37 +2371,369 @@ const WidgetsTab = ({
   showImportantTabs, onShowImportantTabsChange,
   showTimeBoxing, onShowTimeBoxingChange,
   showStreakGrid, onShowStreakGridChange,
-}) => (
-  <CardContainer
-    title="Dashboard Widgets Visibility"
-    description="Control which widgets and tools are displayed on your main dashboard grid."
-  >
-    <div className="flex flex-col gap-1 pt-3 border-t border-white/10">
-      {[
-        { title: "Focus Timer Widget", desc: "Pomodoro & rest countdown timer card", state: showTimer, set: onShowTimerChange, icon: "ri-timer-line" },
-        { title: "Water Reminder Widget", desc: "Liquid animation hydration goal & counter", state: showWaterReminder, set: onShowWaterReminderChange, icon: "ri-drop-line" },
-        { title: "24/7 Song Player Widget", desc: "24/7 Lofi live stream music player", state: showSongPlayer, set: onShowSongPlayerChange, icon: "ri-music-2-line" },
-        { title: "Notepad / To Do Checklist", desc: "Quick notes and task checklist card", state: showTodo, set: onShowTodoChange, icon: "ri-file-text-line" },
-        { title: "Important Tabs Widget", desc: "Categorized quick bookmarks and links", state: showImportantTabs, set: onShowImportantTabsChange, icon: "ri-bookmark-3-line" },
-        { title: "Time Boxing Routines", desc: "Daily time blocking and scheduled task cards", state: showTimeBoxing, set: onShowTimeBoxingChange, icon: "ri-time-line" },
-        { title: "Streak Activity Grid", desc: "GitHub-style daily contribution grid", state: showStreakGrid, set: onShowStreakGridChange, icon: "ri-calendar-check-line" },
-      ].map((w, idx) => (
-        <div key={idx} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] px-2 rounded-xl transition-colors">
+  streakDataSource, onStreakDataSourceChange,
+  githubUsername, onGithubUsernameChange,
+}) => {
+  const isManga = uiTheme === "manga";
+  const accentStyle = {
+    backgroundColor: isManga ? "#000000" : "var(--theme)",
+    borderColor: isManga ? "#000000" : "var(--theme)",
+  };
+  const idleStyle = {
+    borderColor: isManga ? "#000000" : "color-mix(in srgb, var(--theme-1, var(--theme)) 35%, transparent)",
+  };
+
+  return (
+    <>
+      <CardContainer
+        title="Dashboard Widgets Visibility"
+        description="Control which widgets and tools are displayed on your main dashboard grid."
+      >
+        <div className="flex flex-col gap-1 pt-3 border-t border-white/10">
+          {[
+            { title: "Focus Timer Widget", desc: "Pomodoro & rest countdown timer card", state: showTimer, set: onShowTimerChange, icon: "ri-timer-line" },
+            { title: "Water Reminder Widget", desc: "Liquid animation hydration goal & counter", state: showWaterReminder, set: onShowWaterReminderChange, icon: "ri-drop-line" },
+            { title: "24/7 Song Player Widget", desc: "24/7 Lofi live stream music player", state: showSongPlayer, set: onShowSongPlayerChange, icon: "ri-music-2-line" },
+            { title: "Notepad / To Do Checklist", desc: "Quick notes and task checklist card", state: showTodo, set: onShowTodoChange, icon: "ri-file-text-line" },
+            { title: "Important Tabs Widget", desc: "Categorized quick bookmarks and links", state: showImportantTabs, set: onShowImportantTabsChange, icon: "ri-bookmark-3-line" },
+            { title: "Time Boxing Routines", desc: "Daily time blocking and scheduled task cards", state: showTimeBoxing, set: onShowTimeBoxingChange, icon: "ri-time-line" },
+            { title: "Streak Activity Grid", desc: "GitHub-style daily contribution grid", state: showStreakGrid, set: onShowStreakGridChange, icon: "ri-calendar-check-line" },
+          ].map((w, idx) => (
+            <div key={idx} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] px-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-base shrink-0 shadow-inner">
+                  <i className={`${w.icon} relative z-10`} />
+                </div>
+                <div>
+                  <h4 className="text-white text-xs font-gilroy-bold">{w.title}</h4>
+                  <p className="text-white/50 text-[11px] font-gilroy-medium">{w.desc}</p>
+                </div>
+              </div>
+              <Toggle checked={w.state} onChange={w.set} />
+            </div>
+          ))}
+        </div>
+      </CardContainer>
+
+      <CardContainer
+        title="Streak Grid Data Source"
+        description="Choose which contribution graph the Streak Activity Grid widget displays."
+      >
+        <div className="flex flex-col gap-3 pt-3 border-t border-white/10">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-black/40 border border-white/10">
+            {[
+              { id: "local", label: "Focus Activity", desc: "Tasks, timers & water goals logged on this device", icon: "ri-fire-line" },
+              { id: "github", label: "GitHub Contributions", desc: "Public commits, PRs & issues from your GitHub profile", icon: "ri-github-line" },
+            ].map((option) => {
+              const active = streakDataSource === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => onStreakDataSourceChange(option.id)}
+                  style={active ? accentStyle : undefined}
+                  className={`flex-1 flex flex-col items-start gap-0.5 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-left ${
+                    active ? "text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5 text-[11px] font-gilroy-bold">
+                    <i className={`${option.icon} text-sm`}></i>
+                    <span className="relative z-10">{option.label}</span>
+                  </span>
+                  <span className={`text-[10px] font-gilroy-medium ${active ? "text-white/70" : "text-white/40"}`}>
+                    {option.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {streakDataSource === "github" && (
+            <div className="flex flex-col gap-1.5">
+              <label
+                style={{ color: isManga ? "#000000" : "var(--theme-2, var(--theme-1, var(--theme)))" }}
+                className="text-[9px] uppercase tracking-wider block font-gilroy-bold opacity-90"
+              >
+                GitHub Username
+              </label>
+              <div className="flex items-center gap-1.5">
+                <span className="text-white/50 text-[11px] font-gilroy-bold">@</span>
+                <input
+                  type="text"
+                  value={githubUsername}
+                  onChange={(e) => onGithubUsernameChange(e.target.value)}
+                  placeholder="octocat"
+                  style={idleStyle}
+                  className="flex-1 h-8 px-2.5 rounded-xl bg-black/60 border text-[11px] text-white placeholder:text-white/40 focus:outline-none transition-all font-gilroy-medium"
+                />
+              </div>
+              <p className="text-white/40 text-[10px] font-gilroy-medium leading-relaxed">
+                Paste your GitHub username or profile link (e.g. github.com/octocat). Shows
+                contributions from your public activity and reflects roughly the last 90 days.
+              </p>
+            </div>
+          )}
+        </div>
+      </CardContainer>
+    </>
+  );
+};
+
+/* ─── Backup & Data Management Tab Component ─── */
+const BackupTab = ({ uiTheme }) => {
+  const [statusMsg, setStatusMsg] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showConfirmReset, setShowConfirmReset] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      setStatusMsg(null);
+      const data = await exportAllStorageData();
+
+      const jsonStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const dateStr = new Date().toISOString().slice(0, 10);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `lively-dashboard-backup-${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setStatusMsg({
+        type: "success",
+        text: "Backup file exported & downloaded successfully! Keep this file safe.",
+      });
+    } catch (err) {
+      console.error("Export error:", err);
+      setStatusMsg({
+        type: "error",
+        text: "Failed to export data: " + (err?.message || String(err)),
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsImporting(true);
+      setStatusMsg(null);
+
+      const text = await file.text();
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid file format. Must be a valid JSON file.");
+      }
+
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        throw new Error("Invalid backup payload structure. Expected a JSON object.");
+      }
+
+      await importAllStorageData(parsed);
+
+      setStatusMsg({
+        type: "success",
+        text: "All settings, to-dos, widgets & preferences successfully restored! Dashboard will refresh...",
+      });
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+    } catch (err) {
+      console.error("Import error:", err);
+      setStatusMsg({
+        type: "error",
+        text: "Failed to restore backup: " + (err?.message || String(err)),
+      });
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleResetData = async () => {
+    try {
+      setIsResetting(true);
+      await clearAllStorageData();
+      setStatusMsg({
+        type: "success",
+        text: "Dashboard reset to defaults. Refreshing...",
+      });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      setStatusMsg({
+        type: "error",
+        text: "Failed to reset data: " + (err?.message || String(err)),
+      });
+    } finally {
+      setIsResetting(false);
+      setShowConfirmReset(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      {statusMsg && (
+        <div
+          className={`p-4 rounded-2xl border text-xs font-gilroy-bold flex items-center gap-3 animate-fade-in ${
+            statusMsg.type === "success"
+              ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-200"
+              : "bg-rose-500/20 border-rose-500/40 text-rose-200"
+          }`}
+        >
+          <i
+            className={`text-lg ${
+              statusMsg.type === "success"
+                ? "ri-checkbox-circle-fill text-emerald-400"
+                : "ri-error-warning-fill text-rose-400"
+            }`}
+          />
+          <span className="flex-1">{statusMsg.text}</span>
+          {statusMsg.type === "success" && (
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="px-3 py-1 bg-emerald-500/30 hover:bg-emerald-500/50 rounded-xl text-[11px] font-gilroy-bold transition-all cursor-pointer"
+            >
+              Refresh Now
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Export Section */}
+      <CardContainer
+        title="Export Settings & Data"
+        description="Download a complete backup of everything: basic & advanced settings, preferences, custom wallpapers, taskbar shortcuts, widget placements, time-boxing routines, streak activity, and all to-do lists (including sub-tasks)."
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-base shrink-0 shadow-inner">
-              <i className={`${w.icon} relative z-10`} />
+            <div className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-lg shrink-0 shadow-inner">
+              <i className="ri-download-cloud-2-line" />
             </div>
             <div>
-              <h4 className="text-white text-xs font-gilroy-bold">{w.title}</h4>
-              <p className="text-white/50 text-[11px] font-gilroy-medium">{w.desc}</p>
+              <h4 className="text-white text-xs font-gilroy-bold">Backup JSON File</h4>
+              <p className="text-white/50 text-[11px] font-gilroy-medium">
+                Generates a portable backup file containing 100% of your dashboard data.
+              </p>
             </div>
           </div>
-          <Toggle checked={w.state} onChange={w.set} />
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-white bg-[color:var(--theme)]/30 hover:bg-[color:var(--theme)]/50 border border-white/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-md disabled:opacity-50"
+          >
+            <i className="ri-download-2-line text-sm" />
+            <span>{isExporting ? "Exporting..." : "Export Backup (.json)"}</span>
+          </button>
         </div>
-      ))}
+      </CardContainer>
+
+      {/* Restore / Import Section */}
+      <CardContainer
+        title="Restore / Load Settings & Data"
+        description="Load a previously exported backup file to instantly restore all your settings, custom layouts, widget positions, habits, to-do lists with sub-tasks, and preferences."
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-[color:var(--theme)]/20 border border-white/15 flex items-center justify-center text-white text-lg shrink-0 shadow-inner">
+              <i className="ri-upload-cloud-2-line" />
+            </div>
+            <div>
+              <h4 className="text-white text-xs font-gilroy-bold">Upload Backup File</h4>
+              <p className="text-white/50 text-[11px] font-gilroy-medium">
+                Select a valid `.json` dashboard backup file from your device.
+              </p>
+            </div>
+          </div>
+          <div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".json,application/json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isImporting}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-md disabled:opacity-50"
+            >
+              <i className="ri-upload-2-line text-sm" />
+              <span>{isImporting ? "Restoring..." : "Restore Backup (.json)"}</span>
+            </button>
+          </div>
+        </div>
+      </CardContainer>
+
+      {/* Factory Reset Section */}
+      <CardContainer
+        title="Reset All Dashboard Data"
+        description="Permanently clear all saved storage and reset the dashboard back to default initial state."
+      >
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-2">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 text-lg shrink-0 shadow-inner">
+              <i className="ri-delete-bin-line" />
+            </div>
+            <div>
+              <h4 className="text-white text-xs font-gilroy-bold">Factory Reset</h4>
+              <p className="text-white/50 text-[11px] font-gilroy-medium">
+                Clears extension & browser storage data.
+              </p>
+            </div>
+          </div>
+
+          {!showConfirmReset ? (
+            <button
+              type="button"
+              onClick={() => setShowConfirmReset(true)}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-gilroy-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+            >
+              <i className="ri-refresh-line text-xs" />
+              <span>Reset to Defaults</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={handleResetData}
+                disabled={isResetting}
+                className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-gilroy-bold text-white bg-rose-600 hover:bg-rose-700 transition-all cursor-pointer active:scale-95 shadow-md disabled:opacity-50"
+              >
+                {isResetting ? "Resetting..." : "Confirm Reset"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowConfirmReset(false)}
+                className="px-3 py-2 rounded-xl text-xs font-gilroy-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/15 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </CardContainer>
     </div>
-  </CardContainer>
-);
+  );
+};
 
 /* ─── Main Full-Fledged Settings Screen ─── */
 const SettingsPage = (props) => {
@@ -2784,6 +2920,7 @@ const SettingsPage = (props) => {
 
             {activeTab === "widgets" && (
               <WidgetsTab
+                uiTheme={props.uiTheme}
                 showTimer={props.showTimer}
                 onShowTimerChange={props.onShowTimerChange}
                 showWaterReminder={props.showWaterReminder}
@@ -2798,7 +2935,15 @@ const SettingsPage = (props) => {
                 onShowTimeBoxingChange={props.onShowTimeBoxingChange}
                 showStreakGrid={props.showStreakGrid}
                 onShowStreakGridChange={props.onShowStreakGridChange}
+                streakDataSource={props.streakDataSource}
+                onStreakDataSourceChange={props.onStreakDataSourceChange}
+                githubUsername={props.githubUsername}
+                onGithubUsernameChange={props.onGithubUsernameChange}
               />
+            )}
+
+            {activeTab === "backup" && (
+              <BackupTab uiTheme={props.uiTheme} />
             )}
           </div>
         </main>

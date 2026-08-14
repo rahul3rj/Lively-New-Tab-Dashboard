@@ -6,6 +6,7 @@ import {
   getActivityMap,
   seedDemoActivityIfEmpty,
 } from "../utils/activityStore";
+import { extractUsername, fetchGitHubContributions } from "../utils/githubActivity";
 
 const RANGE_OPTIONS = [
   { id: "current", label: "Current" },
@@ -54,6 +55,24 @@ const buildCalendarData = (map, rangeId) => {
   return data;
 };
 
+const buildGithubCalendarData = (githubData) => {
+  const { start, end } = getRangeDates("current");
+  const days = githubData?.days ?? {};
+  const data = [];
+  const cursor = new Date(start);
+
+  while (cursor <= end) {
+    const key = dateKeyOf(cursor);
+    const day = days[key];
+    const count = day && day.count > 0 ? Math.floor(day.count) : 0;
+    const level =
+      day && Number.isFinite(day.level) ? Math.max(0, Math.min(4, day.level)) : 0;
+    data.push({ date: key, count, level });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return data;
+};
+
 const computeStats = (data) => {
   let totalActiveDays = 0;
   let maxStreak = 0;
@@ -84,11 +103,16 @@ const computeStats = (data) => {
   return { totalActiveDays, maxStreak, currentStreak };
 };
 
-const StreakGrid = ({ dragHandleProps }) => {
+const StreakGrid = ({ dragHandleProps, dataSource = "local", githubUsername = "" }) => {
   const [activityMap, setActivityMap] = useState(null);
+  const [githubData, setGithubData] = useState(null);
+  const [githubStatus, setGithubStatus] = useState("idle");
+  const [githubError, setGithubError] = useState("");
+  const [githubRetryKey, setGithubRetryKey] = useState(0);
   const [range, setRange] = useState("current");
   const [rangeMenuOpen, setRangeMenuOpen] = useState(false);
   const rangeMenuRef = useRef(null);
+  const isGithub = dataSource === "github";
 
   useEffect(() => {
     let cancelled = false;
@@ -134,10 +158,39 @@ const StreakGrid = ({ dragHandleProps }) => {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [rangeMenuOpen]);
 
-  const data = useMemo(
-    () => (activityMap ? buildCalendarData(activityMap, range) : []),
-    [activityMap, range],
-  );
+  useEffect(() => {
+    let cancelled = false;
+    if (!isGithub || !extractUsername(githubUsername)) {
+      setGithubStatus("idle");
+      setGithubData(null);
+      setGithubError("");
+      return undefined;
+    }
+    setGithubStatus("loading");
+    setGithubError("");
+    const timer = setTimeout(async () => {
+      try {
+        const result = await fetchGitHubContributions(githubUsername);
+        if (cancelled) return;
+        setGithubData(result);
+        setGithubStatus("ready");
+      } catch (err) {
+        if (cancelled) return;
+        setGithubData(null);
+        setGithubStatus("error");
+        setGithubError(err?.message || "Failed to load GitHub contributions.");
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [isGithub, githubUsername, githubRetryKey]);
+
+  const data = useMemo(() => {
+    if (isGithub) return githubData ? buildGithubCalendarData(githubData) : [];
+    return activityMap ? buildCalendarData(activityMap, range) : [];
+  }, [isGithub, githubData, activityMap, range]);
 
   const { totalActiveDays, maxStreak, currentStreak } = useMemo(
     () => computeStats(data),
@@ -145,6 +198,7 @@ const StreakGrid = ({ dragHandleProps }) => {
   );
 
   const activeRangeLabel = RANGE_OPTIONS.find((o) => o.id === range)?.label;
+  const titleLabel = isGithub ? "GitHub Contributions" : "Streak Grid View";
 
   return (
     <div
@@ -161,21 +215,23 @@ const StreakGrid = ({ dragHandleProps }) => {
           {...dragHandleProps}
         >
           <i className="ri-draggable text-sm pointer-events-none"></i>
-          <span className="pointer-events-none">Streak Grid View</span>
+          <span className="pointer-events-none">{titleLabel}</span>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs">
             <span className="font-gilroy-bold text-white/70">
-              Active Days:
+              {isGithub ? "Total:" : "Active Days:"}
             </span>
             <span className="font-gilroy-medium text-white/90">
-              {totalActiveDays}
+              {isGithub
+                ? (githubData?.yearTotal ?? totalActiveDays).toLocaleString()
+                : totalActiveDays}
             </span>
           </div>
           <div className="flex items-center gap-1 text-xs">
             <span className="font-gilroy-bold text-white/70">Current Streak:</span>
-            <span className="font-gilroy-medium text-[color:var(--theme)] font-gilroy-bold">
+            <span className="font-gilroy-medium text-[color:var(--theme-1,#CBD5E1)] font-gilroy-bold">
               {currentStreak}
             </span>
           </div>
@@ -186,72 +242,105 @@ const StreakGrid = ({ dragHandleProps }) => {
             </span>
           </div>
 
-          <div className="relative" ref={rangeMenuRef}>
-            <button
-              type="button"
-              onClick={() => setRangeMenuOpen((v) => !v)}
-              className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
-            >
-              <span className="relative z-10">{activeRangeLabel}</span>
-              <i
-                className={`ri-arrow-down-s-line text-xs relative z-10 transition-transform ${rangeMenuOpen ? "rotate-180" : ""}`}
-              ></i>
-            </button>
+          {!isGithub && (
+            <div className="relative" ref={rangeMenuRef}>
+              <button
+                type="button"
+                onClick={() => setRangeMenuOpen((v) => !v)}
+                className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-xs font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
+              >
+                <span className="relative z-10">{activeRangeLabel}</span>
+                <i
+                  className={`ri-arrow-down-s-line text-xs relative z-10 transition-transform ${rangeMenuOpen ? "rotate-180" : ""}`}
+                ></i>
+              </button>
 
-            {rangeMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 min-w-[110px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-1 shadow-2xl z-50 flex flex-col">
-                {RANGE_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => {
-                      setRange(option.id);
-                      setRangeMenuOpen(false);
-                    }}
-                    className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-gilroy-medium transition-colors cursor-pointer ${
-                      range === option.id
-                        ? "bg-white/15 text-white"
-                        : "text-white/70 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <span>{option.label}</span>
-                    {range === option.id && (
-                      <i className="ri-check-line text-xs"></i>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+              {rangeMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 min-w-[110px] bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl p-1 shadow-2xl z-50 flex flex-col">
+                  {RANGE_OPTIONS.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        setRange(option.id);
+                        setRangeMenuOpen(false);
+                      }}
+                      className={`flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-gilroy-medium transition-colors cursor-pointer ${
+                        range === option.id
+                          ? "bg-white/15 text-white"
+                          : "text-white/70 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span>{option.label}</span>
+                      {range === option.id && (
+                        <i className="ri-check-line text-xs"></i>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Heatmap */}
       <div className="w-full flex-1 min-h-0 flex items-center justify-center overflow-x-auto scrollbar-hide z-10 relative pt-1.5">
-        <ActivityCalendar
-          data={data}
-          loading={activityMap === null}
-          theme={STREAK_THEME}
-          colorScheme="dark"
-          blockSize={12}
-          blockMargin={4}
-          blockRadius={3}
-          fontSize={11}
-          showWeekdayLabels={false}
-          showTotalCount={false}
-          showColorLegend={false}
-          className="text-white/60 font-gilroy-medium"
-          renderBlock={(block, activity) =>
-            React.cloneElement(block, {
-              title: undefined,
-              children: null,
-              style: {
-                ...block.props.style,
-                ...(activity?.level === 0 ? { opacity: 0.7 } : {}),
-              },
-            })
-          }
-        />
+        {isGithub && !extractUsername(githubUsername) ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-github-line text-3xl text-white/40"></i>
+            <p className="text-[11px] text-white/50 font-gilroy-medium max-w-[240px]">
+              Add your GitHub username in Settings to view your contribution graph.
+            </p>
+          </div>
+        ) : isGithub && githubStatus === "error" ? (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-error-warning-line text-3xl text-white/40"></i>
+            <p className="text-[11px] text-white/60 font-gilroy-medium max-w-[260px]">
+              {githubError}
+            </p>
+            <button
+              type="button"
+              onClick={() => setGithubRetryKey((k) => k + 1)}
+              className="figma-glass-clean h-7 px-3.5 rounded-full flex items-center gap-1.5 text-[11px] font-gilroy-medium text-white/90 hover:text-white transition-all cursor-pointer"
+            >
+              <i className="ri-refresh-line text-xs"></i>
+              <span className="relative z-10">Retry</span>
+            </button>
+          </div>
+        ) : data.length > 0 ? (
+          <ActivityCalendar
+            data={data}
+            loading={isGithub ? githubStatus === "loading" : activityMap === null}
+            theme={STREAK_THEME}
+            colorScheme="dark"
+            blockSize={12}
+            blockMargin={4}
+            blockRadius={3}
+            fontSize={11}
+            showWeekdayLabels={false}
+            showTotalCount={false}
+            showColorLegend={false}
+            className="text-white/60 font-gilroy-medium"
+            renderBlock={(block, activity) =>
+              React.cloneElement(block, {
+                title: undefined,
+                children: null,
+                style: {
+                  ...block.props.style,
+                  ...(activity?.level === 0 ? { opacity: 0.7 } : {}),
+                },
+              })
+            }
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2.5 text-center px-6">
+            <i className="ri-loader-4-line text-2xl text-white/40 animate-spin"></i>
+            <p className="text-[11px] text-white/50 font-gilroy-medium">
+              {isGithub ? "Loading GitHub contributions..." : "Loading activity..."}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
