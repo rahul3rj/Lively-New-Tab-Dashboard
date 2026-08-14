@@ -97,6 +97,8 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
   const [draggedSubtask, setDraggedSubtask] = useState(null);
   const [dragOverSubtask, setDragOverSubtask] = useState(null);
+  const [draggedGroup, setDraggedGroup] = useState(null);
+  const [dragOverGroup, setDragOverGroup] = useState(null);
   const [editingSubtask, setEditingSubtask] = useState(null);
   const [editSubtaskText, setEditSubtaskText] = useState("");
   const [newSubtaskText, setNewSubtaskText] = useState("");
@@ -407,10 +409,12 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     }
     setDraggedSubtask({ groupId, subtaskId });
     e.dataTransfer.effectAllowed = "move";
+    e.stopPropagation();
   };
 
   const handleSubtaskDragOver = (e, groupId, subtaskId) => {
     e.preventDefault();
+    if (draggedGroup !== null) return;
     if (
       !dragOverSubtask ||
       dragOverSubtask.groupId !== groupId ||
@@ -422,6 +426,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
 
   const handleSubtaskDrop = (e, groupId, subtaskId) => {
     e.preventDefault();
+    if (draggedGroup !== null) return;
     if (
       draggedSubtask &&
       draggedSubtask.groupId === groupId &&
@@ -436,6 +441,46 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const handleSubtaskDragEnd = () => {
     setDraggedSubtask(null);
     setDragOverSubtask(null);
+  };
+
+  const reorderGroups = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+    const next = [...groups];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(next);
+    }
+  };
+
+  const handleGroupDragStart = (e, index) => {
+    if (editingGroup === groups[index]?.id) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedGroup(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleGroupDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedGroup === null) return;
+    if (dragOverGroup !== index) setDragOverGroup(index);
+  };
+
+  const handleGroupDrop = (e, index) => {
+    e.preventDefault();
+    if (draggedGroup === null) return;
+    if (draggedGroup !== index) {
+      reorderGroups(draggedGroup, index);
+    }
+    setDraggedGroup(null);
+    setDragOverGroup(null);
+  };
+
+  const handleGroupDragEnd = () => {
+    setDraggedGroup(null);
+    setDragOverGroup(null);
   };
 
   return (
@@ -467,6 +512,8 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
             const active = activeId === group.id;
             const isFirst = index === 0;
             const isLast = index === groups.length - 1;
+            const isDraggingGroup = draggedGroup === index;
+            const isDragOverGroup = dragOverGroup === index && draggedGroup !== index;
 
             const isCompleted = total > 0 && done === total;
             const baseStreak = group.baseStreak ?? group.streak ?? 0;
@@ -476,6 +523,11 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
               <div
                 key={group.id}
                 ref={active ? activeTaskRef : null}
+                draggable
+                onDragStart={(e) => handleGroupDragStart(e, index)}
+                onDragOver={(e) => handleGroupDragOver(e, index)}
+                onDrop={(e) => handleGroupDrop(e, index)}
+                onDragEnd={handleGroupDragEnd}
                 className="flex items-stretch"
               >
                 {/* Task Group Card */}
@@ -484,6 +536,12 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                     className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 ${
                       iconPickerGroupId === group.id ? "overflow-visible" : "overflow-hidden"
                     } shadow-lg transition-all duration-300 ${
+                      isDraggingGroup
+                        ? "opacity-40"
+                        : isDragOverGroup
+                          ? "ring-2 ring-white/50 border-white/40"
+                          : ""
+                    } ${
                       active
                         ? "border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
                         : "border-white/10 hover:border-white/20"
@@ -830,6 +888,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                             }}
                             value={newSubtaskText}
                             onChange={(e) => setNewSubtaskText(e.target.value)}
+                            onDragStart={(e) => e.preventDefault()}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
@@ -898,6 +957,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
               ref={newMainTaskRef}
               value={newMainTaskText}
               onChange={(e) => setNewMainTaskText(e.target.value)}
+              onDragStart={(e) => e.preventDefault()}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
