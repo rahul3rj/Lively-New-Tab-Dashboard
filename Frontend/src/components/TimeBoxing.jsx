@@ -573,11 +573,15 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                         ) : (
                           <h3
                             onClick={(e) => {
-                              e.stopPropagation();
-                              startEditGroup(group);
+                              if (expanded || active) {
+                                e.stopPropagation();
+                                startEditGroup(group);
+                              }
                             }}
-                            title="Click to edit"
-                            className={`font-gilroy-bold text-[15px] truncate cursor-text ${
+                            title={expanded || active ? "Click to edit" : undefined}
+                            className={`font-gilroy-bold text-[15px] truncate ${
+                              expanded || active ? "cursor-text" : "cursor-pointer"
+                            } ${
                               active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
                             }`}
                           >
