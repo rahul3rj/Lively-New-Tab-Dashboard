@@ -569,6 +569,18 @@ const DraggableWidget = ({
           <div className="h-4 w-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
         </div>
       )}
+
+      {/* Left Resizable Handle (Width / Cols) */}
+      {config.resizable && (config.minCols ?? config.cols) !== (config.maxCols ?? config.cols) && (
+        <div
+          data-resize-handle-cols
+          onPointerDown={(e) => onStartResizeCols(id, e, true)}
+          className="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-12 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
+          title="Drag left to expand width"
+        >
+          <div className="h-4 w-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
+        </div>
+      )}
     </div>
   );
 };
@@ -837,7 +849,7 @@ const DashboardGrid = ({
 
   /* ── Horizontal Resizing Logic (Cols) ── */
   const handleStartResizeCols = useCallback(
-    (widgetId, e) => {
+    (widgetId, e, fromLeft = false) => {
       e.preventDefault();
       e.stopPropagation();
       if (e.nativeEvent && typeof e.nativeEvent.stopImmediatePropagation === "function") {
@@ -861,7 +873,9 @@ const DashboardGrid = ({
 
       const onMove = (moveEv) => {
         const currentX = moveEv.clientX;
-        const relX = currentX - widgetRect.left;
+        const relX = fromLeft
+          ? widgetRect.right - currentX
+          : currentX - widgetRect.left;
         const cfg = widgetConfigs[widgetId];
         const minC = cfg.minCols ?? cfg.cols;
         const maxC = cfg.maxCols ?? cfg.cols;
@@ -871,11 +885,15 @@ const DashboardGrid = ({
         );
 
         const currentPos = positionsRef.current[widgetId];
+        if (!currentPos) return;
+        const currentCols = getWidgetCols(cfg, currentPos);
+        const targetCol = fromLeft
+          ? currentPos.col + currentCols - targetCols
+          : currentPos.col;
         if (
-          currentPos &&
           canPlace(
             widgetId,
-            currentPos.col,
+            targetCol,
             currentPos.row,
             positionsRef.current,
             activeRef.current,
@@ -888,7 +906,11 @@ const DashboardGrid = ({
         ) {
           setPositions((prev) => ({
             ...prev,
-            [widgetId]: { ...prev[widgetId], cols: targetCols },
+            [widgetId]: {
+              ...prev[widgetId],
+              ...(fromLeft ? { col: targetCol } : {}),
+              cols: targetCols,
+            },
           }));
         }
       };
