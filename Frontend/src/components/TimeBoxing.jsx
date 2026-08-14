@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { updateTodayCompletedTasksCount } from "../utils/activityStore";
+import { IconDropdownPopover } from "./IconPicker.jsx";
 
 const makeId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -99,7 +100,14 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const [editingSubtask, setEditingSubtask] = useState(null);
   const [editSubtaskText, setEditSubtaskText] = useState("");
   const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [editGroupTitle, setEditGroupTitle] = useState("");
+  const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
+  const [newMainTaskText, setNewMainTaskText] = useState("");
+  const [atBottom, setAtBottom] = useState(true);
   const subtaskInputRefs = useRef({});
+  const iconTriggerRefs = useRef({});
+  const newMainTaskRef = useRef(null);
   const containerRef = useRef(null);
   const activeTaskRef = useRef(null);
 
@@ -154,6 +162,23 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
       setExpandedId(activeId);
     }
   }, [activeId]);
+
+  const updateAtBottom = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 12);
+  };
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(updateAtBottom);
+    return () => cancelAnimationFrame(raf);
+  });
+
+  useEffect(() => {
+    const onResize = () => updateAtBottom();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Auto-scroll active task to center on page load / refresh or activeId change
   useEffect(() => {
@@ -287,6 +312,8 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
       if (typeof onGroupsChange === "function") {
         onGroupsChange(nextGroups);
       }
+    } else {
+      removeSubtask(groupId, subtaskId);
     }
     setEditingSubtask(null);
     setEditSubtaskText("");
@@ -295,6 +322,78 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const cancelEditSubtask = () => {
     setEditingSubtask(null);
     setEditSubtaskText("");
+  };
+
+  const startEditGroup = (group) => {
+    setEditingGroup(group.id);
+    setEditGroupTitle(group.title || "");
+  };
+
+  const removeGroup = (groupId) => {
+    const nextGroups = groups.filter((g) => g.id !== groupId);
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+
+    if (expandedId === groupId) setExpandedId(null);
+    if (iconPickerGroupId === groupId) setIconPickerGroupId(null);
+
+    const completedMainCount = nextGroups.filter(
+      (g) => g.subtasks && g.subtasks.length > 0 && g.subtasks.every((s) => s.done),
+    ).length;
+
+    updateTodayCompletedTasksCount(completedMainCount);
+  };
+
+  const saveEditGroup = (groupId) => {
+    const text = editGroupTitle.trim();
+    if (text) {
+      const nextGroups = groups.map((g) =>
+        g.id === groupId ? { ...g, title: text } : g,
+      );
+      if (typeof onGroupsChange === "function") {
+        onGroupsChange(nextGroups);
+      }
+    } else {
+      removeGroup(groupId);
+    }
+    setEditingGroup(null);
+    setEditGroupTitle("");
+  };
+
+  const cancelEditGroup = () => {
+    setEditingGroup(null);
+    setEditGroupTitle("");
+  };
+
+  const updateGroupIcon = (groupId, iconClass) => {
+    const nextGroups = groups.map((g) =>
+      g.id === groupId ? { ...g, iconClass } : g,
+    );
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+  };
+
+  const addGroup = () => {
+    const text = newMainTaskText.trim();
+    if (!text) return;
+    const g = {
+      id: makeId(),
+      title: text,
+      iconClass: "ri-briefcase-line",
+      time: "9:00 am",
+      streak: 0,
+      subtasks: [],
+    };
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange([...groups, g]);
+    }
+    setExpandedId(g.id);
+    setNewMainTaskText("");
+    setTimeout(() => {
+      newMainTaskRef.current?.focus();
+    }, 0);
   };
 
   const handleSubtaskDragStart = (e, groupId, subtaskId) => {
@@ -356,6 +455,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
       {/* Task Groups + Timeline */}
       <div
         ref={containerRef}
+        onScroll={updateAtBottom}
         className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide z-10 relative pr-0.5"
       >
         <div className="flex flex-col">
@@ -381,7 +481,9 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                 {/* Task Group Card */}
                 <div className={`flex-1 min-w-0 ${isLast ? "" : "pb-5"}`}>
                   <div
-                    className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 overflow-hidden shadow-lg transition-all duration-300 ${
+                    className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 ${
+                      iconPickerGroupId === group.id ? "overflow-visible" : "overflow-hidden"
+                    } shadow-lg transition-all duration-300 ${
                       active
                         ? "border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
                         : "border-white/10 hover:border-white/20"
@@ -399,27 +501,89 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
                       onClick={() => setExpandedId(expanded ? null : group.id)}
                     >
                       <div className="flex items-center gap-2.5">
-                        {group.iconClass && (group.iconClass.startsWith("img:") || group.iconClass.startsWith("http") || group.iconClass.startsWith("data:")) ? (
-                          <img
-                            src={group.iconClass.replace(/^img:/, "")}
-                            alt=""
-                            className="w-[18px] h-[18px] object-contain shrink-0"
-                            onError={(e) => { e.currentTarget.style.display = "none"; }}
-                          />
-                        ) : (
-                          <i
-                            className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
-                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white/75"
+                        <div className="relative shrink-0">
+                          <button
+                            ref={(el) => {
+                              iconTriggerRefs.current[group.id] = el;
+                            }}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIconPickerGroupId(
+                                iconPickerGroupId === group.id ? null : group.id,
+                              );
+                            }}
+                            title="Change icon"
+                            className="shrink-0 cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none"
+                          >
+                            {group.iconClass && (group.iconClass.startsWith("img:") || group.iconClass.startsWith("http") || group.iconClass.startsWith("data:")) ? (
+                              <img
+                                src={group.iconClass.replace(/^img:/, "")}
+                                alt=""
+                                className="w-[18px] h-[18px] object-contain shrink-0"
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                              />
+                            ) : (
+                              <i
+                                className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
+                                  active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white/75"
+                                }`}
+                              />
+                            )}
+                          </button>
+                          {iconPickerGroupId === group.id && (
+                            <IconDropdownPopover
+                              triggerRef={{ current: iconTriggerRefs.current[group.id] }}
+                              current={group.iconClass || "ri-briefcase-line"}
+                              onSelect={(newIcon) => {
+                                updateGroupIcon(group.id, newIcon);
+                                setIconPickerGroupId(null);
+                              }}
+                              onClose={() => setIconPickerGroupId(null)}
+                            />
+                          )}
+                        </div>
+                        {editingGroup === group.id ? (
+                          <input
+                            autoFocus
+                            value={editGroupTitle}
+                            onChange={(e) => setEditGroupTitle(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={() => saveEditGroup(group.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                saveEditGroup(group.id);
+                                const nextGroup = groups[index + 1];
+                                if (nextGroup) {
+                                  startEditGroup(nextGroup);
+                                } else {
+                                  setTimeout(() => {
+                                    newMainTaskRef.current?.focus();
+                                  }, 0);
+                                }
+                              }
+                              if (e.key === "Escape") cancelEditGroup();
+                            }}
+                            onDragStart={(e) => e.preventDefault()}
+                            className={`flex-1 min-w-0 bg-transparent outline-none select-text font-gilroy-bold text-[15px] ${
+                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
                             }`}
                           />
+                        ) : (
+                          <h3
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startEditGroup(group);
+                            }}
+                            title="Click to edit"
+                            className={`font-gilroy-bold text-[15px] truncate cursor-text ${
+                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
+                            }`}
+                          >
+                            {group.title}
+                          </h3>
                         )}
-                        <h3
-                          className={`font-gilroy-bold text-[15px] truncate ${
-                            active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
-                          }`}
-                        >
-                          {group.title}
-                        </h3>
                       </div>
 
                       <div className="mt-2.5 flex items-center gap-2">
@@ -716,6 +880,30 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
               </div>
             );
           })}
+
+          {/* Add New Main Task Row */}
+          <div
+            className={`flex items-center gap-2.5 pl-1.5 py-1.5 transition-opacity duration-200 ${
+              atBottom
+                ? "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
+                : "opacity-0"
+            }`}
+          >
+            <i className="ri-add-circle-line text-[15px] shrink-0 text-white/35"></i>
+            <input
+              ref={newMainTaskRef}
+              value={newMainTaskText}
+              onChange={(e) => setNewMainTaskText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addGroup();
+                }
+              }}
+              placeholder="Add new routine..."
+              className="flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium text-white/90 placeholder:text-white/50 focus:placeholder:text-white/35"
+            />
+          </div>
         </div>
       </div>
     </div>
