@@ -1,7 +1,10 @@
 /**
- * Safe, robust, error-tolerant storage helper supporting Chrome Extension (chrome.storage.local)
- * and Web / Local Dev (localStorage) environments.
+ * Safe, robust, error-tolerant storage helper supporting Chrome Extension (chrome.storage.local),
+ * Web / Local Dev (localStorage), and In-Memory fallback environments.
  */
+
+// In-memory fallback dictionary for private/incognito or restricted environments
+const memoryStorage = new Map();
 
 export const checkHasChromeStorage = () => {
   try {
@@ -41,26 +44,42 @@ const parseIfJsonString = (val) => {
 
 const getFromLocalStorage = (key) => {
   try {
+    if (typeof localStorage === "undefined") {
+      return memoryStorage.get(key);
+    }
     const raw = localStorage.getItem(key);
-    if (raw === null || raw === undefined) return undefined;
+    if (raw === null || raw === undefined) {
+      return memoryStorage.get(key);
+    }
     return parseIfJsonString(raw);
-  } catch {
-    return undefined;
+  } catch (err) {
+    console.warn("localStorage getItem fallback warning:", key, err);
+    return memoryStorage.get(key);
   }
 };
 
 const setToLocalStorage = (key, value) => {
+  if (!key || typeof key !== "string") return;
+
   try {
     if (value === undefined) {
-      localStorage.removeItem(key);
+      memoryStorage.delete(key);
+      if (typeof localStorage !== "undefined") {
+        localStorage.removeItem(key);
+      }
     } else {
-      localStorage.setItem(
-        key,
-        typeof value === "string" ? value : JSON.stringify(value),
-      );
+      memoryStorage.set(key, value);
+      if (typeof localStorage !== "undefined") {
+        const serialized = typeof value === "string" ? value : JSON.stringify(value);
+        localStorage.setItem(key, serialized);
+      }
     }
   } catch (err) {
-    console.warn("localStorage setItem fallback error:", key, err);
+    // QuotaExceededError or SecurityError
+    console.warn("localStorage setItem warning:", key, err);
+    if (value !== undefined) {
+      memoryStorage.set(key, value);
+    }
   }
 };
 
@@ -68,6 +87,10 @@ const setToLocalStorage = (key, value) => {
  * Reads value for key from storage. Always resolves gracefully without throwing.
  */
 export const storageGet = (key) => {
+  if (!key || typeof key !== "string") {
+    return Promise.resolve(undefined);
+  }
+
   if (checkHasChromeStorage()) {
     const chromeApi = globalThis.chrome;
     return new Promise((resolve) => {
@@ -100,6 +123,10 @@ export const storageGet = (key) => {
  * Reads multiple keys from storage at once. Always resolves object mapping key -> value.
  */
 export const storageGetMultiple = (keys) => {
+  if (!Array.isArray(keys)) {
+    return Promise.resolve({});
+  }
+
   if (checkHasChromeStorage()) {
     const chromeApi = globalThis.chrome;
     return new Promise((resolve) => {
@@ -138,6 +165,10 @@ export const storageGetMultiple = (keys) => {
  * Writes value for key to storage. Always resolves gracefully without throwing.
  */
 export const storageSet = (key, value) => {
+  if (!key || typeof key !== "string") {
+    return Promise.resolve();
+  }
+
   if (checkHasChromeStorage()) {
     const chromeApi = globalThis.chrome;
     return new Promise((resolve) => {
@@ -159,6 +190,33 @@ export const storageSet = (key, value) => {
     });
   }
   setToLocalStorage(key, value);
+  return Promise.resolve();
+};
+
+/**
+ * Removes a key from storage.
+ */
+export const storageRemove = (key) => {
+  if (!key || typeof key !== "string") {
+    return Promise.resolve();
+  }
+
+  if (checkHasChromeStorage()) {
+    const chromeApi = globalThis.chrome;
+    return new Promise((resolve) => {
+      try {
+        chromeApi.storage.local.remove([key], () => {
+          setToLocalStorage(key, undefined);
+          resolve();
+        });
+      } catch {
+        setToLocalStorage(key, undefined);
+        resolve();
+      }
+    });
+  }
+
+  setToLocalStorage(key, undefined);
   return Promise.resolve();
 };
 
@@ -202,6 +260,12 @@ export const exportAllStorageData = async () => {
     console.warn("localStorage export error:", err);
   }
 
+  for (const [k, v] of memoryStorage.entries()) {
+    if (result[k] === undefined) {
+      result[k] = v;
+    }
+  }
+
   return result;
 };
 
@@ -231,11 +295,13 @@ export const importAllStorageData = async (dataObj) => {
       for (const [key, val] of Object.entries(dataObj)) {
         if (val === undefined || val === null) {
           localStorage.removeItem(key);
+          memoryStorage.delete(key);
         } else {
           localStorage.setItem(
             key,
             typeof val === "string" ? val : JSON.stringify(val)
           );
+          memoryStorage.set(key, val);
         }
       }
     }
@@ -248,6 +314,7 @@ export const importAllStorageData = async (dataObj) => {
  * Clears all dashboard data from storage.
  */
 export const clearAllStorageData = async () => {
+  memoryStorage.clear();
   if (checkHasChromeStorage()) {
     await new Promise((resolve) => {
       try {
@@ -267,4 +334,3 @@ export const clearAllStorageData = async () => {
     console.warn("localStorage clear error:", err);
   }
 };
-
