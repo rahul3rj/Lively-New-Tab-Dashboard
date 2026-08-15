@@ -1,5 +1,13 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 
+/**
+ * Hero welcome screen with quick dock and Start transition button
+ * @param {Object} props
+ * @param {Array} [props.shortcuts=[]] - Quick launcher bookmarks
+ * @param {Function} props.onStart - Callback to open the main dashboard
+ * @param {boolean} [props.isVisible=true] - Visibility state of the hero screen
+ */
 const HeroView = ({ shortcuts = [], onStart, isVisible = true }) => {
   return (
     <div className='absolute inset-0 pointer-events-none z-40'>
@@ -47,6 +55,21 @@ const HeroView = ({ shortcuts = [], onStart, isVisible = true }) => {
       </div>
     </div>
   )
+}
+
+HeroView.propTypes = {
+  shortcuts: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      title: PropTypes.string,
+      url: PropTypes.string,
+      iconClass: PropTypes.string,
+      iconUrl: PropTypes.string,
+      iconDataUrl: PropTypes.string,
+    })
+  ),
+  onStart: PropTypes.func,
+  isVisible: PropTypes.bool,
 }
 
 export default HeroView

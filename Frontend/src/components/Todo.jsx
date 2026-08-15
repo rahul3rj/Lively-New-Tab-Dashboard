@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { recordActivity } from "../utils/activityStore";
+import { storageGet, storageSet } from "../utils/storage.js";
 
 const STORAGE = {
   items: "todo_items_v2",
 };
-
-import { storageGet, storageSet } from "../utils/storage.js";
 
 const makeId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -20,6 +20,11 @@ const DEFAULT_DEMO_TASKS = [
   { id: "demo-4", text: "LinkedIn Post", done: false },
 ];
 
+/**
+ * Interactive checklist / to-do widget with drag reordering
+ * @param {Object} props
+ * @param {Object} [props.dragHandleProps] - Props for draggable handle
+ */
 const Todo = ({ dragHandleProps }) => {
   const [tasks, setTasks] = useState([]);
   const [newText, setNewText] = useState("");
@@ -269,6 +274,10 @@ const Todo = ({ dragHandleProps }) => {
       </div>
     </div>
   );
+};
+
+Todo.propTypes = {
+  dragHandleProps: PropTypes.object,
 };
 
 export default Todo;

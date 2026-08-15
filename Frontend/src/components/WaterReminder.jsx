@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { recordActivity } from "../utils/activityStore";
+import { storageGet, storageSet } from "../utils/storage.js";
 
 const getTodayUtcDate = () => {
   const d = new Date();
@@ -15,8 +17,12 @@ const STORAGE_KEYS = {
   reminder: "water_reminder_enabled_v1",
 };
 
-import { storageGet, storageSet } from "../utils/storage.js";
-
+/**
+ * Hydration tracker & reminder widget with animated liquid container
+ * @param {Object} props
+ * @param {Object} [props.dragHandleProps] - Props for draggable handle
+ * @param {number} [props.goalMl] - Target hydration volume in ml
+ */
 const WaterReminder = ({ dragHandleProps, goalMl: goalMlProp }) => {
   const [goalMl, setGoalMl] = useState(goalMlProp || 4500); // use prop or default 4.5L
   const [drunkMl, setDrunkMl] = useState(0);
@@ -219,6 +225,11 @@ const WaterReminder = ({ dragHandleProps, goalMl: goalMlProp }) => {
       </div>
     </div>
   );
+};
+
+WaterReminder.propTypes = {
+  dragHandleProps: PropTypes.object,
+  goalMl: PropTypes.number,
 };
 
 export default WaterReminder;

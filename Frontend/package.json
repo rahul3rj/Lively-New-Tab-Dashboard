@@ -16,6 +16,7 @@
     "react": "^19.2.0",
     "react-activity-calendar": "^3.2.1",
     "react-dom": "^19.2.0",
+    "prop-types": "^15.8.1",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {

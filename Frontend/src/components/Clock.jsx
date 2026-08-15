@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 
 const weatherCodeToEmoji = (code) => {
   if (code === 0) return '☀️'
@@ -11,6 +12,11 @@ const weatherCodeToEmoji = (code) => {
   return '☀️'
 }
 
+/**
+ * Clock & Live Weather display component
+ * @param {Object} props
+ * @param {boolean} [props.isDashboard=false] - Whether the clock is rendered in dashboard mode
+ */
 const Clock = ({ isDashboard = false }) => {
   const [now, setNow] = useState(() => new Date())
   const [weather, setWeather] = useState({ temp: 22, emoji: '☀️', loaded: false })
@@ -111,6 +117,10 @@ const Clock = ({ isDashboard = false }) => {
       </div>
     </div>
   )
+}
+
+Clock.propTypes = {
+  isDashboard: PropTypes.bool,
 }
 
 export default Clock
