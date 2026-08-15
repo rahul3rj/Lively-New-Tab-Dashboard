@@ -2557,6 +2557,17 @@ const BackupTab = ({ uiTheme }) => {
 const SettingsPage = (props) => {
   const [activeTab, setActiveTab] = useState("appearance");
 
+  useEffect(() => {
+    if (!props.open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && typeof props.onClose === "function") {
+        props.onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [props.open, props.onClose]);
+
   if (!props.open) return null;
 
   return (

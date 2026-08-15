@@ -209,12 +209,24 @@ const Taskbar = ({
     })
   }
 
-  // Close context menu on window click
+  // Close context menu & modal on Escape or window click
   useEffect(() => {
-    const handleWindowClick = () => setContextMenu(null)
-    window.addEventListener('click', handleWindowClick)
-    return () => window.removeEventListener('click', handleWindowClick)
-  }, [])
+    const handleWindowClick = () => setContextMenu(null);
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setContextMenu(null);
+        if (isModalOpen) {
+          handleCloseModal();
+        }
+      }
+    };
+    window.addEventListener("click", handleWindowClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("click", handleWindowClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isModalOpen]);
 
   const validShortcuts = shortcuts.filter((s) => s && typeof s.url === 'string' && s.url.trim())
 

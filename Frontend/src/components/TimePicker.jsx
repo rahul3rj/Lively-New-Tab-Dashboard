@@ -40,12 +40,19 @@ export const TimeDropdownPopover = ({ current, onSelect, onClose, uiTheme = "def
         onClose();
       }
     };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
     const timerId = setTimeout(() => {
       document.addEventListener("pointerdown", handlePointerDownOutside, true);
+      document.addEventListener("keydown", handleKeyDown);
     }, 50);
     return () => {
       clearTimeout(timerId);
       document.removeEventListener("pointerdown", handlePointerDownOutside, true);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose, triggerRef]);
 
