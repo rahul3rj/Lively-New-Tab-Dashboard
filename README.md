@@ -101,161 +101,79 @@ Personalize your dashboard with 4 handcrafted design themes:
 
 ### 🖼️ 12. Background & Wallpaper Customizer
 - Support for custom **High-Res Images** and **Animated Video Backgrounds** (`.mp4`, `.webm`).
-- Built-in wallpaper library (Default, Cyberpunk, Manga, CLI).
-- Adjustable background **blur filter**, dark overlay **opacity slider**, and image sizing options.
-
----
-
-### 💾 13. Data Privacy & Backup / Restore
-- **100% Local & Private:** All settings, wallpapers, todos, and focus stats stay stored on your device via `chrome.storage.local`.
-- **JSON Backup & Restore:** Export your complete setup configuration to JSON and restore it anytime or transfer across browsers.
+- Built-in presets and the ability to upload or link custom wallpapers.
+- Smooth background transitions and blur control.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-| :--- | :--- |
-| **Framework** | [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/) |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) + Vanilla CSS Theme Engines |
-| **Drag & Drop** | [@dnd-kit/core](https://dndkit.com/) & `@dnd-kit/utilities` |
-| **Activity Graph** | `react-activity-calendar` |
-| **Icons** | Remix Icon (`remixicon`) |
-| **Extension Architecture** | Chrome Extension Manifest V3 (`chrome.storage.local`, `declarativeNetRequest`) |
+| Category | Technology |
+|---|---|
+| **Framework** | React 19 |
+| **Build Tool** | Vite |
+| **Styling** | Tailwind CSS v4 |
+| **Drag & Drop** | @dnd-kit/core |
+| **Calendar** | react-activity-calendar |
+| **Extension** | Chrome Manifest V3 |
+| **Package Manager** | npm |
 
 ---
 
-## 📂 Project Directory Structure
-
-```txt
-Chrome_Extension/
-├── README.md                      # Project OS Documentation
-└── Frontend/
-    ├── package.json               # Dependencies & build scripts
-    ├── vite.config.js             # Vite configuration
-    ├── index.html                 # Main extension HTML template
-    ├── public/
-    │   ├── manifest.json          # Chrome Extension Manifest V3 config
-    │   ├── rules.json             # Declarative net request header rules
-    │   ├── logo.png               # Extension branding icon
-    │   └── wallpapers & fonts     # Pre-loaded wallpaper assets & custom typography
-    └── src/
-        ├── App.jsx                # Core application state, storage syncing & settings
-        ├── main.jsx               # Application entry point
-        ├── index.css              # Global styles & design system utilities
-        ├── components/
-        │   ├── DashboardGrid.jsx  # Drag-and-drop widget layout manager
-        │   ├── HeroView.jsx       # Distraction-free minimal focus view
-        │   ├── Clock.jsx          # Digital clock & dynamic greeting widget
-        │   ├── Taskbar.jsx        # Quick shortcuts launcher bar
-        │   ├── Timmer.jsx         # Pomodoro / focus session timer widget
-        │   ├── Todo.jsx           # Task manager widget
-        │   ├── TimeBoxing.jsx     # Hourly routine planner widget
-        │   ├── StreakGrid.jsx     # Activity contribution graph widget
-        │   ├── WaterReminder.jsx  # Hydration tracker widget
-        │   ├── SongPlayer.jsx     # Ambient Lofi & YouTube music player
-        │   ├── ImportantTabs.jsx  # Categorized link bookmarks widget
-        │   ├── SettingsPage.jsx   # Complete settings, theme & wallpaper drawer
-        │   └── FigmaGlassCard.jsx # Frosted glass card UI wrapper
-        ├── utils/
-        │   ├── storage.js         # Chrome storage wrapper (local & fallback support)
-        │   ├── activityStore.js   # Focus streak activity logger
-        │   ├── youtube.js         # YouTube player helper utilities
-        │   └── spotify.js         # Spotify integration helper utilities
-        └── themes/
-            ├── index.js           # Theme registry & state management
-            ├── cyberpunk.css      # Cyberpunk neon theme stylesheet
-            ├── manga.css          # Manga ink monochrome stylesheet
-            └── pixel.css          # 8-Bit Pixel Art theme stylesheet
-```
-
----
-
-## 🚀 Quick Start & Installation Guide
+## 🚀 Getting Started
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
-- Google Chrome (or any Chromium-based browser like Brave, Edge, Arc)
+- **Node.js** v18+ and **npm** installed
+- **Google Chrome** browser
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/rahul3rj/Project-OS.git
+   cd Project-OS/Frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. To load as a Chrome Extension:
+   - Run `npm run build` to generate the production build
+   - Open `chrome://extensions/` in Chrome
+   - Enable **Developer Mode**
+   - Click **Load unpacked** and select the `dist/` folder
 
 ---
 
-### 1️⃣ Clone & Install Dependencies
+## 🤝 Contributing
 
-Navigating to the `Frontend` directory:
+Contributions are welcome! Here's how:
 
-```bash
-cd Frontend
-npm install
-```
+1. **Fork** the repository
+2. Create a **feature branch** (`git checkout -b feature/your-feature`)
+3. **Commit** your changes (`git commit -m 'Add some feature'`)
+4. **Push** to the branch (`git push origin feature/your-feature`)
+5. Open a **Pull Request**
 
----
-
-### 2️⃣ Development Mode (Local UI Testing)
-
-To run the app locally in the browser for fast UI testing:
-
-```bash
-npm run dev
-```
-
-> **Note:** The Chrome New Tab override feature requires loading the built extension into Chrome.
+Please keep PRs focused and well-scoped for easier review.
 
 ---
 
-### 3️⃣ Build & Load Extension in Chrome
+## 📄 License
 
-#### Step A: Build the project
-```bash
-npm run build
-```
-This generates the optimized production bundle inside `Frontend/dist`.
-
-#### Step B: Load into Google Chrome
-1. Open Google Chrome and navigate to `chrome://extensions`.
-2. Enable **Developer mode** (toggle switch in top right corner).
-3. Click **Load unpacked**.
-4. Select the `Frontend/dist` directory.
-
-#### Step C: Open a New Tab!
-Open a new tab (`Ctrl + T` or `Cmd + T`) to experience **Project OS**! 🎉
+This project is open source. Please check with the maintainer for specific license terms.
 
 ---
 
-### 🔄 Updating After Code Changes
-Whenever you modify files in `src/`:
-```bash
-cd Frontend
-npm run build
-```
-Then go to `chrome://extensions` and click the **Reload** (🔄) icon on **Project OS**.
+## 🙏 Acknowledgments
 
----
-
-## 🔐 Chrome Permissions & Privacy
-
-**Project OS** respects your privacy. All user data stays strictly on your local device.
-
-```json
-"permissions": [
-  "storage",
-  "unlimitedStorage",
-  "declarativeNetRequest"
-]
-```
-
-- **`storage` / `unlimitedStorage`:** Stores custom themes, wallpapers, shortcuts, routine schedules, todos, and timer stats locally on your machine.
-- **`declarativeNetRequest`:** Enables smooth audio streaming playback for Lofi radio stations and YouTube media embedding.
-- **Zero External Data Tracking:** No analytics, no remote telemetry, no external accounts required.
-
----
-
-## 👨‍💻 Author & Credits
-
-Crafted with ❤️ by **Rahul Jha**  
-*Developer • Student • Builder • Hustler* 🚀
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**. Feel free to customize and extend it for personal or open-source use.
+- Built with [React](https://react.dev/), [Vite](https://vite.dev/), and [Tailwind CSS](https://tailwindcss.com/)
+- Drag & drop powered by [@dnd-kit](https://dndkit.com/)
+- Activity calendar by [react-activity-calendar](https://github.com/grubersjoe/react-activity-calendar)
