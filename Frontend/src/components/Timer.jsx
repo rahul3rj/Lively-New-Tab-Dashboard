@@ -41,7 +41,7 @@ const STORAGE = {
 
 import { storageGet, storageSet } from "../utils/storage.js";
 
-const Timmer = ({ dragHandleProps }) => {
+const Timer = ({ dragHandleProps }) => {
   const [mode, setMode] = useState("focus"); // 'focus' | 'rest'
   const [status, setStatus] = useState("idle");
   const [durationSec, setDurationSec] = useState(25 * 60);
@@ -336,4 +336,4 @@ const Timmer = ({ dragHandleProps }) => {
   );
 };
 
-export default Timmer;
+export default Timer;
