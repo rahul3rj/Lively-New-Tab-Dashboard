@@ -315,7 +315,7 @@ const App = () => {
         if (typeof storedThemeTextIdx === "number" && storedThemeTextIdx >= 0 && storedThemeTextIdx <= 3) {
           setThemeTextColorIndex(storedThemeTextIdx);
         }
-        if (Array.isArray(storedShortcuts) && storedShortcuts.length > 0) setShortcuts(storedShortcuts);
+        if (Array.isArray(storedShortcuts)) setShortcuts(storedShortcuts);
 
         if (storedActiveStepObj &&
           typeof storedActiveStepObj === "object" &&
