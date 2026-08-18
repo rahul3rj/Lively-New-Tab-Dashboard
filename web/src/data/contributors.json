@@ -1,0 +1,44 @@
+{
+  "owner": {
+    "id": "rahul3rj",
+    "name": "Rahul Jha",
+    "tagline": "Full-Stack Developer | MERN & UI/UX Specialist | Building Scalable Web Experiences | React • Node • MongoDB • PostgreSQL",
+    "role": "Creator & Lead Developer",
+    "handle": "rahul3rj",
+    "githubUrl": "https://github.com/rahul3rj",
+    "avatar": "https://github.com/rahul3rj.png",
+    "contributionsCount": 6
+  },
+  "contributors": [
+    {
+      "id": "suneetchugh-dev",
+      "name": "Suneet Chugh",
+      "tagline": "Passionate About Coding That's it..✨✌🏻",
+      "role": "Contributor · 8 commits",
+      "handle": "suneetchugh-dev",
+      "githubUrl": "https://github.com/suneetchugh-dev",
+      "avatar": "https://avatars.githubusercontent.com/u/76564569?v=4",
+      "contributionsCount": 33
+    },
+    {
+      "id": "prvthmpcypher",
+      "name": "Poorvith M P",
+      "tagline": "Student · Open Source Contributor",
+      "role": "Contributor · 1 commit",
+      "handle": "prvthmpcypher",
+      "githubUrl": "https://github.com/prvthmpcypher",
+      "avatar": "https://avatars.githubusercontent.com/u/277478855?v=4",
+      "contributionsCount": 1
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "tagline": "AI Pair Programmer · Contributor",
+      "role": "AI Coding Assistant",
+      "handle": "github-copilot",
+      "githubUrl": "https://github.com/features/copilot",
+      "avatar": "https://avatars.githubusercontent.com/in/1143301?s=64&v=4",
+      "contributionsCount": "3"
+    }
+  ]
+}
