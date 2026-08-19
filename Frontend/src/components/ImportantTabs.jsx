@@ -1,10 +1,46 @@
 import React from "react";
 
 const DEFAULT_TABS = [
-  { id: "tab-1", title: "Study", iconClass: "ri-book-open-line", links: [] },
-  { id: "tab-2", title: "AI Engineering", iconClass: "ri-gemini-fill", links: [] },
-  { id: "tab-3", title: "DSA (LeetCode & CP)", iconClass: "ri-code-s-slash-line", links: [] },
-  { id: "tab-4", title: "News", iconClass: "ri-newspaper-line", links: [] },
+  {
+    id: "tab-1",
+    title: "Daily Work & Productivity",
+    iconClass: "ri-briefcase-line",
+    links: [
+      { id: "link-1-1", label: "Gmail", url: "https://mail.google.com" },
+      { id: "link-1-2", label: "Google Calendar", url: "https://calendar.google.com" },
+      { id: "link-1-3", label: "Notion", url: "https://www.notion.so" },
+    ],
+  },
+  {
+    id: "tab-2",
+    title: "Developer Tools",
+    iconClass: "ri-code-s-slash-line",
+    links: [
+      { id: "link-2-1", label: "GitHub", url: "https://github.com" },
+      { id: "link-2-2", label: "Stack Overflow", url: "https://stackoverflow.com" },
+      { id: "link-2-3", label: "MDN Web Docs", url: "https://developer.mozilla.org" },
+    ],
+  },
+  {
+    id: "tab-3",
+    title: "Design & Inspiration",
+    iconClass: "ri-palette-line",
+    links: [
+      { id: "link-3-1", label: "Figma", url: "https://www.figma.com" },
+      { id: "link-3-2", label: "Dribbble", url: "https://dribbble.com" },
+      { id: "link-3-3", label: "Unsplash", url: "https://unsplash.com" },
+    ],
+  },
+  {
+    id: "tab-4",
+    title: "News & Tech Reads",
+    iconClass: "ri-newspaper-line",
+    links: [
+      { id: "link-4-1", label: "Hacker News", url: "https://news.ycombinator.com" },
+      { id: "link-4-2", label: "TechCrunch", url: "https://techcrunch.com" },
+      { id: "link-4-3", label: "Medium", url: "https://medium.com" },
+    ],
+  },
 ];
 
 const ImportantTabs = ({ dragHandleProps, tabsConfig }) => {

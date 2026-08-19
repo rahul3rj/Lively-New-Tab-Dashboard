@@ -14,10 +14,11 @@ const makeId = () => {
 };
 
 const DEFAULT_DEMO_TASKS = [
-  { id: "demo-1", text: "Job Apply On LinkedIn", done: true },
-  { id: "demo-2", text: "TCS Form Fill", done: true },
-  { id: "demo-3", text: "Command Code Subs Ends", done: true },
-  { id: "demo-4", text: "LinkedIn Post", done: false },
+  { id: "demo-1", text: "Welcome to Project OS! 👋", done: true },
+  { id: "demo-2", text: "Customize wallpaper & theme in Settings", done: true },
+  { id: "demo-3", text: "Plan today's schedule in Time Boxing", done: false },
+  { id: "demo-4", text: "Add your favorite website links", done: false },
+  { id: "demo-5", text: "Reach daily water goal 💧", done: false },
 ];
 
 const Todo = ({ dragHandleProps }) => {

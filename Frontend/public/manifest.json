@@ -3,6 +3,12 @@
   "name": "Project OS",
   "version": "1.0.0",
   "description": "Futuristic all-in-one customizable new tab workspace and productivity operating system.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "project-os-workspace@antigravity",
+      "strict_min_version": "115.0"
+    }
+  },
   "permissions": [
     "storage",
     "unlimitedStorage",

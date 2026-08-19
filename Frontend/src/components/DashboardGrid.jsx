@@ -551,10 +551,13 @@ const DraggableWidget = ({
         <div
           data-resize-handle
           onPointerDown={(e) => onStartResizeRows(id, e)}
-          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-12 h-2 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ns-resize z-30 flex items-center justify-center group/handle"
+          className="absolute bottom-1 left-1/2 -translate-x-1/2 w-14 h-3.5 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ns-resize z-30 flex items-center justify-center group/handle"
           title="Drag down to expand height"
         >
-          <div className="w-4 h-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
+          <div
+            className="w-7 h-[2.5px] rounded-full transition-all duration-200 opacity-80 group-hover/handle:opacity-100 group-hover/handle:scale-y-125 group-active/handle:scale-y-150"
+            style={{ backgroundColor: "var(--theme-1, #CBD5E1)" }}
+          />
         </div>
       )}
 
@@ -563,10 +566,13 @@ const DraggableWidget = ({
         <div
           data-resize-handle-cols
           onPointerDown={(e) => onStartResizeCols(id, e)}
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-12 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-14 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
           title="Drag right to expand width"
         >
-          <div className="h-4 w-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
+          <div
+            className="h-7 w-[2.5px] rounded-full transition-all duration-200 opacity-80 group-hover/handle:opacity-100 group-hover/handle:scale-x-125 group-active/handle:scale-x-150"
+            style={{ backgroundColor: "var(--theme-1, #CBD5E1)" }}
+          />
         </div>
       )}
 
@@ -575,10 +581,13 @@ const DraggableWidget = ({
         <div
           data-resize-handle-cols
           onPointerDown={(e) => onStartResizeCols(id, e, true)}
-          className="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-12 rounded-full bg-white/30 hover:bg-white/70 active:bg-white/90 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
+          className="absolute left-1 top-1/2 -translate-y-1/2 w-3.5 h-14 opacity-0 pointer-events-none group-hover/widget:opacity-100 group-hover/widget:pointer-events-auto transition-all duration-200 cursor-ew-resize z-30 flex items-center justify-center group/handle"
           title="Drag left to expand width"
         >
-          <div className="h-4 w-0.5 rounded-full bg-white/60 group-hover/handle:bg-white" />
+          <div
+            className="h-7 w-[2.5px] rounded-full transition-all duration-200 opacity-80 group-hover/handle:opacity-100 group-hover/handle:scale-x-125 group-active/handle:scale-x-150"
+            style={{ backgroundColor: "var(--theme-1, #CBD5E1)" }}
+          />
         </div>
       )}
     </div>

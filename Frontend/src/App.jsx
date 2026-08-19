@@ -51,70 +51,116 @@ const makeId = () => {
 };
 
 const DEFAULT_SHORTCUTS = [
+  { id: "google", title: "Google", url: "https://www.google.com", iconClass: "ri-google-fill" },
+  { id: "youtube", title: "YouTube", url: "https://www.youtube.com", iconClass: "ri-youtube-fill" },
+  { id: "github", title: "GitHub", url: "https://github.com", iconClass: "ri-github-fill" },
+  { id: "chatgpt", title: "ChatGPT", url: "https://chatgpt.com", iconClass: "ri-openai-fill" },
   { id: "gemini", title: "Gemini", url: "https://gemini.google.com", iconClass: "ri-gemini-fill" },
-  { id: "claude", title: "Claude", url: "https://claude.ai", iconClass: "ri-claude-fill" },
-  { id: "copilot", title: "Copilot", url: "https://copilot.microsoft.com", iconClass: "ri-copilot-fill" },
-  { id: "openai", title: "OpenAI", url: "https://chat.openai.com", iconClass: "ri-openai-fill" },
-  { id: "perplexity", title: "Perplexity", url: "https://perplexity.ai", iconClass: "ri-perplexity-fill" },
-  { id: "deepseek", title: "DeepSeek", url: "https://chat.deepseek.com/", iconClass: "ri-deepseek-fill" },
-  { id: "higgsfield", title: "Higgsfield AI", url: "https://higgsfield.ai", iconUrl: "https://higgsfield.ai/favicon.ico" },
+  { id: "notion", title: "Notion", url: "https://www.notion.so", iconClass: "ri-book-open-line" },
+  { id: "reddit", title: "Reddit", url: "https://www.reddit.com", iconClass: "ri-reddit-fill" },
 ];
 
 const DEFAULT_IMPORTANT_TABS = [
-  { id: "tab-1", title: "Study", iconClass: "ri-book-open-line", links: [] },
-  { id: "tab-2", title: "AI Engineering", iconClass: "ri-gemini-fill", links: [] },
-  { id: "tab-3", title: "DSA (LeetCode & CP)", iconClass: "ri-code-s-slash-line", links: [] },
-  { id: "tab-4", title: "News", iconClass: "ri-newspaper-line", links: [] },
+  {
+    id: "tab-1",
+    title: "Daily Work & Productivity",
+    iconClass: "ri-briefcase-line",
+    links: [
+      { id: "link-1-1", label: "Gmail", url: "https://mail.google.com" },
+      { id: "link-1-2", label: "Google Calendar", url: "https://calendar.google.com" },
+      { id: "link-1-3", label: "Notion", url: "https://www.notion.so" },
+    ],
+  },
+  {
+    id: "tab-2",
+    title: "Developer Tools",
+    iconClass: "ri-code-s-slash-line",
+    links: [
+      { id: "link-2-1", label: "GitHub", url: "https://github.com" },
+      { id: "link-2-2", label: "Stack Overflow", url: "https://stackoverflow.com" },
+      { id: "link-2-3", label: "MDN Web Docs", url: "https://developer.mozilla.org" },
+    ],
+  },
+  {
+    id: "tab-3",
+    title: "Design & Inspiration",
+    iconClass: "ri-palette-line",
+    links: [
+      { id: "link-3-1", label: "Figma", url: "https://www.figma.com" },
+      { id: "link-3-2", label: "Dribbble", url: "https://dribbble.com" },
+      { id: "link-3-3", label: "Unsplash", url: "https://unsplash.com" },
+    ],
+  },
+  {
+    id: "tab-4",
+    title: "News & Tech Reads",
+    iconClass: "ri-newspaper-line",
+    links: [
+      { id: "link-4-1", label: "Hacker News", url: "https://news.ycombinator.com" },
+      { id: "link-4-2", label: "TechCrunch", url: "https://techcrunch.com" },
+      { id: "link-4-3", label: "Medium", url: "https://medium.com" },
+    ],
+  },
 ];
 
 const DEFAULT_TIMEBOX_GROUPS = [
   {
-    id: "brain-stretching",
-    title: "Brain Stretching",
-    iconClass: "ri-brain-line",
+    id: "morning-kickoff",
+    title: "Morning Kickoff",
+    iconClass: "ri-sun-line",
     time: "8:00 am",
     streak: 0,
     subtasks: [
-      { id: "bs-1", text: "Morning Meditation", done: false },
-      { id: "bs-2", text: "Read 10 Pages", done: false },
-      { id: "bs-3", text: "Solve A Puzzle", done: false },
-      { id: "bs-4", text: "Plan The Day", done: false },
+      { id: "mr-1", text: "Hydrate & Morning Stretch", done: false },
+      { id: "mr-2", text: "Healthy Breakfast", done: false },
+      { id: "mr-3", text: "Review Daily Priorities", done: false },
     ],
   },
   {
-    id: "exercise",
-    title: "Exercise",
-    iconClass: "ri-run-line",
-    time: "8:45 am",
+    id: "deep-work",
+    title: "Deep Work Session",
+    iconClass: "ri-focus-3-line",
+    time: "9:30 am",
     streak: 0,
     subtasks: [
-      { id: "ex-1", text: "Warm Up & Stretch", done: false },
-      { id: "ex-2", text: "Push Ups 3 Sets", done: false },
-      { id: "ex-3", text: "30 Min Cardio", done: false },
+      { id: "dw-1", text: "Complete High-Priority Task", done: false },
+      { id: "dw-2", text: "Clear Inbox & Key Messages", done: false },
+      { id: "dw-3", text: "Document Progress & Notes", done: false },
     ],
   },
   {
-    id: "leetcode",
-    title: "LeetCode Problem",
-    iconClass: "ri-code-s-slash-line",
-    time: "9:00 am",
-    streak: 0,
-    subtasks: [
-      { id: "lc-1", text: "Solve Problem", done: false },
-      { id: "lc-2", text: "Push Code To Github", done: false },
-      { id: "lc-3", text: "Analyse Optimal Solution", done: false },
-    ],
-  },
-  {
-    id: "project",
-    title: "Project",
+    id: "afternoon-focus",
+    title: "Project & Collaboration",
     iconClass: "ri-briefcase-line",
-    time: "11:00 am",
+    time: "1:30 pm",
     streak: 0,
     subtasks: [
-      { id: "pj-1", text: "Design New Component", done: false },
-      { id: "pj-2", text: "Fix Pending Bugs", done: false },
-      { id: "pj-3", text: "Deploy Latest Build", done: false },
+      { id: "af-1", text: "Team Standup / Quick Sync", done: false },
+      { id: "af-2", text: "Review Deliverables & Feedback", done: false },
+      { id: "af-3", text: "Plan Next Action Items", done: false },
+    ],
+  },
+  {
+    id: "wellness-exercise",
+    title: "Fitness & Wellness",
+    iconClass: "ri-heart-pulse-line",
+    time: "5:00 pm",
+    streak: 0,
+    subtasks: [
+      { id: "we-1", text: "30-Min Workout or Walk", done: false },
+      { id: "we-2", text: "Mindfulness & Screen Break", done: false },
+    ],
+  },
+  {
+    id: "evening-winddown",
+    title: "Evening Wind Down",
+    iconClass: "ri-moon-clear-line",
+    time: "8:00 pm",
+    streak: 0,
+    subtasks: [
+      { id: "ew-1", text: "Review Completed Goals", done: false },
+      { id: "ew-2", text: "Read Book / Skill Learning", done: false },
+      { id: "ew-3", text: "Prepare Schedule for Tomorrow", done: false },
     ],
   },
 ];
