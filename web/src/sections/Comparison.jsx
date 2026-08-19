@@ -119,7 +119,7 @@ const CrossIcon = () => (
 
 const Comparison = () => {
   return (
-    <section className="relative w-full min-h-screen bg-black text-white pt-20 md:pt-10 flex flex-col justify-center select-none overflow-hidden">
+    <section id="comparison" className="relative w-full min-h-screen bg-black text-white pt-20 md:pt-10 flex flex-col justify-center select-none overflow-hidden">
       {/* Top Header Row: Left Title & Right Subtitle */}
       <div className="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-0 flex flex-col sm:flex-row sm:items-end justify-between gap-3 shrink-0 mb-10 md:mb-14">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-rejoice font-normal tracking-tight text-white leading-none mx-14">

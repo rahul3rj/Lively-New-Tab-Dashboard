@@ -32,9 +32,34 @@ const Navbar = () => {
     { name: 'FEATURES', href: '#features' },
     { name: 'THEMES', href: '#themes' },
     { name: 'COMPARISON', href: '#comparison' },
-    { name: 'FAQS', href: '#faqs' },
     { name: 'CONTRIBUTORS', href: '#contributors' },
+    { name: 'FAQS', href: '#faqs' },
   ]
+
+  const handleNavClick = (e, href) => {
+    e.preventDefault()
+    if (href === '#' || href === '#top') {
+      if (window.__lenis) {
+        window.__lenis.scrollTo(0, { duration: 1.5 })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+      return
+    }
+
+    const target = document.querySelector(href)
+    if (!target) return
+
+    if (window.__lenis) {
+      window.__lenis.scrollTo(target, {
+        offset: 0,
+        duration: 1.6,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      })
+    } else {
+      target.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   return (
     <header
@@ -52,7 +77,11 @@ const Navbar = () => {
         }`}
       >
         {/* Brand Logo */}
-        <a href='#' className='flex items-center gap-2 group cursor-pointer z-10'>
+        <a
+          href='#'
+          onClick={(e) => handleNavClick(e, '#')}
+          className='flex items-center gap-2 group cursor-pointer z-10'
+        >
           <img
             src='/logo.png'
             alt='OS Logo'
@@ -63,13 +92,14 @@ const Navbar = () => {
           />
         </a>
 
-        {/* Dead Center Nav Links */}
+        {/* Dead Center Nav Links with Shine On Hover */}
         <nav className='hidden md:flex items-center gap-7 lg:gap-10 absolute left-1/2 -translate-x-1/2'>
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
-              className='text-[10px] font-syne font-bold text-zinc-300 hover:text-white transition-colors duration-200 uppercase tracking-wider'
+              onClick={(e) => handleNavClick(e, link.href)}
+              className='nav-link-shine text-[10px] font-syne font-bold uppercase tracking-wider cursor-pointer select-none'
             >
               {link.name}
             </a>

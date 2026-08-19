@@ -12,6 +12,7 @@ import Setup from './sections/Setup'
 import Contributions from './sections/Contributions'
 import FAQs from './sections/FAQs'
 import Footer from './sections/Footer'
+import CursorFollower from './components/CursorFollower'
 gsap.registerPlugin(ScrollTrigger)
 
 const App = () => {
@@ -32,6 +33,9 @@ const App = () => {
     // Synchronize Lenis scroll position with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
+    // Expose lenis instance globally for smooth navbar scrolling
+    window.__lenis = lenis
+
     const tickerHandler = (time) => {
       lenis.raf(time * 1000)
     }
@@ -42,11 +46,13 @@ const App = () => {
     return () => {
       gsap.ticker.remove(tickerHandler)
       lenis.destroy()
+      window.__lenis = null
     }
   }, [])
 
   return (
     <div className='w-full min-h-screen bg-black text-white selection:bg-white selection:text-black'>
+      <CursorFollower />
       <Hero />
       <Video />
       <Features />

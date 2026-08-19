@@ -98,8 +98,10 @@ const Video = () => {
 
             {/* Firefox */}
             <a
-              href="#firefox"
-              title="Mozilla Firefox"
+              href="https://www.mozilla.org/firefox/new/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Mozilla Firefox"
               className="text-zinc-500 hover:text-zinc-200 transition-all duration-300 hover:scale-110 flex items-center justify-center"
             >
               <svg
@@ -113,8 +115,10 @@ const Video = () => {
 
             {/* Brave (Official Lion Mark) */}
             <a
-              href="#brave"
-              title="Brave Browser"
+              href="https://brave.com/download/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Brave Browser"
               className="text-zinc-500 hover:text-zinc-200 transition-all duration-300 hover:scale-110 flex items-center justify-center"
             >
               <svg
@@ -128,8 +132,10 @@ const Video = () => {
 
             {/* Chrome */}
             <a
-              href="#chrome"
-              title="Google Chrome"
+              href="https://www.google.com/chrome/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Google Chrome"
               className="text-zinc-500 hover:text-zinc-200 transition-all duration-300 hover:scale-110 flex items-center justify-center"
             >
               <i className="ri-chrome-fill text-3xl sm:text-4xl md:text-[2.6rem]" />
@@ -137,8 +143,10 @@ const Video = () => {
 
             {/* Edge */}
             <a
-              href="#edge"
-              title="Microsoft Edge"
+              href="https://www.microsoft.com/edge/download"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Microsoft Edge"
               className="text-zinc-500 hover:text-zinc-200 transition-all duration-300 hover:scale-110 flex items-center justify-center"
             >
               <svg
@@ -152,8 +160,10 @@ const Video = () => {
 
             {/* Opera */}
             <a
-              href="#opera"
-              title="Opera Browser"
+              href="https://www.opera.com/download"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Download Opera Browser"
               className="text-zinc-500 hover:text-zinc-200 transition-all duration-300 hover:scale-110 flex items-center justify-center"
             >
               <svg
