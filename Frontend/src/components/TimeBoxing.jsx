@@ -374,7 +374,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
 
   const updateGroupIcon = (groupId, iconClass) => {
     const nextGroups = groups.map((g) =>
-      g.id === groupId ? { ...g, icon: iconClass } : g,
+      g.id === groupId ? { ...g, iconClass: iconClass } : g,
     );
     if (typeof onGroupsChange === "function") {
       onGroupsChange(nextGroups);
@@ -439,15 +439,39 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     }
   };
 
+  const moveSubtask = (fromGroupId, toGroupId, subtaskId, beforeId) => {
+    const nextGroups = groups.map((g) => {
+      if (g.id === fromGroupId) {
+        return { ...g, subtasks: (g.subtasks || []).filter((s) => s.id !== subtaskId) };
+      }
+      return g;
+    });
+    const subtask = groups.find((g) => g.id === fromGroupId)?.subtasks?.find((s) => s.id === subtaskId);
+    if (!subtask) return;
+    const finalGroups = nextGroups.map((g) => {
+      if (g.id !== toGroupId) return g;
+      const subtasks = [...(g.subtasks || [])];
+      if (beforeId) {
+        const idx = subtasks.findIndex((s) => s.id === beforeId);
+        if (idx !== -1) { subtasks.splice(idx, 0, subtask); return { ...g, subtasks }; }
+      }
+      subtasks.push(subtask);
+      return { ...g, subtasks };
+    });
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(finalGroups);
+    }
+  };
+
   const handleSubtaskDrop = (e, groupId, subtaskId) => {
     e.preventDefault();
     if (draggedGroup !== null) return;
-    if (
-      draggedSubtask &&
-      draggedSubtask.groupId === groupId &&
-      draggedSubtask.subtaskId !== subtaskId
-    ) {
-      reorderSubtask(groupId, draggedSubtask.subtaskId, subtaskId);
+    if (draggedSubtask && draggedSubtask.subtaskId !== subtaskId) {
+      if (draggedSubtask.groupId === groupId) {
+        reorderSubtask(groupId, draggedSubtask.subtaskId, subtaskId);
+      } else {
+        moveSubtask(draggedSubtask.groupId, groupId, draggedSubtask.subtaskId, subtaskId);
+      }
     }
     setDraggedSubtask(null);
     setDragOverSubtask(null);
@@ -461,12 +485,14 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   const reorderGroups = (fromIndex, toIndex) => {
     if (fromIndex === toIndex) return;
     const next = [...groups];
-    const fromTime = next[fromIndex]?.time;
-    const toTime = next[toIndex]?.time;
+    const slotTimes = next.map((g) => g?.time);
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
-    if (fromTime !== undefined) next[fromIndex] = { ...next[fromIndex], time: fromTime };
-    if (toTime !== undefined) next[toIndex] = { ...next[toIndex], time: toTime };
+    for (let i = 0; i < next.length; i++) {
+      if (i < slotTimes.length && slotTimes[i] !== undefined) {
+        next[i] = { ...next[i], time: slotTimes[i] };
+      }
+    }
     if (typeof onGroupsChange === "function") {
       onGroupsChange(next);
     }
@@ -483,17 +509,27 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
 
   const handleGroupDragOver = (e, index) => {
     e.preventDefault();
-    if (draggedGroup === null) return;
-    if (dragOverGroup !== index) setDragOverGroup(index);
+    if (draggedGroup !== null) {
+      if (dragOverGroup !== index) setDragOverGroup(index);
+    } else if (draggedSubtask !== null) {
+      if (dragOverGroup !== index) setDragOverGroup(index);
+    }
   };
 
   const handleGroupDrop = (e, index) => {
     e.preventDefault();
-    if (draggedGroup === null) return;
-    if (draggedGroup !== index) {
-      reorderGroups(draggedGroup, index);
+    if (draggedGroup !== null) {
+      if (draggedGroup !== index) {
+        reorderGroups(draggedGroup, index);
+      }
+      setDraggedGroup(null);
+    } else if (draggedSubtask !== null) {
+      const targetGroup = groups[index];
+      if (targetGroup && draggedSubtask.groupId !== targetGroup.id) {
+        moveSubtask(draggedSubtask.groupId, targetGroup.id, draggedSubtask.subtaskId, null);
+      }
+      setDraggedSubtask(null);
     }
-    setDraggedGroup(null);
     setDragOverGroup(null);
   };
 
@@ -503,7 +539,10 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
   };
 
   return (
-    <div className="group/widget figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col shadow-2xl relative overflow-hidden">
+    <div
+      className="group/widget figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col shadow-2xl relative"
+      style={(timePickerGroupId || iconPickerGroupId) ? { overflow: "visible" } : { overflow: "hidden" }}
+    >
       {/* Header Row */}
       <div className="w-full flex items-center justify-between z-10 relative shrink-0 mb-3">
         <div
@@ -520,7 +559,14 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
       <div
         ref={containerRef}
         onScroll={updateAtBottom}
+        onWheel={(e) => {
+          if (timePickerGroupId || iconPickerGroupId) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }}
         className="w-full flex-1 min-h-0 overflow-y-auto scrollbar-hide z-10 relative pr-0.5"
+        style={(timePickerGroupId || iconPickerGroupId) ? { overflow: "hidden" } : undefined}
       >
         <div className="flex flex-col">
           {groups.map((group, index) => {
