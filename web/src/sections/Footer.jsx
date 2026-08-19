@@ -58,7 +58,7 @@ const Footer = () => {
 
                 {/* Download Zip Button (RippleButton) */}
                 <RippleButton
-                  href="#download"
+                  href="https://drive.google.com/uc?export=download&id=1WhLH_-XkolPMaNIcPfXzu5QbRj0MYo0_"
                   className="px-4 sm:px-6 py-2 sm:py-3 text-[9.5px] sm:text-[11px]"
                 >
                   <span>DOWNLOAD ZIP</span>
