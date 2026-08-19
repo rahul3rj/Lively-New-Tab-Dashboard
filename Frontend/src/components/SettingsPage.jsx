@@ -2523,9 +2523,9 @@ const BackupTab = ({ uiTheme }) => {
             <button
               type="button"
               onClick={() => setShowConfirmReset(true)}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-gilroy-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-md"
             >
-              <i className="ri-refresh-line text-xs" />
+              <i className="ri-refresh-line text-sm" />
               <span>Reset to Defaults</span>
             </button>
           ) : (
@@ -2534,14 +2534,14 @@ const BackupTab = ({ uiTheme }) => {
                 type="button"
                 onClick={handleResetData}
                 disabled={isResetting}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-gilroy-bold text-white bg-rose-600 hover:bg-rose-700 transition-all cursor-pointer active:scale-95 shadow-md disabled:opacity-50"
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-white bg-rose-600 hover:bg-rose-700 transition-all cursor-pointer active:scale-95 shadow-md disabled:opacity-50"
               >
                 {isResetting ? "Resetting..." : "Confirm Reset"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowConfirmReset(false)}
-                className="px-3 py-2 rounded-xl text-xs font-gilroy-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/15 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-xs font-gilroy-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/15 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -2556,6 +2556,15 @@ const BackupTab = ({ uiTheme }) => {
 /* ─── Main Full-Fledged Settings Screen ─── */
 const SettingsPage = (props) => {
   const [activeTab, setActiveTab] = useState("appearance");
+
+  useEffect(() => {
+    if (!props.open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") props.onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [props.open, props.onClose]);
 
   if (!props.open) return null;
 
