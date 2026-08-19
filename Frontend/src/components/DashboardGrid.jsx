@@ -12,7 +12,7 @@ import {
   useSensors,
   useDraggable,
 } from "@dnd-kit/core";
-import Timmer from "./Timmer";
+import Timer from "./Timer";
 import WaterReminder from "./WaterReminder";
 import Todo from "./Todo";
 import Clock from "./Clock";
@@ -1245,7 +1245,7 @@ const DashboardGrid = ({
   const renderWidget = (id, dragHandleProps) => {
     switch (id) {
       case "timer":
-        return <Timmer dragHandleProps={dragHandleProps} />;
+        return <Timer dragHandleProps={dragHandleProps} />;
       case "waterReminder":
         return <WaterReminder dragHandleProps={dragHandleProps} goalMl={waterGoalMl} />;
       case "todo":
