@@ -488,13 +488,13 @@ const Features = () => {
         {/* Extended Top & Bottom Horizontal Lines stretching to the viewport edge */}
         {isLeft ? (
           <>
-            <div className="absolute top-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
-            <div className="absolute bottom-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
+            <div className="hidden md:block absolute top-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
+            <div className="hidden md:block absolute bottom-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
           </>
         ) : (
           <>
-            <div className="absolute top-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
-            <div className="absolute bottom-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
+            <div className="hidden md:block absolute top-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
+            <div className="hidden md:block absolute bottom-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
           </>
         )}
 
@@ -538,8 +538,6 @@ const Features = () => {
           </div>
         </div>
 
-
-
         {/* Connector Target Node for SVG Vector Line */}
         <div
           ref={(el) => (dotRefs.current[cardIdx] = el)}
@@ -564,7 +562,7 @@ const Features = () => {
           </div>
 
           {/* Title & Shortened Description */}
-          <div className={`my-auto py-1 max-w-[58%] sm:max-w-[55%] md:max-w-[52%] ${isLeft ? "" : "text-right"}`}>
+          <div className={`my-auto py-1 max-w-[65%] sm:max-w-[58%] md:max-w-[52%] ${isLeft ? "" : "text-right"}`}>
             <h3 className="font-rejoice text-lg sm:text-xl md:text-[22px] text-white font-normal tracking-tight leading-tight mb-1">
               {card.title}
             </h3>
@@ -592,7 +590,7 @@ const Features = () => {
   };
 
   return (
-    <section id="features" className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-8 px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col justify-between overflow-hidden select-none">
+    <section id="features" className="relative w-full min-h-screen md:h-screen md:min-h-[640px] md:max-h-screen bg-black text-white pt-8 pb-10 md:pb-0 px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col justify-between overflow-x-hidden md:overflow-hidden select-none">
       {/* Top Header Row: Left Title & Right Subtitle */}
       <div className="w-full mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-3 shrink-0 mb-4 md:mb-6">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-rejoice font-normal tracking-tight text-white leading-none">
@@ -609,10 +607,10 @@ const Features = () => {
         ref={containerRef}
         className="relative w-full mx-auto flex-1 min-h-0 flex flex-col justify-between"
       >
-        {/* Central Brain & Skin Illustration */}
+        {/* Central Brain & Skin Illustration (Hidden on mobile, perfectly animated on laptop/desktop) */}
         <div
           ref={brainRef}
-          className="absolute left-1/2 -translate-x-1/2 bottom-0 h-[82%] max-h-[520px] pointer-events-none z-10 flex items-end justify-center"
+          className="hidden md:flex absolute left-1/2 -translate-x-1/2 bottom-0 h-[82%] max-h-[520px] pointer-events-none z-10 items-end justify-center"
         >
           <div className="relative h-full w-auto flex items-end justify-center">
             <img
@@ -630,8 +628,8 @@ const Features = () => {
           </div>
         </div>
 
-        {/* SVG Layer: 100% Vector-Synchronized Blur + Color Fill + Noise Texture + White Outline */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible">
+        {/* SVG Layer: 100% Vector-Synchronized Blur + Color Fill + Noise Texture + White Outline (Desktop only) */}
+        <svg className="hidden md:block absolute inset-0 w-full h-full pointer-events-none z-30 overflow-visible">
           <defs>
             {/* Fine Grain / Noise Filter for tactile organic texture */}
             <filter
@@ -827,16 +825,16 @@ const Features = () => {
         </svg>
 
         {/* 6 Feature Containers: Left 3-Card Column & Right 3-Card Column Framing Brain */}
-        <div className="relative z-20 w-full h-full flex flex-col md:flex-row items-stretch justify-between gap-4 md:gap-6">
+        <div className="relative z-20 w-full h-full flex flex-col md:flex-row items-stretch justify-between gap-3 sm:gap-4 md:gap-6">
           {/* Left Column: 3 Cards (0: Top-Left Widest, 5: Mid-Left Compact, 4: Bottom-Left Medium-Wide) */}
-          <div className="flex flex-col items-start justify-between gap-3 md:gap-4 flex-1 h-full">
-            <div className="w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-0">
+          <div className="flex flex-col items-stretch md:items-start justify-between gap-3 md:gap-4 flex-1 h-full w-full">
+            <div className="w-full md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(0)}
             </div>
-            <div className="w-full max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-0">
+            <div className="w-full md:max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(5)}
             </div>
-            <div className="w-full max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-0">
+            <div className="w-full md:max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(4)}
             </div>
           </div>
@@ -845,14 +843,14 @@ const Features = () => {
           <div className="hidden md:block w-[140px] lg:w-[180px] xl:w-[220px] shrink-0 h-full pointer-events-none" />
 
           {/* Right Column: 3 Cards (1: Top-Right Widest, 2: Mid-Right Compact, 3: Bottom-Right Medium-Wide) */}
-          <div className="flex flex-col items-end justify-between gap-3 md:gap-4 flex-1 h-full">
-            <div className="w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-0">
+          <div className="flex flex-col items-stretch md:items-end justify-between gap-3 md:gap-4 flex-1 h-full w-full">
+            <div className="w-full md:max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(1)}
             </div>
-            <div className="w-full max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-0">
+            <div className="w-full md:max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(2)}
             </div>
-            <div className="w-full max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-0">
+            <div className="w-full md:max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-[140px] md:min-h-0">
               {renderFeatureCard(3)}
             </div>
           </div>
