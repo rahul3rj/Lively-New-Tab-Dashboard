@@ -43,6 +43,8 @@ const CustomBackgroundMedia = ({ src }) => {
  * - Robust play/pause & station switcher with explicit audio loading (.load()) and error recovery.
  * - Custom user video/animation backdrop container (supports uploaded video/GIF or animated lofi visualizer).
  */
+const DEFAULT_SONG_BG = "https://i.pinimg.com/originals/ee/e0/c1/eee0c1dc806da44930fc6eb26b94a737.gif";
+
 const SongPlayer = ({ dragHandleProps, playlistUrl, autoPlay, customVideo, stations }) => {
   const [stationIndex, setStationIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoPlay || false);
@@ -149,7 +151,9 @@ const SongPlayer = ({ dragHandleProps, playlistUrl, autoPlay, customVideo, stati
     changeStation(prevIdx);
   };
 
-  const videoSrc = typeof customVideo === "string" ? customVideo : customVideo?.dataUrl;
+  const videoSrc =
+    (typeof customVideo === "string" ? customVideo : customVideo?.dataUrl) ||
+    DEFAULT_SONG_BG;
 
   const stationTitle = isCustomStream ? "Custom Audio Stream" : activeStation.name;
   const stationBadge = isCustomStream ? "Custom Lofi Stream" : (activeStation.badge || activeStation.name);

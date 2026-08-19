@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_LOFI_STATIONS } from "../App";
+import { DEFAULT_LOFI_STATIONS, DEFAULT_SONG_CUSTOM_VIDEO } from "../App";
 import { UI_THEMES } from "../themes/index.js";
 import {
   exportAllStorageData,
@@ -1238,15 +1238,24 @@ const SongPlayerTab = ({
                 <i className="ri-vidicon-line text-sm text-[color:var(--theme)]" />
                 <span className="text-white/90 text-xs font-gilroy-bold">Custom Video / GIF Background</span>
               </div>
-              {songCustomVideo && (
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => onSongCustomVideoChange(null)}
-                  className="text-[11px] text-white/60 hover:text-white underline cursor-pointer transition-colors"
+                  onClick={() => onSongCustomVideoChange(DEFAULT_SONG_CUSTOM_VIDEO)}
+                  className="text-[11px] text-[color:var(--theme)] hover:brightness-125 underline cursor-pointer transition-colors font-gilroy-medium"
                 >
-                  Remove Background
+                  Reset to Default GIF
                 </button>
-              )}
+                {songCustomVideo && (
+                  <button
+                    type="button"
+                    onClick={() => onSongCustomVideoChange(null)}
+                    className="text-[11px] text-white/60 hover:text-white underline cursor-pointer transition-colors"
+                  >
+                    Remove Background
+                  </button>
+                )}
+              </div>
             </div>
             <p className="text-white/50 text-[11px] font-gilroy-medium leading-relaxed">
               Upload a video/GIF file (.mp4, .webm, .gif) or paste an online video / GIF link URL to display inside the Song Player container.

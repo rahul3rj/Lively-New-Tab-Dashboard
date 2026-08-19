@@ -406,6 +406,13 @@
     user-select: none;
   }
 
+  [data-resize-handle-cols] {
+    cursor: ew-resize;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
   /* Song Player YouTube Iframe Container */
   .song-player-iframe {
     position: absolute !important;
