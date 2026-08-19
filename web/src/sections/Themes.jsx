@@ -45,17 +45,19 @@ const Themes = () => {
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top top",
-        end: "+=350", // Ultra-compact scroll distance for immediate step transitions
+        end: "+=700",
         pin: true,
         pinSpacing: true,
-        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        fastScrollEnd: true,
+        preventOverlaps: true,
         onUpdate: (self) => {
           // Map scroll progress [0, 1] across the 4 themes
           const nextIndex = Math.min(
             THEMES.length - 1,
             Math.floor(self.progress * THEMES.length),
           );
-          setActiveIndex(nextIndex);
+          setActiveIndex((prev) => (prev !== nextIndex ? nextIndex : prev));
         },
       });
     }, sectionRef);
@@ -67,7 +69,7 @@ const Themes = () => {
     <section
       id="themes"
       ref={sectionRef}
-      className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-4 flex flex-col justify-between overflow-hidden select-none"
+      className="relative w-full h-screen min-h-[580px] sm:min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-4 flex flex-col justify-between overflow-hidden select-none"
     >
       {/* Top Header Row: Left Title & Right Subtitle */}
       <div className="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col sm:flex-row sm:items-end justify-between gap-3 shrink-0 mb-4 md:mb-6">
@@ -83,7 +85,7 @@ const Themes = () => {
       {/* Main Content: 4 Full-Width Equal Size Theme Rows (Touching Edge-to-Edge) */}
       <div className="relative w-full flex-1 min-h-0 flex flex-col justify-center">
         {/* Dead-Center Theme Showcase Card (Matching Reference Image) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none w-[45%] max-w-[820px] min-w-[320px] aspect-[16/9] select-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none w-[52%] sm:w-[48%] md:w-[45%] max-w-[820px] min-w-0 sm:min-w-[280px] md:min-w-[320px] aspect-[16/9] select-none">
           {/* Clean Rounded Image Frame Container (No Backglow, No Border) */}
           <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-950 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
             {THEMES.map((theme, i) => {

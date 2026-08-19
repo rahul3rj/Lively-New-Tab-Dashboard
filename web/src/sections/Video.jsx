@@ -42,7 +42,7 @@ const Video = () => {
   const VIDEO_URL = "https://github.com/user-attachments/assets/ee133631-92e3-42fd-bb24-6e94da42a7a8";
 
   return (
-    <section className="relative w-full min-h-screen bg-black flex flex-col items-center justify-start pb-8 z-20 select-none">
+    <section className="relative w-full bg-black flex flex-col items-center justify-start pb-8 md:pb-12 z-20 select-none">
       {/* macOS Window Card bleeding upwards into Hero and extending into Video */}
       <div
         ref={windowGlassRef}
@@ -80,7 +80,7 @@ const Video = () => {
       </div>
 
       {/* Available For These Browsers Bar with Full-Width Horizontal Grid Lines and Corner Circles */}
-      <div className="w-full mt-24 md:mt-16 flex flex-col items-center">
+      <div className="w-full mt-10 sm:mt-14 md:mt-16 flex flex-col items-center">
         {/* Section Tagline */}
         <p className="text-[10px] sm:text-[11px] font-syne font-bold text-zinc-500 uppercase mb-4 text-center">
           AVAILABLE FOR THESE BROWSERS

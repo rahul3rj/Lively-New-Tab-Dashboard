@@ -240,7 +240,7 @@ const Contributions = () => {
       {/* Center Dynamic Ball Cluster Canvas */}
       <div className="relative w-full h-full flex items-center justify-center">
         {/* Central Exact Zero-Size Origin Point — Shifted Left for clearance from HUD Card */}
-        <div className="relative w-0 h-0 flex items-center justify-center -translate-x-10 sm:-translate-x-16 md:-translate-x-24 lg:-translate-x-32">
+        <div className="relative w-0 h-0 flex items-center justify-center -translate-x-0 sm:-translate-x-16 md:-translate-x-24 lg:-translate-x-32">
           {/* Main Big Center Planet (Owner rahul3rj / Lead) — Positioned at (0, 0) */}
           <div
             ref={centerElRef}
@@ -342,7 +342,7 @@ const Contributions = () => {
       {/* Bottom-Right HUD Contributor Detail Card (Absolute on Section with lines extending to extreme right) */}
       <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 right-0 z-30 flex items-end justify-end pointer-events-none">
         {/* Card Framing Container */}
-        <div className="relative border-y border-x border-white/15 bg-zinc-950/85 backdrop-blur-md p-5 sm:p-6 pr-7 sm:pr-9 mr-4 sm:mr-6 md:mr-8 lg:mr-14 w-[340px] sm:w-[390px] md:w-[420px] shadow-[0_25px_70px_rgba(0,0,0,0.9)] select-none pointer-events-auto">
+        <div className="relative border-y border-x border-white/15 bg-zinc-950/85 backdrop-blur-md p-4 sm:p-6 pr-6 sm:pr-9 mr-4 sm:mr-6 md:mr-8 lg:mr-14 w-[calc(100vw-2rem)] max-w-[340px] sm:max-w-none sm:w-[390px] md:w-[420px] shadow-[0_25px_70px_rgba(0,0,0,0.9)] select-none pointer-events-auto">
           {/* Extended Top & Bottom Horizontal Lines stretching to the extreme right edge of viewport */}
           <div className="absolute top-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/15 pointer-events-none" />
           <div className="absolute bottom-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/15 pointer-events-none" />

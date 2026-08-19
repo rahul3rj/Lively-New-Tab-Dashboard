@@ -43,7 +43,19 @@ const App = () => {
     gsap.ticker.add(tickerHandler)
     gsap.ticker.lagSmoothing(0)
 
+    // Recalculate and synchronize exact pin coordinates after DOM & asset settle
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh()
+    }, 400)
+
+    const handleWindowLoad = () => {
+      ScrollTrigger.refresh()
+    }
+    window.addEventListener('load', handleWindowLoad)
+
     return () => {
+      clearTimeout(refreshTimer)
+      window.removeEventListener('load', handleWindowLoad)
       gsap.ticker.remove(tickerHandler)
       lenis.destroy()
       window.__lenis = null
