@@ -226,7 +226,7 @@ const Contributions = () => {
   }
 
   return (
-    <section className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white select-none overflow-hidden">
+    <section id="contributors" className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white select-none overflow-hidden">
       {/* Top Header Row: Left Title & Right Subtitle (Absolute Overlay) */}
       <div className="absolute top-16 sm:top-20 md:top-24 inset-x-4 sm:inset-x-6 md:inset-x-8 lg:inset-x-14 z-20 flex flex-col sm:flex-row sm:items-end justify-between gap-3 pointer-events-none">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-rejoice font-normal tracking-tight text-white leading-none pointer-events-auto">

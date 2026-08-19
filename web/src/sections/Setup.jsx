@@ -80,6 +80,24 @@ const Setup = () => {
           cursor: 'grab',
           activeCursor: 'grabbing',
           zIndexBoost: true,
+          onPress: function (e) {
+            window.dispatchEvent(new CustomEvent('cursor-state', { detail: 'drag' }))
+            const clientX = e?.clientX ?? e?.pointerEvent?.clientX ?? (e?.touches && e.touches[0]?.clientX)
+            const clientY = e?.clientY ?? e?.pointerEvent?.clientY ?? (e?.touches && e.touches[0]?.clientY)
+            if (clientX !== undefined && clientY !== undefined) {
+              window.dispatchEvent(new CustomEvent('cursor-pos', { detail: { x: clientX, y: clientY } }))
+            }
+          },
+          onDrag: function (e) {
+            const clientX = e?.clientX ?? e?.pointerEvent?.clientX ?? (e?.touches && e.touches[0]?.clientX)
+            const clientY = e?.clientY ?? e?.pointerEvent?.clientY ?? (e?.touches && e.touches[0]?.clientY)
+            if (clientX !== undefined && clientY !== undefined) {
+              window.dispatchEvent(new CustomEvent('cursor-pos', { detail: { x: clientX, y: clientY } }))
+            }
+          },
+          onRelease: function () {
+            window.dispatchEvent(new CustomEvent('cursor-state', { detail: 'scroll' }))
+          },
         })
       }
     }, sectionRef)
@@ -89,6 +107,7 @@ const Setup = () => {
 
   return (
     <section
+      id="setup"
       ref={sectionRef}
       className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-24 pb-0 px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col justify-between select-none overflow-hidden"
     >
@@ -200,6 +219,7 @@ const Setup = () => {
             {/* Mac Window Controls (Draggable Trigger Handle matching Video.jsx) */}
             <div
               ref={handleRef}
+              data-cursor="drag"
               title="Drag window anywhere on page"
               className="flex items-center gap-2 mb-3 px-1 py-1 cursor-grab active:cursor-grabbing w-fit rounded-lg hover:bg-white/5 transition-colors"
             >

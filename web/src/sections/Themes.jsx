@@ -65,6 +65,7 @@ const Themes = () => {
 
   return (
     <section
+      id="themes"
       ref={sectionRef}
       className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-4 flex flex-col justify-between overflow-hidden select-none"
     >

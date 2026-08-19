@@ -13,7 +13,7 @@ const Hero = () => {
   })
 
   return (
-    <section className='relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-black select-none'>
+    <section id='hero' className='relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-black select-none'>
       {/* Full Cover Background Artwork (extended downwards to bleed into video section) */}
       <img
         src='/hero.png'
@@ -60,7 +60,8 @@ const Hero = () => {
           <a
             ref={chromeGlassRef}
             href='#chrome-store'
-            className='liquid-glass flex items-center gap-2 px-6 py-3 rounded-full text-white text-[11px] font-syne font-bold uppercase hover:brightness-125 transition-all duration-200 shadow-xl hover:scale-105 active:scale-95'
+            data-cursor='soon'
+            className='liquid-glass liquid-glass-btn flex items-center gap-2 px-6 py-3 rounded-full text-white text-[11px] font-syne font-bold uppercase transition-all duration-300 shadow-xl'
           >
             <span>ADD TO CHROME</span>
             <i className='ri-chrome-fill text-sm'></i>

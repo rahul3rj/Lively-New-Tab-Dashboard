@@ -49,7 +49,8 @@ const Footer = () => {
                 <a
                   ref={chromeGlassRef}
                   href="#chrome-store"
-                  className="liquid-glass flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-white text-[10px] sm:text-[11px] font-syne font-bold uppercase hover:brightness-125 transition-all duration-200 shadow-xl hover:scale-105 active:scale-95"
+                  data-cursor="soon"
+                  className="liquid-glass liquid-glass-btn flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-white text-[10px] sm:text-[11px] font-syne font-bold uppercase transition-all duration-300 shadow-xl"
                 >
                   <span>ADD TO CHROME</span>
                   <i className="ri-chrome-fill text-sm" />

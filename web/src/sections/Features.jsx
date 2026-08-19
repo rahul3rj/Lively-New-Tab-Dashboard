@@ -5,70 +5,263 @@ const NOISE_BG = `data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://
 const FEATURE_CARDS = [
   {
     index: 0,
-    number: '#01',
-    badge: 'Focus Engine',
-    title: 'Pomodoro Focus Timer',
-    desc: 'Customizable work and rest cycles with audio alerts, browser notifications, and automatic streak logging.',
+    number: '01 // FLOW',
+    title: 'Deep Focus Protocol',
+    desc: 'Customizable Pomodoro flow cycles with audio alerts.',
     icon: 'ri-timer-flash-line',
-    subtag: 'Work / Rest Cycles',
-    status: 'Auto-Syncs Streaks',
+    subtag: 'Dual Interval Engine',
+    status: 'LOCKED IN',
     isLeft: true,
   },
   {
     index: 1,
-    number: '#02',
-    badge: 'Habit Engine',
-    title: 'Time-Boxing Planner',
-    desc: 'Hourly routine blocks with subtask checklists, automatic UTC daily reset, and habit streak counters.',
+    number: '02 // TIME',
+    title: 'Chrono Time-Boxing',
+    desc: 'Hourly routine blocks with UTC midnight reset.',
     icon: 'ri-calendar-check-line',
-    subtag: 'Routine Blocks',
-    status: 'UTC 00:00 Reset',
+    subtag: 'Hourly Task Sprint',
+    status: 'UTC 00:00 SYNC',
     isLeft: false,
   },
   {
     index: 2,
-    number: '#03',
-    badge: 'Productivity Heatmap',
-    title: 'Activity Streak Matrix',
-    desc: 'GitHub-style contribution calendar mapping focus intensity and syncing with real GitHub commit history.',
-    icon: 'ri-bar-chart-grouped-line',
-    subtag: 'Contribution Heatmap',
-    status: 'GitHub Sync',
+    number: '03 // SYNC',
+    title: 'GitHub Matrix HUD',
+    desc: 'Live GitHub commit momentum heatmap on new tab.',
+    icon: 'ri-github-fill',
+    subtag: 'Contribution Graph',
+    status: 'LIVE SYNC',
     isLeft: false,
   },
   {
     index: 3,
-    number: '#04',
-    badge: 'Ambient Audio',
-    title: 'Lofi & Media Player',
-    desc: '24/7 live lofi radio stations, YouTube audio background streams, and Spotify quick integration.',
+    number: '04 // AUDIO',
+    title: 'Ambient Audio Space',
+    desc: '24/7 curated lofi radio and ambient soundscapes.',
     icon: 'ri-music-2-line',
-    subtag: '24/7 Lofi Streams',
-    status: 'Zero Distraction',
+    subtag: 'Audio Command Center',
+    status: 'STREAMING',
     isLeft: false,
   },
   {
     index: 4,
-    number: '#05',
-    badge: 'Health & Wellness',
-    title: 'Smart Hydration Log',
-    desc: 'Visual water intake progress ring with quick +250ml logging and customizable interval sound reminders.',
+    number: '05 // HYDRO',
+    title: 'Bio-Hydration Metric',
+    desc: 'Smart water tracker with timed audio prompts.',
     icon: 'ri-drop-line',
-    subtag: 'Hydration Ring',
-    status: 'Interval Alerts',
+    subtag: 'Cognitive Wellness',
+    status: 'OPTIMAL LEVEL',
     isLeft: true,
   },
   {
     index: 5,
-    number: '#06',
-    badge: 'dnd-kit Grid',
-    title: 'Modular Grid Engine',
-    desc: 'Drag, drop, and rearrange every widget with dnd-kit or switch to a distraction-free Hero View.',
-    icon: 'ri-layout-grid-line',
-    subtag: 'Drag & Drop Layout',
-    status: 'Dual View Mode',
+    number: '06 // DOCK',
+    title: 'Freeform Grid Engine',
+    desc: 'Physics-based drag & drop with instant HUD mode.',
+    icon: 'ri-layout-masonry-line',
+    subtag: 'Modular Workspace',
+    status: 'DRAGGABLE',
     isLeft: true,
   },
+];
+
+// Geometric wireframe illustrations — each shape meaningfully represents its card's feature
+const ILLUS_CLASS = "w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 shrink-0 text-white/50 group-hover:text-white/90 group-hover:scale-105 transition-all duration-500";
+
+const CARD_ILLUSTRATIONS = [
+  // 0: FLOW — Modern Focus Timer / Pomodoro Stopwatch
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Outer track ring — subtle background */}
+      <circle cx="40" cy="40" r="34" strokeWidth="1" opacity="0.15" />
+      {/* Progress arc — ~270° sweep showing focus session progress */}
+      <path d="M 40 6 A 34 34 0 1 1 6.06 40" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      {/* 4 cardinal tick marks only — minimal */}
+      {[0, 90, 180, 270].map((deg) => {
+        const r1 = 30, r2 = 34;
+        const rad = (deg - 90) * Math.PI / 180;
+        return <line key={deg} x1={40+r1*Math.cos(rad)} y1={40+r1*Math.sin(rad)} x2={40+r2*Math.cos(rad)} y2={40+r2*Math.sin(rad)} strokeWidth="0.8" opacity="0.35" />;
+      })}
+      {/* Inner dashed ring */}
+      <circle cx="40" cy="40" r="24" strokeDasharray="1.5 3.5" opacity="0.15" />
+      {/* Timer needle — points to ~10 o'clock position (current progress head) */}
+      <line x1="40" y1="40" x2="12" y2="40" strokeWidth="1" strokeLinecap="round" opacity="0.5" />
+      {/* Needle tip dot */}
+      <circle cx="12" cy="40" r="2" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="0.5" opacity="0.6" />
+      {/* Center hub */}
+      <circle cx="40" cy="40" r="2.5" fill="currentColor" fillOpacity="0.3" stroke="none" />
+      {/* Pause icon in center — indicates active timer */}
+      <rect x="37" y="37" width="2" height="6" rx="0.5" fill="currentColor" fillOpacity="0.35" stroke="none" />
+      <rect x="41" y="37" width="2" height="6" rx="0.5" fill="currentColor" fillOpacity="0.35" stroke="none" />
+      {/* Small arc accent at the start position (12 o'clock) */}
+      <circle cx="40" cy="6" r="2" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
+    </svg>
+  ),
+
+  // 1: TIME — Hourly Timeline / Schedule Blocks
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Timeline vertical backbone */}
+      <line x1="18" y1="6" x2="18" y2="74" strokeWidth="0.6" opacity="0.25" />
+      {/* Hour tick marks + faint labels */}
+      {[12, 24, 36, 48, 60, 72].map((y, i) => (
+        <g key={y}>
+          <line x1="14" y1={y} x2="18" y2={y} strokeWidth="0.6" opacity="0.3" />
+          <rect x="6" y={y - 2} width="6" height="4" rx="0.5" fill="currentColor" fillOpacity="0.08" stroke="none" />
+        </g>
+      ))}
+      {/* Time blocks — fill only, no stroke, varying widths for visual hierarchy */}
+      <rect x="22" y="10" width="32" height="9" rx="1.5" fill="currentColor" fillOpacity="0.25" stroke="none" />
+      <rect x="22" y="22" width="48" height="9" rx="1.5" fill="currentColor" fillOpacity="0.15" stroke="none" />
+      <rect x="22" y="34" width="22" height="9" rx="1.5" fill="currentColor" fillOpacity="0.1" stroke="none" />
+      <rect x="22" y="46" width="40" height="9" rx="1.5" fill="currentColor" fillOpacity="0.2" stroke="none" />
+      <rect x="22" y="58" width="28" height="9" rx="1.5" fill="currentColor" fillOpacity="0.12" stroke="none" />
+      {/* Active block highlight accent */}
+      <rect x="22" y="46" width="40" height="9" rx="1.5" fill="none" stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
+      {/* Current time indicator — horizontal line across */}
+      <line x1="14" y1="50" x2="76" y2="50" strokeWidth="0.8" opacity="0.45" strokeDasharray="2 2" />
+      <circle cx="14" cy="50" r="2" fill="currentColor" fillOpacity="0.45" stroke="currentColor" strokeWidth="0.4" opacity="0.6" />
+      {/* Small progress fill inside active block */}
+      <rect x="22" y="46" width="24" height="9" rx="1.5" fill="currentColor" fillOpacity="0.08" stroke="none" />
+      {/* Checkmark hints on completed blocks */}
+      <path d="M 50 13.5 L 52 15.5 L 56 11.5" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.3" />
+      <path d="M 66 25.5 L 68 27.5 L 72 23.5" strokeWidth="0.8" strokeLinecap="round" strokeLinejoin="round" opacity="0.3" />
+    </svg>
+  ),
+
+  // 2: SYNC — GitHub Contribution Grid (7x5 heatmap matrix)
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Contribution grid — smaller cells, proper gaps */}
+      {[0,1,2,3,4,5,6,7,8].map((col) =>
+        [0,1,2,3,4].map((row) => {
+          const x = 6 + col * 7;
+          const y = 10 + row * 7;
+          const intensities = [
+            0.06,0.2,0.45,0.1,0.35,
+            0.25,0.06,0.5,0.15,0.1,
+            0.4,0.08,0.3,0.5,0.06,
+            0.15,0.35,0.06,0.25,0.45,
+            0.06,0.55,0.12,0.35,0.2,
+            0.3,0.06,0.4,0.1,0.5,
+            0.45,0.15,0.25,0.06,0.35,
+            0.1,0.4,0.55,0.2,0.06,
+            0.3,0.06,0.15,0.45,0.25,
+          ];
+          const opacity = intensities[col * 5 + row] || 0.06;
+          return <rect key={`${col}-${row}`} x={x} y={y} width="4.5" height="4.5" rx="0.8" fill="currentColor" fillOpacity={opacity} stroke="none" />;
+        })
+      )}
+      {/* Streak line chart underneath */}
+      <polyline points="6,56 14,52 22,54 30,48 38,50 46,44 54,46 62,41 70,43" strokeWidth="0.8" opacity="0.4" strokeLinejoin="round" strokeLinecap="round" />
+      {/* Endpoint pulse dot */}
+      <circle cx="70" cy="43" r="1.5" fill="currentColor" fillOpacity="0.5" stroke="currentColor" strokeWidth="0.4" opacity="0.6" />
+      {/* Commit count hint text line */}
+      <line x1="6" y1="64" x2="22" y2="64" strokeWidth="1.2" opacity="0.15" strokeLinecap="round" />
+      <line x1="6" y1="68" x2="16" y2="68" strokeWidth="0.8" opacity="0.1" strokeLinecap="round" />
+      {/* Branch icon — bottom right */}
+      <circle cx="68" cy="60" r="2" strokeWidth="0.6" opacity="0.25" />
+      <circle cx="68" cy="72" r="2" strokeWidth="0.6" opacity="0.25" />
+      <line x1="68" y1="62" x2="68" y2="70" strokeWidth="0.6" opacity="0.2" />
+      <circle cx="76" cy="56" r="2" strokeWidth="0.6" opacity="0.25" />
+      <path d="M 68 60 Q 72 58 76 56" strokeWidth="0.6" opacity="0.2" fill="none" />
+    </svg>
+  ),
+
+  // 3: AUDIO — Ambient Waveform / Lofi Radio Visualization
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Vinyl disc accent — top left */}
+      <circle cx="18" cy="22" r="12" strokeWidth="0.6" opacity="0.2" />
+      <circle cx="18" cy="22" r="7" strokeDasharray="1.5 2" opacity="0.15" />
+      <circle cx="18" cy="22" r="2" fill="currentColor" fillOpacity="0.25" stroke="none" />
+      {/* Play triangle on disc */}
+      <polygon points="16,19 16,25 21,22" fill="currentColor" fillOpacity="0.2" stroke="none" />
+      {/* Audio waveform — smooth ambient oscillation across the card */}
+      <polyline
+        points="4,48 10,44 16,50 22,38 28,52 34,36 40,54 46,34 52,50 58,38 64,48 70,42 76,46"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.5"
+      />
+      {/* Mirrored lower waveform — reflection */}
+      <polyline
+        points="4,52 10,56 16,50 22,62 28,48 34,64 40,46 46,66 52,50 58,62 64,52 70,58 76,54"
+        strokeWidth="0.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.15"
+      />
+      {/* Center baseline */}
+      <line x1="4" y1="50" x2="76" y2="50" strokeDasharray="1 3" opacity="0.1" />
+      {/* Frequency dots — subtle rhythm markers */}
+      {[12, 28, 44, 60].map((x) => (
+        <circle key={x} cx={x} cy="70" r="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+      ))}
+      {/* Active frequency dot */}
+      <circle cx="44" cy="70" r="1.5" fill="currentColor" fillOpacity="0.4" stroke="currentColor" strokeWidth="0.4" opacity="0.5" />
+    </svg>
+  ),
+
+  // 4: HYDRO — Water Droplet with Level Gauge
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Droplet outline */}
+      <path d="M 40 8 Q 40 8 56 36 A 18 18 0 1 1 24 36 Q 40 8 40 8 Z" opacity="0.5" strokeWidth="1" />
+      {/* Water fill level — ~70% filled, clipped to droplet */}
+      <clipPath id="dropClip">
+        <path d="M 40 8 Q 40 8 56 36 A 18 18 0 1 1 24 36 Q 40 8 40 8 Z" />
+      </clipPath>
+      <rect x="20" y="34" width="40" height="40" fill="currentColor" fillOpacity="0.15" clipPath="url(#dropClip)" stroke="none" />
+      {/* Water surface wave */}
+      <path d="M 24 38 Q 30 34 36 38 Q 42 42 48 38 Q 54 34 58 38" strokeWidth="0.7" opacity="0.4" clipPath="url(#dropClip)" />
+      {/* Level gauge marks on the right */}
+      <line x1="62" y1="28" x2="66" y2="28" opacity="0.3" />
+      <line x1="62" y1="36" x2="68" y2="36" opacity="0.4" />
+      <line x1="62" y1="44" x2="66" y2="44" opacity="0.3" />
+      <line x1="62" y1="52" x2="68" y2="52" opacity="0.4" />
+      <line x1="62" y1="60" x2="66" y2="60" opacity="0.3" />
+      {/* Gauge indicator arrow */}
+      <polygon points="69,36 73,34 73,38" fill="currentColor" fillOpacity="0.5" stroke="none" />
+      {/* Small bubbles */}
+      <circle cx="35" cy="48" r="1.5" opacity="0.25" />
+      <circle cx="44" cy="52" r="1" opacity="0.2" />
+      <circle cx="38" cy="56" r="1.8" opacity="0.2" />
+    </svg>
+  ),
+
+  // 5: DOCK — Modular Workspace with draggable widgets
+  () => (
+    <svg viewBox="0 0 80 80" className={ILLUS_CLASS} fill="none" stroke="currentColor" strokeWidth="0.8">
+      {/* Subtle dot grid backdrop */}
+      {[0,1,2,3,4,5,6,7,8,9].map((col) =>
+        [0,1,2,3,4,5,6,7,8,9].map((row) => (
+          <circle key={`${col}-${row}`} cx={6 + col * 8} cy={6 + row * 8} r="0.4" fill="currentColor" fillOpacity="0.1" stroke="none" />
+        ))
+      )}
+      {/* Widget tiles — fill only, clean */}
+      <rect x="6" y="6" width="30" height="18" rx="2" fill="currentColor" fillOpacity="0.18" stroke="none" />
+      <rect x="40" y="6" width="34" height="12" rx="2" fill="currentColor" fillOpacity="0.1" stroke="none" />
+      <rect x="6" y="28" width="18" height="24" rx="2" fill="currentColor" fillOpacity="0.12" stroke="none" />
+      <rect x="40" y="22" width="20" height="14" rx="2" fill="currentColor" fillOpacity="0.08" stroke="none" />
+      <rect x="6" y="56" width="26" height="18" rx="2" fill="currentColor" fillOpacity="0.1" stroke="none" />
+      <rect x="36" y="56" width="38" height="18" rx="2" fill="currentColor" fillOpacity="0.06" stroke="none" />
+      {/* Active / dragging widget — slightly elevated with outline */}
+      <rect x="28" y="38" width="28" height="14" rx="2" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="0.6" opacity="0.4" />
+      {/* Drag handle grip dots on active widget */}
+      {[0,1,2].map((r) =>
+        [0,1].map((c) => (
+          <circle key={`grip-${r}-${c}`} cx={36 + c * 4} cy={42 + r * 3} r="0.7" fill="currentColor" fillOpacity="0.3" stroke="none" />
+        ))
+      )}
+      {/* Ghost outline — showing where widget came from */}
+      <rect x="62" y="22" width="14" height="14" rx="2" strokeDasharray="2 2" strokeWidth="0.5" opacity="0.15" />
+      {/* Drag motion arrow */}
+      <path d="M 69 29 L 56 38" strokeWidth="0.5" strokeDasharray="1.5 1.5" opacity="0.2" />
+      <path d="M 58 36 L 56 38 L 58.5 39" strokeWidth="0.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.25" />
+    </svg>
+  ),
 ];
 
 // Sector definitions with angles in Cartesian degrees (0° is Right, 90° is Down, -90° is Top, 180° is Left)
@@ -286,34 +479,34 @@ const Features = () => {
     return (
       <div
         onMouseEnter={() => setActiveSector(cardIdx)}
-        className={`relative w-full h-full border-y border-x p-3 sm:p-3.5 md:p-4 select-none transition-all duration-300 group cursor-pointer flex flex-col justify-between ${
+        className={`relative w-full h-full border-y border-x border-white/10 p-3 sm:p-3.5 md:p-4 select-none transition-all duration-300 group cursor-pointer flex flex-col justify-between ${
           isActive
-            ? "bg-zinc-950/90 backdrop-blur-md border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
-            : "bg-transparent border-white/15 hover:border-white/30"
+            ? "bg-zinc-950/90 backdrop-blur-md shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
+            : "bg-transparent"
         }`}
       >
         {/* Extended Top & Bottom Horizontal Lines stretching to the viewport edge */}
         {isLeft ? (
           <>
-            <div className="absolute top-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/15 pointer-events-none" />
-            <div className="absolute bottom-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/15 pointer-events-none" />
+            <div className="absolute top-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
+            <div className="absolute bottom-0 right-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
           </>
         ) : (
           <>
-            <div className="absolute top-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/15 pointer-events-none" />
-            <div className="absolute bottom-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/15 pointer-events-none" />
+            <div className="absolute top-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-t border-white/10 pointer-events-none" />
+            <div className="absolute bottom-0 left-full w-4 sm:w-6 md:w-8 lg:w-14 border-b border-white/10 pointer-events-none" />
           </>
         )}
 
-        {/* Background Layer with Overflow-Hidden for Gradients and Noise only */}
+        {/* Background & Illustration Layer with Overflow-Hidden */}
         <div
-          className={`absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-300 ease-out ${
-            isActive ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-300 ease-out z-0`}
         >
           {/* Horizontal Ambient Gradient */}
           <div
-            className={`absolute inset-0 ${
+            className={`absolute inset-0 transition-opacity duration-300 ${
+              isActive ? "opacity-100" : "opacity-0"
+            } ${
               isLeft
                 ? "bg-gradient-to-r from-white/[0.12] via-white/[0.035] to-transparent"
                 : "bg-gradient-to-l from-white/[0.12] via-white/[0.035] to-transparent"
@@ -322,7 +515,9 @@ const Features = () => {
 
           {/* Horizontal Noise Gradient Mask */}
           <div
-            className="absolute inset-0 opacity-30 mix-blend-screen pointer-events-none"
+            className={`absolute inset-0 mix-blend-screen pointer-events-none transition-opacity duration-300 ${
+              isActive ? "opacity-30" : "opacity-0"
+            }`}
             style={{
               backgroundImage: `url("${NOISE_BG}")`,
               backgroundSize: "140px 140px",
@@ -334,37 +529,16 @@ const Features = () => {
                 : "linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.45) 50%, rgba(0,0,0,0) 100%)",
             }}
           />
+
+          {/* Absolute Geometric UI Illustration — positioned on the OUTER edge of the card (away from brain center) */}
+          <div className={`absolute top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none ${
+            isLeft ? "right-3 sm:right-5 md:right-6" : "left-3 sm:left-5 md:left-6"
+          }`}>
+            {CARD_ILLUSTRATIONS[cardIdx] && CARD_ILLUSTRATIONS[cardIdx]()}
+          </div>
         </div>
 
-        {/* 4 Corner Intersection Nodes on Card Borders */}
-        <div
-          className={`absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border shadow-sm z-30 pointer-events-none transition-all duration-300 ${
-            isActive
-              ? "bg-white border-white shadow-[0_0_8px_#ffffff]"
-              : "bg-zinc-500 border-zinc-400/60"
-          }`}
-        />
-        <div
-          className={`absolute bottom-0 left-0 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full border shadow-sm z-30 pointer-events-none transition-all duration-300 ${
-            isActive
-              ? "bg-white border-white shadow-[0_0_8px_#ffffff]"
-              : "bg-zinc-500 border-zinc-400/60"
-          }`}
-        />
-        <div
-          className={`absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full border shadow-sm z-30 pointer-events-none transition-all duration-300 ${
-            isActive
-              ? "bg-white border-white shadow-[0_0_8px_#ffffff]"
-              : "bg-zinc-500 border-zinc-400/60"
-          }`}
-        />
-        <div
-          className={`absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full border shadow-sm z-30 pointer-events-none transition-all duration-300 ${
-            isActive
-              ? "bg-white border-white shadow-[0_0_8px_#ffffff]"
-              : "bg-zinc-500 border-zinc-400/60"
-          }`}
-        />
+
 
         {/* Connector Target Node for SVG Vector Line */}
         <div
@@ -378,37 +552,39 @@ const Features = () => {
           }`}
         />
 
-        {/* Card Content with z-10 */}
-        <div className="relative z-10 flex flex-col justify-between h-full">
+        {/* Card Content with z-10 — text on the INNER edge (near brain), illustration on OUTER edge */}
+        <div className={`relative z-10 flex flex-col justify-between h-full pointer-events-auto ${
+          isLeft ? "items-start" : "items-end"
+        }`}>
           {/* Top Meta Row */}
-          <div className="flex items-center justify-between">
-            <span className="font-gilroy text-[11px] sm:text-xs text-zinc-400 font-medium tracking-wide">
+          <div className={`w-full ${isLeft ? "text-left" : "text-right"}`}>
+            <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 font-semibold tracking-wider">
               {card.number}
-            </span>
-            <span className="text-[10px] sm:text-[11px] font-gilroy text-white/90 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-              {card.badge}
             </span>
           </div>
 
-          {/* Title & Description */}
-          <div className="my-auto py-1">
-            <h3 className="font-rejoice text-lg sm:text-xl md:text-2xl text-white font-normal tracking-tight mt-0.5 mb-0.5 leading-tight">
+          {/* Title & Shortened Description */}
+          <div className={`my-auto py-1 max-w-[58%] sm:max-w-[55%] md:max-w-[52%] ${isLeft ? "" : "text-right"}`}>
+            <h3 className="font-rejoice text-lg sm:text-xl md:text-[22px] text-white font-normal tracking-tight leading-tight mb-1">
               {card.title}
             </h3>
-            <p className="font-gilroy text-[11px] sm:text-xs text-zinc-400 font-light leading-relaxed line-clamp-2">
+            <p className="font-gilroy text-[11px] sm:text-xs text-zinc-400 font-light leading-relaxed">
               {card.desc}
             </p>
           </div>
 
           {/* Bottom Row: Subtag & Status */}
-          <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-            <span className="flex items-center gap-1 text-zinc-400 text-[10px] sm:text-[11px] font-gilroy">
+          <div className="w-full flex items-center justify-between pt-1.5 border-t border-white/10 mt-auto">
+            <span className="flex items-center gap-1.5 text-zinc-400 text-[10px] sm:text-[11px] font-gilroy">
               <i className={`${card.icon} text-xs text-white/80`} />
               <span>{card.subtag}</span>
             </span>
-            <span className="text-zinc-500 text-[10px] sm:text-[11px] font-gilroy font-light">
-              {card.status}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full transition-colors ${isActive ? 'bg-white shadow-[0_0_6px_#ffffff] animate-pulse' : 'bg-zinc-600'}`} />
+              <span className="text-zinc-400 text-[9.5px] sm:text-[10px] font-mono font-medium tracking-tight">
+                {card.status}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -416,7 +592,7 @@ const Features = () => {
   };
 
   return (
-    <section className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-8 px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col justify-between overflow-hidden select-none">
+    <section id="features" className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-8 px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col justify-between overflow-hidden select-none">
       {/* Top Header Row: Left Title & Right Subtitle */}
       <div className="w-full mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-3 shrink-0 mb-4 md:mb-6">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-rejoice font-normal tracking-tight text-white leading-none">
@@ -657,7 +833,7 @@ const Features = () => {
             <div className="w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-0">
               {renderFeatureCard(0)}
             </div>
-            <div className="w-full max-w-[300px] lg:max-w-[330px] xl:max-w-[350px] flex-1 min-h-0">
+            <div className="w-full max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-0">
               {renderFeatureCard(5)}
             </div>
             <div className="w-full max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-0">
@@ -673,7 +849,7 @@ const Features = () => {
             <div className="w-full max-w-[520px] lg:max-w-[580px] xl:max-w-[640px] flex-1 min-h-0">
               {renderFeatureCard(1)}
             </div>
-            <div className="w-full max-w-[300px] lg:max-w-[330px] xl:max-w-[350px] flex-1 min-h-0">
+            <div className="w-full max-w-[340px] lg:max-w-[380px] xl:max-w-[410px] flex-1 min-h-0">
               {renderFeatureCard(2)}
             </div>
             <div className="w-full max-w-[390px] lg:max-w-[430px] xl:max-w-[470px] flex-1 min-h-0">
