@@ -28,7 +28,8 @@
     "https://streams.ilovemusic.de/*",
     "https://*.zeno.fm/*",
     "https://*.laut.fm/*",
-    "https://streams.fluxfm.de/*"
+    "https://streams.fluxfm.de/*",
+    "https://*.pinimg.com/*"
   ],
   "declarative_net_request": {
     "rule_resources": [

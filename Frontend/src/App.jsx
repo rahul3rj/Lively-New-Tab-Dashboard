@@ -210,7 +210,13 @@ export const DEFAULT_LOFI_STATIONS = [
 
 const MAX_SHORTCUTS = 12;
 
-const DEFAULT_THEME_PALETTE = ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
+export const DEFAULT_SONG_CUSTOM_VIDEO = {
+  dataUrl: "https://i.pinimg.com/originals/ee/e0/c1/eee0c1dc806da44930fc6eb26b94a737.gif",
+  name: "Cozy Anime Lofi GIF",
+  type: "image/gif",
+};
+
+export const DEFAULT_THEME_PALETTE = ["#CBD5E1", "#64748B", "#334155", "#0F172A"];
 
 export const DEFAULT_THEME_PALETTES = {
   default: ["#CBD5E1", "#64748B", "#334155", "#0F172A"],
@@ -251,7 +257,7 @@ const App = () => {
 
   const [songPlaylistUrl, setSongPlaylistUrl] = useState("");
   const [songAutoPlay, setSongAutoPlay] = useState(false);
-  const [songCustomVideo, setSongCustomVideo] = useState(null);
+  const [songCustomVideo, setSongCustomVideo] = useState(DEFAULT_SONG_CUSTOM_VIDEO);
   const [lofiStations, setLofiStations] = useState(DEFAULT_LOFI_STATIONS);
 
   const [importantTabsConfig, setImportantTabsConfig] = useState(DEFAULT_IMPORTANT_TABS);
@@ -384,7 +390,11 @@ const App = () => {
         if (typeof storedWaterRing === "string") setWaterRingtone(storedWaterRing);
         if (typeof storedPlaylist === "string") setSongPlaylistUrl(storedPlaylist);
         if (typeof storedAutoPlay === "boolean") setSongAutoPlay(storedAutoPlay);
-        if (storedCustomVideo) setSongCustomVideo(storedCustomVideo);
+        if (storedCustomVideo !== undefined && storedCustomVideo !== null) {
+          setSongCustomVideo(storedCustomVideo);
+        } else {
+          setSongCustomVideo(DEFAULT_SONG_CUSTOM_VIDEO);
+        }
         if (Array.isArray(storedLofiStations) && storedLofiStations.length > 0) setLofiStations(storedLofiStations);
         if (Array.isArray(storedTimeboxGroups) && storedTimeboxGroups.length > 0) setTimeBoxingGroups(storedTimeboxGroups);
         let parsedImpTabs = storedImpTabsCfg;
