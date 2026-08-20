@@ -22,6 +22,8 @@ const Footer = () => {
           <img
             src="/footer.png"
             alt="Footer Background"
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none"
           />
 

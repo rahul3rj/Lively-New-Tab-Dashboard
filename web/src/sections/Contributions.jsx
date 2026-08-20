@@ -277,6 +277,8 @@ const Contributions = () => {
                   src={owner.avatar}
                   alt={owner.name}
                   draggable={false}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover object-center select-none"
                   onError={(e) => {
                     e.currentTarget.src = 'https://github.com/rahul3rj.png'
@@ -324,6 +326,8 @@ const Contributions = () => {
                     src={contributor.avatar}
                     alt={contributor.name}
                     draggable={false}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover object-center select-none"
                     onError={(e) => {
                       e.currentTarget.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${contributor.handle}`

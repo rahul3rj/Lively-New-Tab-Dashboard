@@ -114,6 +114,8 @@ const Navbar = () => {
           <img
             src='/logo.png'
             alt='OS Logo'
+            loading='eager'
+            decoding='async'
             className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 h-8 sm:h-10`}
             onError={(e) => {
               e.currentTarget.style.display = 'none'
