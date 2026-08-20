@@ -379,7 +379,7 @@ const Contributions = () => {
               </span>
               {activeContributor.contributionsCount && (
                 <span className="text-[11px] font-gilroy text-emerald-400/90 bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                  {activeContributor.contributionsCount} commit{activeContributor.contributionsCount > 1 ? 's' : ''}
+                  {activeContributor.contributionsCount}
                 </span>
               )}
             </div>

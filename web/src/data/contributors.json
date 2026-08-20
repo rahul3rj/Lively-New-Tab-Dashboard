@@ -3,32 +3,32 @@
     "id": "rahul3rj",
     "name": "Rahul Jha",
     "tagline": "Full-Stack Developer | MERN & UI/UX Specialist | Building Scalable Web Experiences | React • Node • MongoDB • PostgreSQL",
-    "role": "Creator & Lead Developer",
+    "role": "Creator & Lead Developer · 14 commits",
     "handle": "rahul3rj",
     "githubUrl": "https://github.com/rahul3rj",
     "avatar": "https://github.com/rahul3rj.png",
-    "contributionsCount": 6
+    "contributionsCount": "18,315++"
   },
   "contributors": [
     {
       "id": "suneetchugh-dev",
       "name": "Suneet Chugh",
       "tagline": "Passionate About Coding That's it..✨✌🏻",
-      "role": "Contributor · 8 commits",
+      "role": "Contributor · 33 commits",
       "handle": "suneetchugh-dev",
       "githubUrl": "https://github.com/suneetchugh-dev",
       "avatar": "https://avatars.githubusercontent.com/u/76564569?v=4",
-      "contributionsCount": 33
+      "contributionsCount": "3,769++"
     },
     {
-      "id": "prvthmpcypher",
+      "id": "poorvith-mp",
       "name": "Poorvith M P",
-      "tagline": "Student · Open Source Contributor",
+      "tagline": "Shipping tools for problems people notice too late.",
       "role": "Contributor · 1 commit",
-      "handle": "prvthmpcypher",
-      "githubUrl": "https://github.com/prvthmpcypher",
+      "handle": "poorvith-mp",
+      "githubUrl": "https://github.com/poorvith-mp",
       "avatar": "https://avatars.githubusercontent.com/u/277478855?v=4",
-      "contributionsCount": 1
+      "contributionsCount": "341++"
     },
     {
       "id": "github-copilot",
@@ -38,7 +38,7 @@
       "handle": "github-copilot",
       "githubUrl": "https://github.com/features/copilot",
       "avatar": "https://avatars.githubusercontent.com/in/1143301?s=64&v=4",
-      "contributionsCount": "3"
+      "contributionsCount": "3++"
     }
   ]
 }

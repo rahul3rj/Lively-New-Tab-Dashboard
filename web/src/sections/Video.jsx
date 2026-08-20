@@ -3,50 +3,77 @@ import { useLiquidGlass } from "../utils/useLiquidGlass";
 
 const Video = () => {
   const videoRef = useRef(null);
+  const sectionRef = useRef(null);
 
-  // Real liquid glass physics on the macOS window frame
+  // Real liquid glass refraction on the macOS window frame
   const windowGlassRef = useLiquidGlass({
-    scale: -112,
-    chroma: 6,
-    blur: 6,
-    saturate: 1.8,
+    scale: -85,
+    chroma: 2,
+    border: 0.05,
+    mapBlur: 8,
+    blur: 4,
+    saturate: 1.6,
   });
 
-  // Ensure robust autoplay and loop playback across all modern browsers
+  const VIDEO_URL = "/Project-OS-video.mp4";
+
+  // High-performance IntersectionObserver: only play video when visible in viewport
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
-      video.muted = true;
-      video.defaultMuted = true;
-      video.playsInline = true;
-      video.loop = true;
+    const section = sectionRef.current;
+    if (!video || !section) return;
 
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay fallback: re-attempt on first user interaction or scroll
-          const handleFirstInteraction = () => {
-            if (videoRef.current) {
-              videoRef.current.play();
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.loop = true;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(() => {
+                // User gesture fallback
+                const startPlayback = () => {
+                  if (videoRef.current) {
+                    videoRef.current.play().catch(() => {});
+                  }
+                  window.removeEventListener("click", startPlayback);
+                  window.removeEventListener("touchstart", startPlayback);
+                };
+                window.addEventListener("click", startPlayback, { once: true });
+                window.addEventListener("touchstart", startPlayback, { once: true });
+              });
             }
-            window.removeEventListener("click", handleFirstInteraction);
-            window.removeEventListener("scroll", handleFirstInteraction);
-          };
-          window.addEventListener("click", handleFirstInteraction);
-          window.addEventListener("scroll", handleFirstInteraction);
+          } else {
+            video.pause();
+          }
         });
+      },
+      {
+        rootMargin: "150px 0px",
+        threshold: 0.05,
       }
-    }
+    );
+
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
-  const VIDEO_URL = "https://github.com/user-attachments/assets/ee133631-92e3-42fd-bb24-6e94da42a7a8";
-
   return (
-    <section className="relative w-full bg-black flex flex-col items-center justify-start pb-8 md:pb-12 z-20 select-none">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-black flex flex-col items-center justify-start pb-8 md:pb-12 z-20 select-none"
+    >
       {/* macOS Window Card bleeding upwards into Hero and extending into Video */}
       <div
         ref={windowGlassRef}
-        className="relative -mt-32 sm:-mt-44 md:-mt-26 w-[94%] max-w-5xl lg:max-w-5xl liquid-glass !rounded-[20px] p-3 sm:p-6 z-20 transition-all duration-300"
+        className="relative -mt-32 sm:-mt-44 md:-mt-26 w-[94%] max-w-5xl lg:max-w-5xl liquid-glass !rounded-[20px] p-3 sm:p-6 z-20 transition-all duration-300 shadow-[0_30px_90px_rgba(0,0,0,0.8)] will-change-transform"
       >
         {/* macOS Window Titlebar */}
         <div className="flex items-center justify-between pb-5">
@@ -58,8 +85,11 @@ const Video = () => {
           </div>
         </div>
 
-        {/* Inner Window Display Container */}
-        <div className="relative w-full aspect-video rounded-[10px] overflow-hidden bg-zinc-950 border border-white/10 shadow-inner group">
+        {/* Inner Window Display Container (isolated stacking context to avoid GPU repaint bottleneck) */}
+        <div
+          className="relative w-full aspect-video rounded-[10px] overflow-hidden bg-zinc-950 border border-white/10 shadow-inner group"
+          style={{ isolation: "isolate", contain: "paint" }}
+        >
           {/* App Preview Video */}
           <video
             ref={videoRef}
@@ -68,8 +98,9 @@ const Video = () => {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="metadata"
             className="w-full h-full object-cover object-center"
+            style={{ transform: "translateZ(0)" }}
           >
             <source src={VIDEO_URL} type="video/mp4" />
           </video>
