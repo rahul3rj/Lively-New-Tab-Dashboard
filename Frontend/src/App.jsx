@@ -500,6 +500,20 @@ const App = () => {
     };
   }, [isHydrated]);
 
+  /* ── Escape key: dashboard × button → back to hero ── */
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      // Settings and IconPickerModal handle Escape themselves (higher z-index / capture phase)
+      // This only runs when we're on dashboard with no overlays open
+      if (!settingsOpen && activeStep === "dashboard") {
+        setActiveStep("hero");
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [settingsOpen, activeStep]);
+
   /* ── Dynamic Google Font Loader for Base Font ── */
   useEffect(() => {
     if (!baseFont || baseFont === "Gilroy" || baseFont === "Default") {
