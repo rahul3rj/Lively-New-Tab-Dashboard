@@ -11,31 +11,31 @@ const STEPS = [
     number: '[ Step 01 ]',
     icon: 'ri-file-line',
     text: 'Extract the file in a folder.',
-    img: '/wallpaper.png',
+    img: '/step1.mp4',
   },
   {
     number: '[ Step 02 ]',
     icon: 'ri-settings-3-line',
     text: 'Open Browser and open Manage\nextensions.',
-    img: '/cyberpunk-wallpaper.png',
+    img: '/step2.mp4',
   },
   {
     number: '[ Step 03 ]',
     icon: 'ri-code-line',
     text: 'Enable developer mode.',
-    img: '/cli-wallpaper.jpg',
+    img: '/step3.mp4',
   },
   {
     number: '[ Step 04 ]',
     icon: 'ri-folder-line',
     text: 'Locate the Extension folder you\ndownloaded from here.',
-    img: '/manga-wallpaper.jpg',
+    img: '/step4.mp4',
   },
   {
     number: '[ Step 05 ]',
     icon: 'ri-sparkling-fill',
     text: "Let's go You have done with setup.",
-    img: '/Home 2.png',
+    img: '/step5.mp4',
   },
 ]
 
@@ -252,12 +252,14 @@ const Setup = () => {
                       zIndex: isCurrent ? 10 : 0,
                     }}
                   >
-                    <img
+                    <video
                       src={step.img}
-                      alt={`Step ${i + 1} Preview`}
                       className="w-full h-full object-cover object-center select-none"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
                       draggable={false}
-                      loading="eager"
                     />
                     <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] pointer-events-none" />
                   </div>

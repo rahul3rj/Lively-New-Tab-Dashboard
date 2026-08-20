@@ -69,7 +69,7 @@ const Hero = () => {
 
           {/* Download Zip Button (RippleButton) */}
           <RippleButton
-            href='https://drive.google.com/uc?export=download&id=1WhLH_-XkolPMaNIcPfXzu5QbRj0MYo0_'
+            href='https://drive.google.com/uc?export=download&id=1QeZsujRG2amFlaDyx9Py7I2TPr8qltSA'
             className='px-5 sm:px-6 py-2.5 sm:py-3 text-[10px] sm:text-[11px]'
           >
             <span>DOWNLOAD ZIP</span>
