@@ -112,7 +112,8 @@ const Themes = () => {
                     src={theme.img}
                     alt={theme.name}
                     className="w-full h-full object-cover object-center"
-                    loading="eager"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
                   />
                   {/* Subtle Inner Edge Vignette */}
                   <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] pointer-events-none" />

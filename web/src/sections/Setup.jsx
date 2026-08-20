@@ -117,6 +117,8 @@ const Setup = () => {
       <img
         src="/Setup-bg.png"
         alt="Setup Background"
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none z-0"
       />
 
@@ -255,10 +257,11 @@ const Setup = () => {
                     <video
                       src={step.img}
                       className="w-full h-full object-cover object-center select-none"
-                      autoPlay
+                      autoPlay={isCurrent}
                       muted
                       loop
                       playsInline
+                      preload={isCurrent ? "metadata" : "none"}
                       draggable={false}
                     />
                     <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] pointer-events-none" />

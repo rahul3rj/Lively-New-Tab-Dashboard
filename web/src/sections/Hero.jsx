@@ -18,6 +18,9 @@ const Hero = () => {
       <img
         src='/hero.png'
         alt='Hero Background'
+        fetchPriority='high'
+        loading='eager'
+        decoding='async'
         className='absolute -top-0 inset-x-0 w-full h-[115%] object-cover object-top pointer-events-none'
       />
 

@@ -18,8 +18,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Instant Critical Asset Preloading -->
+    <link rel="preload" href="/hero.png" as="image" fetchpriority="high" />
+    <link rel="preload" href="/logo.png" as="image" />
+    <link rel="preload" href="/Rejouice.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/Gilroy-Medium.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/Gilroy-Regular.ttf" as="font" type="font/ttf" crossorigin />
+
+    <!-- CDN Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
