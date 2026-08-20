@@ -206,6 +206,18 @@ const IconPickerModal = ({ current, onSelect, onClose }) => {
     });
   }, [activeCategory, search]);
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [onClose]);
+
   return (
     <div
       className="fixed inset-0 z-[250] flex items-center justify-center bg-black/65 backdrop-blur-xl animate-fade-in p-4"
@@ -2565,6 +2577,18 @@ const BackupTab = ({ uiTheme }) => {
 /* ─── Main Full-Fledged Settings Screen ─── */
 const SettingsPage = (props) => {
   const [activeTab, setActiveTab] = useState("appearance");
+
+  // Close on Escape key (only fires when no deeper modal is open, since those use capture phase)
+  useEffect(() => {
+    if (!props.open) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        props.onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [props.open, props.onClose]);
 
   if (!props.open) return null;
 
