@@ -12,25 +12,25 @@ const THEMES = [
     index: "01",
     name: "Glassmorphism",
     desc: "Frosted glass panels, soft glow halos,\nand luminous depth layers.",
-    img: "/wallpaper.png",
+    img: "/Theme_glassmorphism.png",
   },
   {
     index: "02",
     name: "Cyberpunk",
     desc: "Neon glow accents, HUD bracket\nframes, and dark grid styling.",
-    img: "/cyberpunk-wallpaper.png",
+    img: "/Theme_cyberpunk.png",
   },
   {
     index: "03",
     name: "Manga",
     desc: "High-contrast ink strokes, halftone\ndots, and manga panel overlays.",
-    img: "/manga-wallpaper.jpg",
+    img: "/Theme_manga.png",
   },
   {
     index: "04",
     name: "Terminal",
     desc: "Monospace CLI aesthetics, phosphor\nglow text, and scanline textures.",
-    img: "/cli-wallpaper.jpg",
+    img: "/Theme_cli.png",
   },
 ];
 
@@ -45,17 +45,19 @@ const Themes = () => {
       ScrollTrigger.create({
         trigger: sectionRef.current,
         start: "top top",
-        end: "+=350", // Ultra-compact scroll distance for immediate step transitions
+        end: "+=700",
         pin: true,
         pinSpacing: true,
-        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        fastScrollEnd: true,
+        preventOverlaps: true,
         onUpdate: (self) => {
           // Map scroll progress [0, 1] across the 4 themes
           const nextIndex = Math.min(
             THEMES.length - 1,
             Math.floor(self.progress * THEMES.length),
           );
-          setActiveIndex(nextIndex);
+          setActiveIndex((prev) => (prev !== nextIndex ? nextIndex : prev));
         },
       });
     }, sectionRef);
@@ -65,8 +67,9 @@ const Themes = () => {
 
   return (
     <section
+      id="themes"
       ref={sectionRef}
-      className="relative w-full h-screen min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-4 flex flex-col justify-between overflow-hidden select-none"
+      className="relative w-full h-screen min-h-[580px] sm:min-h-[640px] max-h-screen bg-black text-white pt-16 sm:pt-20 md:pt-4 flex flex-col justify-between overflow-hidden select-none"
     >
       {/* Top Header Row: Left Title & Right Subtitle */}
       <div className="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-14 flex flex-col sm:flex-row sm:items-end justify-between gap-3 shrink-0 mb-4 md:mb-6">
@@ -82,7 +85,7 @@ const Themes = () => {
       {/* Main Content: 4 Full-Width Equal Size Theme Rows (Touching Edge-to-Edge) */}
       <div className="relative w-full flex-1 min-h-0 flex flex-col justify-center">
         {/* Dead-Center Theme Showcase Card (Matching Reference Image) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none w-[45%] max-w-[820px] min-w-[320px] aspect-[16/9] select-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none w-[62%] sm:w-[58%] md:w-[55%] max-w-[960px] min-w-0 sm:min-w-[300px] md:min-w-[360px] aspect-[14.5/7] select-none">
           {/* Clean Rounded Image Frame Container (No Backglow, No Border) */}
           <div className="relative w-full h-full rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-950 shadow-[0_20px_60px_rgba(0,0,0,0.9)]">
             {THEMES.map((theme, i) => {
@@ -109,7 +112,8 @@ const Themes = () => {
                     src={theme.img}
                     alt={theme.name}
                     className="w-full h-full object-cover object-center"
-                    loading="eager"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
                   />
                   {/* Subtle Inner Edge Vignette */}
                   <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] pointer-events-none" />
@@ -133,7 +137,6 @@ const Themes = () => {
                   isActive ? "opacity-100" : "opacity-0"
                 }`}
               >
-
                 {/* White Noise Texture Layer Masked to fade in center */}
                 <div
                   className="absolute inset-0 opacity-35 mix-blend-screen"

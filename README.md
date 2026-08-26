@@ -1,261 +1,429 @@
-# 🖥️ Project OS — Ultimate New Tab Workspace & Dashboard
+<div align="center">
 
-> **Transform every new tab into a futuristic, hyper-customizable productivity HQ.**  
-> *Sleek aesthetics. Zero distractions. Unrivaled focus.*
+<img src="./web/public/logo.png" alt="Project OS Logo" width="80" height="80" style="border-radius: 16px;" />
+
+# Project OS
+
+**The OS You Were Always Missing**
+
+*Transform every new Chrome tab into a hyper-customizable productivity command center.*
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](./LICENSE)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Chrome](https://img.shields.io/badge/Chrome-Manifest_V3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/mv3/)
+[![Firefox](https://img.shields.io/badge/Firefox-Supported-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square)](./CONTRIBUTING.md)
+[![Stars](https://img.shields.io/github/stars/rahul3rj/Project-OS?style=flat-square&color=FBBF24)](https://github.com/rahul3rj/Project-OS/stargazers)
+
+<br/>
+
+[**✨ Features**](#-features) · [**🚀 Quick Start**](#-quick-start) · [**🏗️ Architecture**](#️-project-structure) · [**🤝 Contributing**](./CONTRIBUTING.md) · [**📜 License**](./LICENSE)
+
+</div>
+
+<br/>
+
+![Project OS Showcase](./Frontend/public/Readme_Header.png)
 
 ---
 
 ## 📌 Overview
 
-**Project OS** is a cutting-edge Chrome New Tab Extension (**Manifest V3**) built with **React 19**, **Vite**, **Tailwind CSS v4**, and **dnd-kit**. It replaces standard blank browser tabs with an interactive, modular operating system dashboard designed for developers, students, power users, and productivity enthusiasts.
+**Project OS** is a cutting-edge Chrome New Tab Extension built with **React 19**, **Vite**, and **Tailwind CSS v4**. It replaces your standard blank new tab with an interactive, fully modular productivity dashboard — designed for developers, students, power users, and builders who live in the browser.
 
-Whether you need a distraction-free minimalist view, an hourly routine time-box planner, an ambient Lofi music player, or a GitHub-style activity contribution calendar, **Project OS** adapts to your workflow seamlessly.
+A companion **landing website** (`web/`) built with GSAP, Lenis smooth scroll, and a liquid-glass UI effect showcases the extension.
 
----
-
-## ✨ Features Breakdown
-
-### 🎨 1. Multi-Aesthetic Theme Engine
-Personalize your dashboard with 4 handcrafted design themes:
-- 💎 **Glassmorphic (Default):** Translucent frosted-glass cards, smooth modern gradients, and sleek backdrop blurs.
-- ⚡ **Cyberpunk:** High-contrast neon glows, futuristic cyan/pink accents, scanline textures, and sci-fi styling.
-- 🖋️ **Manga / Ink:** Monochromatic black-and-white ink aesthetic with high-contrast outlines and manga panel styling.
-- 👾 **Pixel Art:** Nostalgic 8-bit retro arcade interface with pixelated borders and retro typography.
+> 🔒 **100% local & private.** No accounts. No tracking. No telemetry. Your data never leaves your machine.
 
 ---
 
-### 🧱 2. Drag & Drop Modular Grid Dashboard
-- **Flexible Grid Layout:** Drag, drop, and rearrange widgets dynamically using `@dnd-kit/core`.
-- **Dual Workspace View Modes:**
-  - **Dashboard Grid Mode:** Multi-widget layout displaying all your active tools at once.
-  - **Hero View Mode:** Distraction-free, minimal focus screen for deep work sessions.
-- **Widget Toggle Control:** Turn individual widgets on/off on demand to keep your space clean.
+## ✨ Features
 
----
+<table>
+<tr>
+<td width="50%">
 
-### ⏰ 3. Smart Clock & Dynamic Greeting
-- Real-time digital clock with **12-hour / 24-hour** display formats.
-- Customizable greetings (e.g. *"Good Morning, Rahul"*).
-- Live date presentation and optional seconds ticker.
-- Theme-responsive fonts and custom text color index selection.
+### 🎨 Multi-Theme Engine
+4 handcrafted visual themes:
+- 💎 **Glassmorphism** — frosted glass, soft glows
+- ⚡ **Cyberpunk** — neon HUD, scanline textures
+- 🖋️ **Manga / Ink** — high-contrast monochrome
+- 👾 **Pixel Art** — nostalgic 8-bit retro arcade
 
----
+</td>
+<td width="50%">
 
-### 🧭 4. Workspace Shortcuts & AI Tool Launcher
-- Quick-launch bar pre-configured with top AI tools & developer sites:
-  - 🤖 **Gemini**, **Claude**, **Copilot**, **ChatGPT**, **Perplexity**, **DeepSeek**, **Higgsfield AI**, and custom bookmarks.
-- Full CRUD management: Add, edit, remove, reorder, and upload custom icons/favicons for any shortcut.
+### 🧱 Drag & Drop Grid
+- Physics-based drag & drop via `@dnd-kit`
+- **Dashboard Grid** — multi-widget layout
+- **Hero View** — distraction-free focus mode
+- Widget toggle on/off on demand
 
----
+</td>
+</tr>
+<tr>
+<td>
 
-### 🎯 5. Pomodoro & Focus Timer
-- Customizable **Work / Rest** timer durations.
-- Session counter and total daily focus time tracking.
-- Audio ringtone alerts on session completion (Focus finish & Rest finish).
-- Chrome browser notifications support.
-- Automatically syncs focus metrics to your streak contribution log.
+### ⏰ Smart Clock & Greeting
+- Real-time 12/24hr display
+- Personalized dynamic greeting
+- Live date, optional seconds ticker
+- Theme-adaptive fonts & colors
 
----
+</td>
+<td>
 
-### ✅ 6. Structured Task Manager (Todo)
-- Lightweight, persistent task checklist.
-- Task completion progress bar & quick filters.
-- Zero clutter, smooth micro-animations, and fast keyboard entry.
+### 🎯 Pomodoro Focus Timer
+- Customizable work/rest durations
+- Session counter & daily focus tracking
+- Audio ringtone alerts
+- Chrome notification support
+- Syncs to activity streak log
 
----
+</td>
+</tr>
+<tr>
+<td>
 
-### 📅 7. Time-Boxing Routine Planner
-- Hourly habit and routine block planner.
-- Pre-loaded & customizable task groups (*Brain Stretching, Exercise, LeetCode, Deep Work, Skill Development*).
-- Subtask checklists and per-group streak tracking.
-- Automatic daily UTC reset to keep your habits fresh every morning.
+### 🟩 GitHub Activity Matrix
+- GitHub-style contribution heatmap
+- Visualizes daily focus intensity
+- Live GitHub commit sync support
+- Long-term consistency streaks
 
----
+</td>
+<td>
 
-### 🟩 8. Activity Contribution & Streak Grid
-- GitHub-style activity contribution calendar matrix (powered by `react-activity-calendar`).
-- Visualizes daily focus intensity, logged activity, and long-term consistency streaks.
+### 🎵 Ambient Audio Player
+- Lofi radio stations (Zeno.fm, FluxFM, Laut.fm)
+- YouTube audio integration
+- Spotify quick access
+- Volume control & custom stream URLs
 
----
+</td>
+</tr>
+<tr>
+<td>
 
-### 💧 9. Hydration Tracker / Water Reminder
-- Interactive water intake monitor with customizable daily target in milliliters (ml).
-- Quick drink logs (`+250ml`, `+500ml`, custom amounts) with visual hydration progress ring.
-- Configurable interval reminders and customizable sound ringtones.
+### 📅 Time-Boxing Planner
+- Hourly habit & routine blocks
+- Customizable task groups
+- Subtask checklists + streak tracking
+- Auto UTC midnight reset
 
----
+</td>
+<td>
 
-### 🎵 10. Ambient Audio & Media Player
-- **Lofi Radio Stations:** Embedded live streaming audio feeds (*ILoveMusic, Zeno.fm, Laut.fm, FluxFM*).
-- **YouTube Audio Integration:** Play YouTube music videos or streams directly in the background.
-- **Spotify Integration:** Quick access to Spotify audio streams.
-- Full control bar: Play/Pause, track details, volume adjustment, and custom audio stream URLs.
+### 💧 Hydration Tracker
+- Interactive water intake monitor
+- `+250ml / +500ml / custom` quick logs
+- Visual hydration progress ring
+- Timed audio reminders
 
----
+</td>
+</tr>
+<tr>
+<td>
 
-### 📑 11. Important Tabs & Categorized Bookmarks
-- Categorized bookmark hubs (*Study, AI Engineering, DSA / LeetCode, News, Personal*).
-- Quickly access, group, and manage link collections without tab clutter.
+### 🧭 Shortcuts
+- Quick-launch bar: **Gemini**, **Claude**, **ChatGPT**, **Copilot**, **Perplexity**, **DeepSeek**
+- Full CRUD for shortcuts
+- Custom icon/favicon upload
 
----
+</td>
+<td>
 
-### 🖼️ 12. Background & Wallpaper Customizer
-- Support for custom **High-Res Images** and **Animated Video Backgrounds** (`.mp4`, `.webm`).
-- Built-in wallpaper library (Default, Cyberpunk, Manga, CLI).
-- Adjustable background **blur filter**, dark overlay **opacity slider**, and image sizing options.
+### 💾 Backup & Restore
+- Full JSON export/import of all settings
+- `chrome.storage.local` — stays on your device
+- Transfer seamlessly across machines
 
----
-
-### 💾 13. Data Privacy & Backup / Restore
-- **100% Local & Private:** All settings, wallpapers, todos, and focus stats stay stored on your device via `chrome.storage.local`.
-- **JSON Backup & Restore:** Export your complete setup configuration to JSON and restore it anytime or transfer across browsers.
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-| :--- | :--- |
-| **Framework** | [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/) |
+|:---|:---|
+| **Extension Framework** | [React 19](https://react.dev/) + [Vite 7](https://vitejs.dev/) |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) + Vanilla CSS Theme Engines |
-| **Drag & Drop** | [@dnd-kit/core](https://dndkit.com/) & `@dnd-kit/utilities` |
+| **Drag & Drop** | [@dnd-kit/core](https://dndkit.com/) + `@dnd-kit/utilities` |
 | **Activity Graph** | `react-activity-calendar` |
 | **Icons** | Remix Icon (`remixicon`) |
-| **Extension Architecture** | Chrome Extension Manifest V3 (`chrome.storage.local`, `declarativeNetRequest`) |
+| **Extension API** | Chrome Manifest V3 (`chrome.storage.local`, `declarativeNetRequest`) |
+| **Landing Site** | [GSAP 3](https://gsap.com/) + [Lenis](https://lenis.darkroom.engineering/) smooth scroll |
+| **Build Tool** | Vite 7 (extension) · Vite 8 (web) |
 
 ---
 
-## 📂 Project Directory Structure
+## 🏗️ Project Structure
 
-```txt
+```
 Chrome_Extension/
-├── README.md                      # Project OS Documentation
-└── Frontend/
-    ├── package.json               # Dependencies & build scripts
-    ├── vite.config.js             # Vite configuration
-    ├── index.html                 # Main extension HTML template
-    ├── public/
-    │   ├── manifest.json          # Chrome Extension Manifest V3 config
-    │   ├── rules.json             # Declarative net request header rules
-    │   ├── logo.png               # Extension branding icon
-    │   └── wallpapers & fonts     # Pre-loaded wallpaper assets & custom typography
+├── README.md                       # You are here
+├── CONTRIBUTING.md                 # Contribution guidelines
+├── CODE_OF_CONDUCT.md              # Community code of conduct
+├── LICENSE                         # MIT License
+│
+├── Frontend/                       # Chrome Extension (Manifest V3)
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── index.html
+│   ├── public/
+│   │   ├── manifest.json           # Chrome Extension manifest
+│   │   ├── rules.json              # declarativeNetRequest rules
+│   │   └── logo.png
+│   └── src/
+│       ├── App.jsx                 # Root: state, storage sync, settings
+│       ├── main.jsx
+│       ├── index.css               # Global styles & design tokens
+│       ├── components/
+│       │   ├── DashboardGrid.jsx   # dnd-kit drag & drop layout
+│       │   ├── HeroView.jsx        # Distraction-free focus view
+│       │   ├── Clock.jsx           # Smart clock & greeting widget
+│       │   ├── Taskbar.jsx         # Shortcuts quick-launch bar
+│       │   ├── Timer.jsx           # Pomodoro focus timer
+│       │   ├── Todo.jsx            # Task manager
+│       │   ├── TimeBoxing.jsx      # Hourly routine planner
+│       │   ├── StreakGrid.jsx      # GitHub-style activity matrix
+│       │   ├── WaterReminder.jsx   # Hydration tracker
+│       │   ├── SongPlayer.jsx      # Lofi & YouTube audio player
+│       │   ├── ImportantTabs.jsx   # Categorized bookmarks
+│       │   ├── SettingsPage.jsx    # Full settings & theme drawer
+│       │   ├── FigmaGlassCard.jsx  # Frosted glass card wrapper
+│       │   ├── IconPicker.jsx      # Custom icon picker UI
+│       │   └── TimePicker.jsx      # Time picker component
+│       ├── utils/
+│       │   ├── storage.js          # Chrome storage wrapper
+│       │   ├── activityStore.js    # Focus streak activity logger
+│       │   ├── youtube.js          # YouTube player helper
+│       │   └── spotify.js          # Spotify integration helper
+│       └── themes/
+│           ├── index.js            # Theme registry
+│           ├── cyberpunk.css
+│           ├── manga.css
+│           └── pixel.css
+│
+└── web/                            # Landing Website
+    ├── package.json
+    ├── vite.config.js
     └── src/
-        ├── App.jsx                # Core application state, storage syncing & settings
-        ├── main.jsx               # Application entry point
-        ├── index.css              # Global styles & design system utilities
+        ├── App.jsx                 # Lenis + GSAP scroll orchestration
         ├── components/
-        │   ├── DashboardGrid.jsx  # Drag-and-drop widget layout manager
-        │   ├── HeroView.jsx       # Distraction-free minimal focus view
-        │   ├── Clock.jsx          # Digital clock & dynamic greeting widget
-        │   ├── Taskbar.jsx        # Quick shortcuts launcher bar
-        │   ├── Timmer.jsx         # Pomodoro / focus session timer widget
-        │   ├── Todo.jsx           # Task manager widget
-        │   ├── TimeBoxing.jsx     # Hourly routine planner widget
-        │   ├── StreakGrid.jsx     # Activity contribution graph widget
-        │   ├── WaterReminder.jsx  # Hydration tracker widget
-        │   ├── SongPlayer.jsx     # Ambient Lofi & YouTube music player
-        │   ├── ImportantTabs.jsx  # Categorized link bookmarks widget
-        │   ├── SettingsPage.jsx   # Complete settings, theme & wallpaper drawer
-        │   └── FigmaGlassCard.jsx # Frosted glass card UI wrapper
-        ├── utils/
-        │   ├── storage.js         # Chrome storage wrapper (local & fallback support)
-        │   ├── activityStore.js   # Focus streak activity logger
-        │   ├── youtube.js         # YouTube player helper utilities
-        │   └── spotify.js         # Spotify integration helper utilities
-        └── themes/
-            ├── index.js           # Theme registry & state management
-            ├── cyberpunk.css      # Cyberpunk neon theme stylesheet
-            ├── manga.css          # Manga ink monochrome stylesheet
-            └── pixel.css          # 8-Bit Pixel Art theme stylesheet
+        │   ├── Navbar.jsx
+        │   ├── CursorFollower.jsx  # Magnetic custom cursor
+        │   └── RippleButton.jsx    # Ripple-effect CTA button
+        ├── sections/
+        │   ├── Hero.jsx            # Liquid-glass CTA hero
+        │   ├── Video.jsx           # Product showcase
+        │   ├── Features.jsx        # Interactive feature cards
+        │   ├── Themes.jsx          # Theme showcase carousel
+        │   ├── Comparison.jsx      # Before/after comparison
+        │   ├── Setup.jsx           # Installation guide
+        │   ├── Contributions.jsx   # Contributors orbital display
+        │   ├── FAQs.jsx            # Accordion FAQ
+        │   └── Footer.jsx          # Footer with liquid-glass CTAs
+        ├── data/
+        │   └── contributors.json
+        └── utils/
+            └── useLiquidGlass.js   # WebGL liquid-glass hook
 ```
 
 ---
 
-## 🚀 Quick Start & Installation Guide
+## 🚀 Quick Start
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher recommended)
-- Google Chrome (or any Chromium-based browser like Brave, Edge, Arc)
+
+- [Node.js](https://nodejs.org/) `v18+`
+- Google Chrome, Brave, Edge, Arc, or any Chromium-based browser
+- Mozilla Firefox (also supported)
 
 ---
 
-### 1️⃣ Clone & Install Dependencies
+### 🔌 Option A — Load as Chrome Extension
 
-Navigating to the `Frontend` directory:
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/rahul3rj/Project-OS.git
+cd Project-OS
+```
+
+**2. Install dependencies & build**
 
 ```bash
 cd Frontend
 npm install
+npm run build
 ```
+
+**3. Load into Chrome**
+
+1. Open `chrome://extensions` in your browser
+2. Enable **Developer mode** (top-right toggle)
+3. Click **Load unpacked**
+4. Select the `Frontend/dist` folder
+
+**4. Open a new tab and experience Project OS! 🎉**
 
 ---
 
-### 2️⃣ Development Mode (Local UI Testing)
-
-To run the app locally in the browser for fast UI testing:
+### 💻 Option B — Development mode (UI-only)
 
 ```bash
+cd Frontend
+npm install
 npm run dev
 ```
 
-> **Note:** The Chrome New Tab override feature requires loading the built extension into Chrome.
+> ⚠️ The new-tab override requires the built extension. `npm run dev` is for fast UI iteration.
 
 ---
 
-### 3️⃣ Build & Load Extension in Chrome
+### ♻️ Rebuild after code changes
 
-#### Step A: Build the project
-```bash
-npm run build
-```
-This generates the optimized production bundle inside `Frontend/dist`.
-
-#### Step B: Load into Google Chrome
-1. Open Google Chrome and navigate to `chrome://extensions`.
-2. Enable **Developer mode** (toggle switch in top right corner).
-3. Click **Load unpacked**.
-4. Select the `Frontend/dist` directory.
-
-#### Step C: Open a New Tab!
-Open a new tab (`Ctrl + T` or `Cmd + T`) to experience **Project OS**! 🎉
-
----
-
-### 🔄 Updating After Code Changes
-Whenever you modify files in `src/`:
 ```bash
 cd Frontend
 npm run build
 ```
-Then go to `chrome://extensions` and click the **Reload** (🔄) icon on **Project OS**.
+
+Then open `chrome://extensions` → click the **Reload** 🔄 icon on Project OS.
 
 ---
 
-## 🔐 Chrome Permissions & Privacy
+### 🌐 Run the Landing Website locally
 
-**Project OS** respects your privacy. All user data stays strictly on your local device.
-
-```json
-"permissions": [
-  "storage",
-  "unlimitedStorage",
-  "declarativeNetRequest"
-]
+```bash
+cd web
+npm install
+npm run dev
 ```
 
-- **`storage` / `unlimitedStorage`:** Stores custom themes, wallpapers, shortcuts, routine schedules, todos, and timer stats locally on your machine.
-- **`declarativeNetRequest`:** Enables smooth audio streaming playback for Lofi radio stations and YouTube media embedding.
-- **Zero External Data Tracking:** No analytics, no remote telemetry, no external accounts required.
+---
+
+## 🔐 Permissions & Privacy
+
+Project OS requests only the minimum permissions required:
+
+```json
+"permissions": ["storage", "unlimitedStorage", "declarativeNetRequest"]
+```
+
+| Permission | Why it's needed |
+|:---|:---|
+| `storage` / `unlimitedStorage` | Saves themes, wallpapers, shortcuts, todos, timer stats **locally on your device only** |
+| `declarativeNetRequest` | Enables smooth audio streaming for Lofi radio & YouTube embeds |
+
+**No external servers. No analytics. No accounts. Ever.**
 
 ---
 
-## 👨‍💻 Author & Credits
+## ⭐ Star History
 
-Crafted with ❤️ by **Rahul Jha**  
-*Developer • Student • Builder • Hustler* 🚀
+<a href="https://www.star-history.com/?repos=rahul3rj%2FProject-OS&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=rahul3rj/Project-OS&type=date&theme=dark&legend=top-left&sealed_token=feICPbEpd5x4bQxC4fkJssAKVsXtgyehUt8Tm1ifUlSmfHkIqWnpJUKunG5D1b3H2ir1EU44YNObRWS_OpePID54aup5x_keHfqH3ZiclOmURO7YGy-xb0JTE6DrkBekTDpZ9nC4e66wDUhkyF55bFWYPz2PEuSap9MB-iZkDP8VIUSRklVK56n6MbhL" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=rahul3rj/Project-OS&type=date&legend=top-left&sealed_token=feICPbEpd5x4bQxC4fkJssAKVsXtgyehUt8Tm1ifUlSmfHkIqWnpJUKunG5D1b3H2ir1EU44YNObRWS_OpePID54aup5x_keHfqH3ZiclOmURO7YGy-xb0JTE6DrkBekTDpZ9nC4e66wDUhkyF55bFWYPz2PEuSap9MB-iZkDP8VIUSRklVK56n6MbhL" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=rahul3rj/Project-OS&type=date&legend=top-left&sealed_token=feICPbEpd5x4bQxC4fkJssAKVsXtgyehUt8Tm1ifUlSmfHkIqWnpJUKunG5D1b3H2ir1EU44YNObRWS_OpePID54aup5x_keHfqH3ZiclOmURO7YGy-xb0JTE6DrkBekTDpZ9nC4e66wDUhkyF55bFWYPz2PEuSap9MB-iZkDP8VIUSRklVK56n6MbhL" />
+ </picture>
+</a>
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make open source such an amazing place to learn, inspire, and create. **Any contribution you make is greatly appreciated.** 💙
+
+Read our full [**Contributing Guide →**](./CONTRIBUTING.md)
+
+**Quick contribution flow:**
+
+```bash
+# 1. Fork the repo & clone your fork
+git clone https://github.com/YOUR_USERNAME/Project-OS.git
+
+# 2. Create a feature branch
+git checkout -b feat/your-amazing-feature
+
+# 3. Commit your changes
+git commit -m "feat: add your amazing feature"
+
+# 4. Push & open a Pull Request
+git push origin feat/your-amazing-feature
+```
+
+---
+
+## 👥 Contributors
+
+Thanks goes to these wonderful people 💙
+
+<a href="https://github.com/rahul3rj/Project-OS/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=rahul3rj/Project-OS" alt="Contributors" />
+</a>
+
+*Made with [contrib.rocks](https://contrib.rocks)*
+
+---
+
+---
+
+## ❓ FAQ
+
+<details>
+<summary><b>Is Project OS free?</b></summary>
+<br/>
+Yes — 100% free and open source under the MIT License.
+</details>
+
+<details>
+<summary><b>Does it collect any data?</b></summary>
+<br/>
+No. All data is stored locally using <code>chrome.storage.local</code>. Nothing is sent to external servers.
+</details>
+
+<details>
+<summary><b>Can I use it on Firefox or Edge?</b></summary>
+<br/>
+Yes! Firefox is fully supported. Edge and other Chromium-based browsers work great too.
+</details>
+
+<details>
+<summary><b>How do I back up my configuration?</b></summary>
+<br/>
+Go to Settings → Backup & Restore → Export JSON. To restore, import the same JSON file.
+</details>
+
+<details>
+<summary><b>Can I contribute a new widget?</b></summary>
+<br/>
+Absolutely! See the <a href="./CONTRIBUTING.md">Contributing Guide</a> for how to propose and build new widgets.
+</details>
 
 ---
 
 ## 📜 License
 
-This project is licensed under the **MIT License**. Feel free to customize and extend it for personal or open-source use.
+Distributed under the **MIT License**. See [`LICENSE`](./LICENSE) for the full text.
+
+---
+
+<div align="center">
+
+Crafted with ❤️ by **[Rahul Jha](https://github.com/rahul3rj)**
+
+*Developer · Student · Builder · Hustler* 🚀
+
+<br/>
+
+If this project helped you, consider giving it a ⭐ — it means a lot!
+
+[![GitHub Stars](https://img.shields.io/github/stars/rahul3rj/Project-OS?style=social)](https://github.com/rahul3rj/Project-OS)
+
+</div>

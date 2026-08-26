@@ -90,6 +90,20 @@ body::-webkit-scrollbar {
   height: 0;
 }
 
+/* =========================================================
+   Custom Cursor Pointer Override for Desktop
+   ========================================================= */
+/* =========================================================
+   Crisp Antialiased Text Rendering for Custom Cursor
+   ========================================================= */
+.cursor-crisp {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
 @layer utilities {
   .font-gilroy {
     font-family: "Gilroy", sans-serif;
@@ -112,6 +126,10 @@ body::-webkit-scrollbar {
     font-weight: 700;
   }
 
+  .font-rejoice {
+    font-family: "Rejouice", sans-serif;
+  }
+
   /* =========================================================
      Liquid Glass Material Dressing (Apple spec)
      Pairs with liquidGlass(element) JS engine for real rim refraction
@@ -131,6 +149,57 @@ body::-webkit-scrollbar {
       inset 0 0 0 1px rgba(255, 255, 255, 0.13);
     isolation: isolate;
   }
+
+  /* =========================================================
+     Liquid Glass Button - Single-Pass Hover Light Sweep
+     ========================================================= */
+  .liquid-glass-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .liquid-glass-btn::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 20%,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0.08) 80%,
+      transparent 100%
+    );
+    transform: rotate(25deg);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 20;
+  }
+
+  .liquid-glass-btn:hover::after {
+    animation: glassBtnShineOnce 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  }
+}
+
+@keyframes glassBtnShineOnce {
+  0% {
+    left: -150%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    left: 200%;
+    opacity: 0;
+  }
 }
 
 @keyframes drawLine {
@@ -142,6 +211,42 @@ body::-webkit-scrollbar {
     stroke-dashoffset: 0;
     opacity: 1;
   }
+}
+
+/* =========================================================
+   Shiny Shimmer Text Animation (Navbar Hover Once -> Pure White)
+   ========================================================= */
+@keyframes navHoverShineOnce {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.nav-link-shine {
+  color: #d4d4d8; /* zinc-300 normal state */
+  transition: color 0.25s ease;
+  display: inline-block;
+}
+
+.nav-link-shine:hover {
+  background: linear-gradient(
+    115deg,
+    #d4d4d8 0%,
+    #d4d4d8 28%,
+    rgba(255, 255, 255, 0.45) 40%,
+    #ffffff 50%,
+    rgba(255, 255, 255, 0.45) 60%,
+    #ffffff 72%,
+    #ffffff 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: navHoverShineOnce 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 /* =========================================================

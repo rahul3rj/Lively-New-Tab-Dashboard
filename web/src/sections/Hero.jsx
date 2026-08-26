@@ -13,11 +13,14 @@ const Hero = () => {
   })
 
   return (
-    <section className='relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-black select-none'>
+    <section id='hero' className='relative w-full min-h-screen flex flex-col justify-between overflow-hidden bg-black select-none'>
       {/* Full Cover Background Artwork (extended downwards to bleed into video section) */}
       <img
         src='/hero.png'
         alt='Hero Background'
+        fetchPriority='high'
+        loading='eager'
+        decoding='async'
         className='absolute -top-0 inset-x-0 w-full h-[115%] object-cover object-top pointer-events-none'
       />
 
@@ -28,9 +31,9 @@ const Hero = () => {
       <Navbar />
 
       {/* Main Hero Content Area */}
-      <div className='relative z-10 w-full flex-1 flex flex-col justify-between px-8 md:px-14 pb-12 pt-24 md:pt-18'>
+      <div className='relative z-10 w-full flex-1 flex flex-col justify-between px-4 sm:px-8 md:px-14 pb-12 pt-20 sm:pt-24 md:pt-18'>
         {/* Middle Row: Left Heading & Right Subtitle */}
-        <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-4 md:mt-8'>
+        <div className='grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start mt-4 md:mt-8'>
           {/* Left Column: Tagline & Main Title */}
           <div className='lg:col-span-8 flex flex-col gap-2'>
             {/* Small Bullet Feature Line */}
@@ -39,7 +42,7 @@ const Hero = () => {
             </p>
 
             {/* Large Rejoice Heading */}
-            <h1 className='text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-rejoice font-light leading-[1.03] tracking-tight text-white drop-shadow-md'>
+            <h1 className='text-4xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-rejoice font-light leading-[1.03] tracking-tight text-white drop-shadow-md'>
               The OS You<br />
               Was Always<br />
               Missing...
@@ -54,13 +57,14 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Bottom Bar: Action Buttons on the Right (Absolute Positioned) */}
-        <div className='absolute bottom-30 right-8 md:right-14 z-20 flex items-center gap-3'>
+        {/* Bottom Bar: Action Buttons on the Right (Absolute Positioned on Desktop, Flowing on Mobile) */}
+        <div className='relative mt-10 sm:mt-14 md:mt-0 md:absolute md:bottom-30 md:right-14 z-20 flex flex-wrap sm:flex-nowrap items-center gap-3'>
           {/* Add to Chrome Button with Real Liquid Glass */}
           <a
             ref={chromeGlassRef}
             href='#chrome-store'
-            className='liquid-glass flex items-center gap-2 px-6 py-3 rounded-full text-white text-[11px] font-syne font-bold uppercase hover:brightness-125 transition-all duration-200 shadow-xl hover:scale-105 active:scale-95'
+            data-cursor='soon'
+            className='liquid-glass liquid-glass-btn flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-white text-[10px] sm:text-[11px] font-syne font-bold uppercase transition-all duration-300 shadow-xl'
           >
             <span>ADD TO CHROME</span>
             <i className='ri-chrome-fill text-sm'></i>
@@ -68,8 +72,8 @@ const Hero = () => {
 
           {/* Download Zip Button (RippleButton) */}
           <RippleButton
-            href='#download'
-            className='px-6 py-3 text-[11px]'
+            href='https://drive.google.com/uc?export=download&id=1QeZsujRG2amFlaDyx9Py7I2TPr8qltSA'
+            className='px-5 sm:px-6 py-2.5 sm:py-3 text-[10px] sm:text-[11px]'
           >
             <span>DOWNLOAD ZIP</span>
             <i className='ri-download-line text-sm font-bold' />

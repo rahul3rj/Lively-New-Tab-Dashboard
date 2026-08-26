@@ -184,7 +184,12 @@
 }
 
 /* Resize handle */
-[data-theme="manga"] .grid-widget [data-resize-handle] div {
+[data-theme="manga"] .grid-widget [data-resize-handle],
+[data-theme="manga"] .grid-widget [data-resize-handle-cols] {
+  background: transparent !important;
+}
+[data-theme="manga"] .grid-widget [data-resize-handle] div,
+[data-theme="manga"] .grid-widget [data-resize-handle-cols] div {
   background: var(--theme-1, #1a1a1a) !important;
 }
 

@@ -12,6 +12,7 @@ import Setup from './sections/Setup'
 import Contributions from './sections/Contributions'
 import FAQs from './sections/FAQs'
 import Footer from './sections/Footer'
+import CursorFollower from './components/CursorFollower'
 gsap.registerPlugin(ScrollTrigger)
 
 const App = () => {
@@ -32,6 +33,9 @@ const App = () => {
     // Synchronize Lenis scroll position with GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update)
 
+    // Expose lenis instance globally for smooth navbar scrolling
+    window.__lenis = lenis
+
     const tickerHandler = (time) => {
       lenis.raf(time * 1000)
     }
@@ -39,14 +43,28 @@ const App = () => {
     gsap.ticker.add(tickerHandler)
     gsap.ticker.lagSmoothing(0)
 
+    // Recalculate and synchronize exact pin coordinates after DOM & asset settle
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh()
+    }, 400)
+
+    const handleWindowLoad = () => {
+      ScrollTrigger.refresh()
+    }
+    window.addEventListener('load', handleWindowLoad)
+
     return () => {
+      clearTimeout(refreshTimer)
+      window.removeEventListener('load', handleWindowLoad)
       gsap.ticker.remove(tickerHandler)
       lenis.destroy()
+      window.__lenis = null
     }
   }, [])
 
   return (
     <div className='w-full min-h-screen bg-black text-white selection:bg-white selection:text-black'>
+      <CursorFollower />
       <Hero />
       <Video />
       <Features />

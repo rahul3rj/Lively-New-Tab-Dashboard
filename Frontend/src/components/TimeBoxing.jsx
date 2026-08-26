@@ -12,67 +12,75 @@ const makeId = () => {
   return String(Date.now() + Math.random());
 };
 
+const formatCurrentTime = () => {
+  const d = new Date();
+  let hours = d.getHours();
+  const minutes = d.getMinutes();
+  const period = hours >= 12 ? "pm" : "am";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  return `${hours}:${minutesStr} ${period}`;
+};
 
 const DEFAULT_TASK_GROUPS = [
   {
-    id: "brain-stretching",
-    title: "Brain Stretching",
+    id: "morning-kickoff",
+    title: "Morning Kickoff",
+    iconClass: "ri-sun-line",
     time: "8:00 am",
     streak: 0,
     subtasks: [
-      { id: "bs-1", text: "Morning Meditation", done: false },
-      { id: "bs-2", text: "Read 10 Pages", done: false },
-      { id: "bs-3", text: "Solve A Puzzle", done: false },
-      { id: "bs-4", text: "Plan The Day", done: false },
+      { id: "mr-1", text: "Hydrate & Morning Stretch", done: false },
+      { id: "mr-2", text: "Healthy Breakfast", done: false },
+      { id: "mr-3", text: "Review Daily Priorities", done: false },
     ],
   },
   {
-    id: "exercise",
-    title: "Exercise",
-    time: "8:45 am",
+    id: "deep-work",
+    title: "Deep Work Session",
+    iconClass: "ri-focus-3-line",
+    time: "9:30 am",
     streak: 0,
     subtasks: [
-      { id: "ex-1", text: "Warm Up & Stretch", done: false },
-      { id: "ex-2", text: "Push Ups 3 Sets", done: false },
-      { id: "ex-3", text: "30 Min Cardio", done: false },
-      { id: "ex-4", text: "Cool Down Yoga", done: false },
+      { id: "dw-1", text: "Complete High-Priority Task", done: false },
+      { id: "dw-2", text: "Clear Inbox & Key Messages", done: false },
+      { id: "dw-3", text: "Document Progress & Notes", done: false },
     ],
   },
   {
-    id: "leetcode",
-    title: "LeetCode Problem",
-    time: "9:00 am",
+    id: "afternoon-focus",
+    title: "Project & Collaboration",
+    iconClass: "ri-briefcase-line",
+    time: "1:30 pm",
     streak: 0,
     subtasks: [
-      { id: "lc-1", text: "Leetcode Problem Solve", done: false },
-      { id: "lc-2", text: "Push Code To Github", done: false },
-      { id: "lc-3", text: "Analyse Most Optimal Solution", done: false },
-      { id: "lc-4", text: "Recognise Patterns", done: false },
-      { id: "lc-5", text: "Note Down Any Important Findings", done: false },
+      { id: "af-1", text: "Team Standup / Quick Sync", done: false },
+      { id: "af-2", text: "Review Deliverables & Feedback", done: false },
+      { id: "af-3", text: "Plan Next Action Items", done: false },
     ],
   },
   {
-    id: "project",
-    title: "Project",
-    time: "11:00 am",
+    id: "wellness-exercise",
+    title: "Fitness & Wellness",
+    iconClass: "ri-heart-pulse-line",
+    time: "5:00 pm",
     streak: 0,
     subtasks: [
-      { id: "pj-1", text: "Design New Component", done: false },
-      { id: "pj-2", text: "Fix Pending Bugs", done: false },
-      { id: "pj-3", text: "Code Review", done: false },
-      { id: "pj-4", text: "Deploy Latest Build", done: false },
+      { id: "we-1", text: "30-Min Workout or Walk", done: false },
+      { id: "we-2", text: "Mindfulness & Screen Break", done: false },
     ],
   },
   {
-    id: "gaming",
-    title: "Gaming",
-    time: "2:00 pm",
+    id: "evening-winddown",
+    title: "Evening Wind Down",
+    iconClass: "ri-moon-clear-line",
+    time: "8:00 pm",
     streak: 0,
     subtasks: [
-      { id: "gm-1", text: "Warm Up Aim Trainer", done: false },
-      { id: "gm-2", text: "Ranked Matches", done: false },
-      { id: "gm-3", text: "Review Gameplay", done: false },
-      { id: "gm-4", text: "Claim Daily Rewards", done: false },
+      { id: "ew-1", text: "Review Completed Goals", done: false },
+      { id: "ew-2", text: "Read Book / Skill Learning", done: false },
+      { id: "ew-3", text: "Prepare Schedule for Tomorrow", done: false },
     ],
   },
 ];
@@ -134,28 +142,21 @@ const getTodayKey = () => new Date().toDateString();
 const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnabled = true, ringtone = "beep" }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
-  const [draggedSubtask, setDraggedSubtask] = useState(null);
-  const [dragOverSubtask, setDragOverSubtask] = useState(null);
-  const [draggedGroup, setDraggedGroup] = useState(null);
-  const [dragOverGroup, setDragOverGroup] = useState(null);
-  const [editingSubtask, setEditingSubtask] = useState(null);
-  const [editSubtaskText, setEditSubtaskText] = useState("");
-  const [newSubtaskText, setNewSubtaskText] = useState("");
-  const [editingGroup, setEditingGroup] = useState(null);
-  const [editGroupTitle, setEditGroupTitle] = useState("");
-  const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
-  const [timePickerGroupId, setTimePickerGroupId] = useState(null);
-  const [newMainTaskText, setNewMainTaskText] = useState("");
-  const [atBottom, setAtBottom] = useState(true);
-  const subtaskInputRefs = useRef({});
-  const iconTriggerRefs = useRef({});
-  const timeTriggerRefs = useRef({});
-  const newMainTaskRef = useRef(null);
+
+  // New main task draft (editing phase)
+  const [draftNewTask, setDraftNewTask] = useState(null);
+  const [draftSubtaskText, setDraftSubtaskText] = useState("");
+  const [draftIconPickerOpen, setDraftIconPickerOpen] = useState(false);
+  const [draftTimePickerOpen, setDraftTimePickerOpen] = useState(false);
+
   const containerRef = useRef(null);
   const activeTaskRef = useRef(null);
+  const draftTitleInputRef = useRef(null);
+  const draftSubtaskInputRef = useRef(null);
+  const draftIconTriggerRef = useRef(null);
+  const draftTimeTriggerRef = useRef(null);
 
-  // Use externalGroups when provided (always the case from DashboardGrid),
-  // falling back to built-in defaults only for standalone/testing usage.
+  // Use externalGroups when provided (always the case from DashboardGrid)
   const groups = useMemo(() => {
     if (Array.isArray(externalGroups) && externalGroups.length > 0) {
       return externalGroups;
@@ -263,23 +264,6 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     }
   }, [activeId]);
 
-  const updateAtBottom = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 12);
-  };
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(updateAtBottom);
-    return () => cancelAnimationFrame(raf);
-  });
-
-  useEffect(() => {
-    const onResize = () => updateAtBottom();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
   // Auto-scroll active task to center on page load / refresh or activeId change
   useEffect(() => {
     if (!activeId) return;
@@ -319,7 +303,6 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
           },
     );
 
-    // Lift state up to parent (App.jsx) which persists it — no local shadow needed.
     if (typeof onGroupsChange === "function") {
       onGroupsChange(nextGroups);
     }
@@ -487,51 +470,50 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     setTimePickerGroupId(null);
   };
 
-  const addGroup = () => {
-    const text = newMainTaskText.trim();
-    if (!text) return;
-    const g = {
+  /* ── Draft Main Task Creation Handlers ── */
+  const handleStartAddMainTask = () => {
+    const initialTime = formatCurrentTime();
+    setDraftNewTask({
       id: makeId(),
-      title: text,
+      title: "",
       iconClass: "ri-briefcase-line",
-      time: "9:00 am",
-      streak: 0,
+      time: initialTime,
       subtasks: [],
-    };
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange([...groups, g]);
-    }
-    setExpandedId(g.id);
-    setNewMainTaskText("");
+    });
+    setDraftSubtaskText("");
+    setDraftIconPickerOpen(false);
+    setDraftTimePickerOpen(false);
+
     setTimeout(() => {
-      newMainTaskRef.current?.focus();
+      if (containerRef.current) {
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+      draftTitleInputRef.current?.focus();
+    }, 60);
+  };
+
+  const addDraftSubtask = () => {
+    const text = draftSubtaskText.trim();
+    if (!text || !draftNewTask) return;
+    setDraftNewTask((prev) => ({
+      ...prev,
+      subtasks: [...(prev.subtasks || []), { id: makeId(), text, done: false }],
+    }));
+    setDraftSubtaskText("");
+    setTimeout(() => {
+      draftSubtaskInputRef.current?.focus();
     }, 0);
   };
 
-  const handleSubtaskDragStart = (e, groupId, subtaskId) => {
-    if (
-      editingSubtask &&
-      editingSubtask.groupId === groupId &&
-      editingSubtask.subtaskId === subtaskId
-    ) {
-      e.preventDefault();
-      return;
-    }
-    setDraggedSubtask({ groupId, subtaskId });
-    e.dataTransfer.effectAllowed = "move";
-    e.stopPropagation();
-  };
-
-  const handleSubtaskDragOver = (e, groupId, subtaskId) => {
-    e.preventDefault();
-    if (draggedGroup !== null) return;
-    if (
-      !dragOverSubtask ||
-      dragOverSubtask.groupId !== groupId ||
-      dragOverSubtask.subtaskId !== subtaskId
-    ) {
-      setDragOverSubtask({ groupId, subtaskId });
-    }
+  const removeDraftSubtask = (subtaskId) => {
+    if (!draftNewTask) return;
+    setDraftNewTask((prev) => ({
+      ...prev,
+      subtasks: (prev.subtasks || []).filter((s) => s.id !== subtaskId),
+    }));
   };
 
   const moveSubtask = (fromGroupId, toGroupId, subtaskId, beforeId) => {
@@ -633,6 +615,37 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     setDragOverGroup(null);
   };
 
+  const handleCancelDraftTask = () => {
+    setDraftNewTask(null);
+    setDraftSubtaskText("");
+    setDraftIconPickerOpen(false);
+    setDraftTimePickerOpen(false);
+  };
+
+  const handleSaveDraftTask = () => {
+    if (!draftNewTask) return;
+    const title = draftNewTask.title.trim() || "New Routine";
+    const newGroup = {
+      id: draftNewTask.id || makeId(),
+      title,
+      iconClass: draftNewTask.iconClass || "ri-briefcase-line",
+      time: draftNewTask.time || formatCurrentTime(),
+      streak: 0,
+      subtasks: draftNewTask.subtasks || [],
+    };
+
+    const nextGroups = [...groups, newGroup];
+    if (typeof onGroupsChange === "function") {
+      onGroupsChange(nextGroups);
+    }
+
+    setDraftNewTask(null);
+    setDraftSubtaskText("");
+    setDraftIconPickerOpen(false);
+    setDraftTimePickerOpen(false);
+    setExpandedId(newGroup.id);
+  };
+
   return (
     <div
       className="group/widget figma-glass-static rounded-[26px] px-4 py-3 text-white font-gilroy-medium w-full h-full select-none flex flex-col shadow-2xl relative"
@@ -648,6 +661,17 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
           <i className="ri-draggable text-sm pointer-events-none"></i>
           <span className="pointer-events-none">Time Boxing</span>
         </div>
+
+        {/* Add Task Button parallel to Time Boxing title (only visible on hover) */}
+        <button
+          type="button"
+          onClick={handleStartAddMainTask}
+          className="opacity-0 group-hover/widget:opacity-100 pointer-events-none group-hover/widget:pointer-events-auto flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-gilroy-medium text-white/85 hover:text-white bg-white/10 hover:bg-white/20 active:scale-95 transition-all duration-200 cursor-pointer border border-white/15 shadow-sm"
+          title="Add new main task"
+        >
+          <i className="ri-add-line text-xs font-bold"></i>
+          <span>Add Task</span>
+        </button>
       </div>
 
       {/* Task Groups + Timeline */}
@@ -665,15 +689,13 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
       >
         <div className="flex flex-col">
           {groups.map((group, index) => {
-            const total = group.subtasks.length;
-            const done = group.subtasks.filter((s) => s.done).length;
+            const total = group.subtasks?.length || 0;
+            const done = (group.subtasks || []).filter((s) => s.done).length;
             const percent = total === 0 ? 0 : Math.round((done / total) * 100);
             const expanded = expandedId === group.id;
             const active = activeId === group.id;
             const isFirst = index === 0;
             const isLast = index === groups.length - 1;
-            const isDraggingGroup = draggedGroup === index;
-            const isDragOverGroup = dragOverGroup === index && draggedGroup !== index;
 
             const isCompleted = total > 0 && done === total;
             const baseStreak = group.baseStreak ?? group.streak ?? 0;
@@ -683,27 +705,12 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
               <div
                 key={group.id}
                 ref={active ? activeTaskRef : null}
-                draggable
-                onDragStart={(e) => handleGroupDragStart(e, index)}
-                onDragOver={(e) => handleGroupDragOver(e, index)}
-                onDrop={(e) => handleGroupDrop(e, index)}
-                onDragEnd={handleGroupDragEnd}
                 className="flex items-stretch"
               >
                 {/* Task Group Card */}
-                <div className={`flex-1 min-w-0 ${isLast ? "" : "pb-5"}`}>
+                <div className={`flex-1 min-w-0 ${isLast && !draftNewTask ? "" : "pb-5"}`}>
                   <div
-                    className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 ${
-                      iconPickerGroupId === group.id || timePickerGroupId === group.id
-                        ? "overflow-visible"
-                        : "overflow-hidden"
-                    } shadow-lg transition-all duration-300 ${
-                      isDraggingGroup
-                        ? "opacity-40"
-                        : isDragOverGroup
-                          ? "ring-2 ring-white/50 border-white/40"
-                          : ""
-                    } ${
+                    className={`timebox-task-card relative rounded-[18px] border px-4 pt-3.5 pb-4 overflow-hidden shadow-lg transition-all duration-300 ${
                       active
                         ? "border-white/50 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
                         : "border-white/10 hover:border-white/20"
@@ -721,93 +728,39 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                       onClick={() => setExpandedId(expanded ? null : group.id)}
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="relative shrink-0">
-                          <button
-                            ref={(el) => {
-                              iconTriggerRefs.current[group.id] = el;
-                            }}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setIconPickerGroupId(
-                                iconPickerGroupId === group.id ? null : group.id,
-                              );
-                            }}
-                            title="Change icon"
-                            className="shrink-0 cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none"
-                          >
-                            {group.iconClass && (group.iconClass.startsWith("img:") || group.iconClass.startsWith("http") || group.iconClass.startsWith("data:")) ? (
-                              <img
-                                src={group.iconClass.replace(/^img:/, "")}
-                                alt=""
-                                className="w-[18px] h-[18px] object-contain shrink-0"
-                                onError={(e) => { e.currentTarget.style.display = "none"; }}
-                              />
-                            ) : (
-                              <i
-                                className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
-                                  active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white/75"
-                                }`}
-                              />
-                            )}
-                          </button>
-                          {iconPickerGroupId === group.id && (
-                            <IconDropdownPopover
-                              triggerRef={{ current: iconTriggerRefs.current[group.id] }}
-                              current={group.iconClass || "ri-briefcase-line"}
-                              onSelect={(newIcon) => {
-                                updateGroupIcon(group.id, newIcon);
-                                setIconPickerGroupId(null);
+                        <div className="shrink-0 flex items-center justify-center">
+                          {group.iconClass &&
+                          (group.iconClass.startsWith("img:") ||
+                            group.iconClass.startsWith("http") ||
+                            group.iconClass.startsWith("data:")) ? (
+                            <img
+                              src={group.iconClass.replace(/^img:/, "")}
+                              alt=""
+                              className="w-[18px] h-[18px] object-contain shrink-0"
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none";
                               }}
-                              onClose={() => setIconPickerGroupId(null)}
+                            />
+                          ) : (
+                            <i
+                              className={`${group.iconClass || "ri-briefcase-line"} text-[17px] ${
+                                active
+                                  ? "text-[color:var(--theme-4,#0F172A)]"
+                                  : "text-white/75"
+                              }`}
                             />
                           )}
                         </div>
-                        {editingGroup === group.id ? (
-                          <input
-                            autoFocus
-                            value={editGroupTitle}
-                            onChange={(e) => setEditGroupTitle(e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                            onBlur={() => saveEditGroup(group.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                saveEditGroup(group.id);
-                                const nextGroup = groups[index + 1];
-                                if (nextGroup) {
-                                  startEditGroup(nextGroup);
-                                } else {
-                                  setTimeout(() => {
-                                    newMainTaskRef.current?.focus();
-                                  }, 0);
-                                }
-                              }
-                              if (e.key === "Escape") cancelEditGroup();
-                            }}
-                            onDragStart={(e) => e.preventDefault()}
-                            className={`flex-1 min-w-0 bg-transparent outline-none select-text font-gilroy-bold text-[15px] ${
-                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
-                            }`}
-                          />
-                        ) : (
-                          <h3
-                            onClick={(e) => {
-                              if (expanded) {
-                                e.stopPropagation();
-                                startEditGroup(group);
-                              }
-                            }}
-                            title={expanded ? "Click to edit" : undefined}
-                            className={`font-gilroy-bold text-[15px] truncate ${
-                              expanded ? "cursor-text" : "cursor-pointer"
-                            } ${
-                              active ? "text-[color:var(--theme-4,#0F172A)]" : "text-white"
-                            }`}
-                          >
-                            {group.title}
-                          </h3>
-                        )}
+
+                        <h3
+                          className={`font-gilroy-bold text-[15px] truncate cursor-pointer ${
+                            active
+                              ? "text-[color:var(--theme-4,#0F172A)]"
+                              : "text-white"
+                          }`}
+                        >
+                          {group.title}
+                        </h3>
                       </div>
 
                       <div className="mt-2.5 flex items-center gap-2">
@@ -824,7 +777,9 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                         ></i>
                         <span
                           className={`text-[11px] font-gilroy-medium whitespace-nowrap ${
-                            active ? "text-[color:var(--theme-4,#0F172A)] opacity-75" : "text-white/55"
+                            active
+                              ? "text-[color:var(--theme-4,#0F172A)] opacity-75"
+                              : "text-white/55"
                           }`}
                         >
                           {done} of {total}
@@ -836,14 +791,18 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                         >
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
-                              active ? "bg-[color:var(--theme-4,#0F172A)]" : "bg-white/85"
+                              active
+                                ? "bg-[color:var(--theme-4,#0F172A)]"
+                                : "bg-white/85"
                             }`}
                             style={{ width: `${percent}%` }}
                           />
                         </div>
                         <span
                           className={`text-[11px] font-gilroy-medium w-[30px] text-right whitespace-nowrap ${
-                            active ? "text-[color:var(--theme-4,#0F172A)] opacity-75" : "text-white/55"
+                            active
+                              ? "text-[color:var(--theme-4,#0F172A)] opacity-75"
+                              : "text-white/55"
                           }`}
                         >
                           {percent}%
@@ -860,136 +819,68 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                           }`}
                           title={`Current Task Streak: ${displayStreak} days`}
                         >
-                          <i className={`ri-fire-fill text-sm ${displayStreak > 0 ? "animate-pulse" : ""}`}></i>
-                          <span className="text-[11px]">
-                            {displayStreak}
-                          </span>
+                          <i
+                            className={`ri-fire-fill text-sm ${
+                              displayStreak > 0 ? "animate-pulse" : ""
+                            }`}
+                          ></i>
+                          <span className="text-[11px]">{displayStreak}</span>
                         </span>
                       </div>
                     </div>
 
-                    {/* Expanded Subtask Tree */}
+                    {/* Expanded Subtask Tree (Read-only checklist) */}
                     {expanded && (
                       <div className="relative mt-1.5">
-                        {group.subtasks.map((subtask, subIndex) => {
-                          const isLastSubtask =
-                            subIndex === group.subtasks.length - 1;
-                          const isDragging =
-                            draggedSubtask &&
-                            draggedSubtask.groupId === group.id &&
-                            draggedSubtask.subtaskId === subtask.id;
-                          const isDragOver =
-                            dragOverSubtask &&
-                            dragOverSubtask.groupId === group.id &&
-                            dragOverSubtask.subtaskId === subtask.id;
-                          return (
-                            <div
-                              key={subtask.id}
-                              draggable
-                              onDragStart={(e) =>
-                                handleSubtaskDragStart(
-                                  e,
-                                  group.id,
-                                  subtask.id,
-                                )
-                              }
-                              onDragOver={(e) =>
-                                handleSubtaskDragOver(
-                                  e,
-                                  group.id,
-                                  subtask.id,
-                                )
-                              }
-                              onDrop={(e) =>
-                                handleSubtaskDrop(e, group.id, subtask.id)
-                              }
-                              onDragEnd={handleSubtaskDragEnd}
-                              className={`group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all ${
-                                isDragging
-                                  ? "opacity-40"
-                                  : isDragOver
-                                    ? active
-                                      ? "ring-1 ring-black/40 bg-black/10"
-                                      : "ring-1 ring-white/40 bg-white/5"
-                                    : ""
-                              }`}
-                            >
-                              <span
-                                className={`absolute left-[9px] top-0 w-px ${
-                                  active ? "bg-black/25" : "bg-white/20"
-                                } ${isLastSubtask ? "h-1/2" : "bottom-0"}`}
-                              />
-                              <span
-                                className={`absolute left-[9px] top-1/2 w-[13px] h-px ${
-                                  active ? "bg-black/25" : "bg-white/20"
-                                }`}
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  toggleSubtask(group.id, subtask.id)
-                                }
-                                className="timebox-subtask-check shrink-0 cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none"
+                        {group.subtasks && group.subtasks.length > 0 ? (
+                          group.subtasks.map((subtask, subIndex) => {
+                            const isLastSubtask =
+                              subIndex === group.subtasks.length - 1;
+                            return (
+                              <div
+                                key={subtask.id}
+                                className="group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
                               >
-                                {subtask.done ? (
-                                  <i
-                                    className={`ri-checkbox-circle-fill text-[15px] ${
-                                      active
-                                        ? "text-[color:var(--theme-4,#0F172A)] opacity-85"
-                                        : "text-white/65"
-                                    }`}
-                                  ></i>
-                                ) : (
-                                  <i
-                                    className={`ri-checkbox-blank-circle-line text-[15px] ${
-                                      active
-                                        ? "text-[color:var(--theme-4,#0F172A)] opacity-60 hover:opacity-100"
-                                        : "text-white/50 hover:text-white"
-                                    }`}
-                                  ></i>
-                                )}
-                              </button>
-                              {editingSubtask?.groupId === group.id &&
-                              editingSubtask?.subtaskId === subtask.id ? (
-                                <input
-                                  autoFocus
-                                  value={editSubtaskText}
-                                  onChange={(e) =>
-                                    setEditSubtaskText(e.target.value)
-                                  }
-                                  onBlur={() =>
-                                    saveEditSubtask(group.id, subtask.id)
-                                  }
-                                  onKeyDown={(e) => {
-                                    if (e.key === "Enter") {
-                                      e.preventDefault();
-                                      saveEditSubtask(group.id, subtask.id);
-                                      const nextSubtask = group.subtasks[subIndex + 1];
-                                      if (nextSubtask) {
-                                        startEditSubtask(group.id, nextSubtask);
-                                      } else {
-                                        setTimeout(() => {
-                                          subtaskInputRefs.current[group.id]?.focus();
-                                        }, 0);
-                                      }
-                                    }
-                                    if (e.key === "Escape")
-                                      cancelEditSubtask();
-                                  }}
-                                  onDragStart={(e) => e.preventDefault()}
-                                  className={`flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium ${
-                                    active
-                                      ? "text-[color:var(--theme-4,#0F172A)]"
-                                      : "text-white"
+                                <span
+                                  className={`absolute left-[9px] top-0 w-px ${
+                                    active ? "bg-black/25" : "bg-white/20"
+                                  } ${isLastSubtask ? "h-1/2" : "bottom-0"}`}
+                                />
+                                <span
+                                  className={`absolute left-[9px] top-1/2 w-[13px] h-px ${
+                                    active ? "bg-black/25" : "bg-white/20"
                                   }`}
                                 />
-                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    toggleSubtask(group.id, subtask.id)
+                                  }
+                                  className="timebox-subtask-check shrink-0 cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none"
+                                >
+                                  {subtask.done ? (
+                                    <i
+                                      className={`ri-checkbox-circle-fill text-[15px] ${
+                                        active
+                                          ? "text-[color:var(--theme-4,#0F172A)] opacity-85"
+                                          : "text-white/65"
+                                      }`}
+                                    ></i>
+                                  ) : (
+                                    <i
+                                      className={`ri-checkbox-blank-circle-line text-[15px] ${
+                                        active
+                                          ? "text-[color:var(--theme-4,#0F172A)] opacity-60 hover:opacity-100"
+                                          : "text-white/50 hover:text-white"
+                                      }`}
+                                    ></i>
+                                  )}
+                                </button>
                                 <span
                                   onClick={() =>
-                                    startEditSubtask(group.id, subtask)
+                                    toggleSubtask(group.id, subtask.id)
                                   }
-                                  title="Click to edit"
-                                  className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-text ${
+                                  className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-pointer select-none ${
                                     subtask.done
                                       ? active
                                         ? "line-through opacity-50 text-[color:var(--theme-4,#0F172A)]"
@@ -1001,73 +892,14 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                                 >
                                   {subtask.text}
                                 </span>
-                              )}
-
-                              {/* Delete Subtask Action */}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeSubtask(group.id, subtask.id);
-                                }}
-                                className={`opacity-0 group-hover/subtask:opacity-100 transition-opacity p-0.5 cursor-pointer shrink-0 ${
-                                  active
-                                    ? "text-[color:var(--theme-4,#0F172A)]/40 hover:text-[color:var(--theme-4,#0F172A)]"
-                                    : "text-white/30 hover:text-white/80"
-                                }`}
-                                title="Delete subtask"
-                              >
-                                <i className="ri-close-line text-xs"></i>
-                              </button>
-                            </div>
-                          );
-                        })}
-
-                        {/* Add New Subtask Row */}
-                        <div className={`relative flex items-center gap-2.5 py-[5px] pl-7 transition-opacity duration-200 ${
-                          newSubtaskText ? "opacity-100" : "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
-                        }`}>
-                          <span
-                            className={`absolute left-[9px] top-0 bottom-0 w-px ${
-                              active ? "bg-black/25" : "bg-white/20"
-                            }`}
-                          />
-                          <span
-                            className={`absolute left-[9px] top-1/2 w-[13px] h-px ${
-                              active ? "bg-black/25" : "bg-white/20"
-                            }`}
-                          />
-                          <i
-                            className={`ri-checkbox-blank-circle-line text-[15px] shrink-0 ${
-                              active
-                                ? "text-[color:var(--theme-4,#0F172A)] opacity-50"
-                                : "text-white/30"
-                            }`}
-                          />
-                          <input
-                            ref={(el) => {
-                              subtaskInputRefs.current[group.id] = el;
-                            }}
-                            value={newSubtaskText}
-                            onChange={(e) => setNewSubtaskText(e.target.value)}
-                            onDragStart={(e) => e.preventDefault()}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                addSubtask(group.id);
-                                setTimeout(() => {
-                                  subtaskInputRefs.current[group.id]?.focus();
-                                }, 0);
-                              }
-                            }}
-                            placeholder="Add new task..."
-                            className={`flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium transition-colors ${
-                              active
-                                ? "text-[color:var(--theme-4,#0F172A)] placeholder:text-black/65 focus:placeholder:text-black/40"
-                                : "text-white/90 placeholder:text-white/70 focus:placeholder:text-white/45"
-                            }`}
-                          />
-                        </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="py-2 pl-7 text-xs text-white/40 font-gilroy-medium italic">
+                            No subtasks added yet
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1079,7 +911,7 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                     className={`absolute left-[5px] w-px bg-white/15 ${
                       isFirst
                         ? "top-[9px] bottom-0"
-                        : isLast
+                        : isLast && !draftNewTask
                           ? "top-0 h-[9px]"
                           : "top-0 bottom-0"
                     }`}
@@ -1091,7 +923,9 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                         : "bg-white/60"
                     }`}
                     style={{
-                      backgroundColor: active ? "var(--theme-1, #CBD5E1)" : undefined,
+                      backgroundColor: active
+                        ? "var(--theme-1, #CBD5E1)"
+                        : undefined,
                     }}
                   />
                   <span
@@ -1099,66 +933,211 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                       active ? "text-white font-gilroy-bold" : "text-white/55"
                     }`}
                   >
-                    {expanded ? (
-                      <>
-                        <button
-                          ref={(el) => {
-                            timeTriggerRefs.current[group.id] = el;
-                          }}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTimePickerGroupId(
-                              timePickerGroupId === group.id ? null : group.id,
-                            );
-                          }}
-                          title="Edit time"
-                          className="cursor-pointer focus:outline-none bg-transparent border-0 p-0 shadow-none hover:underline underline-offset-2 transition-all active:scale-95"
-                        >
-                          {group.time}
-                        </button>
-                        {timePickerGroupId === group.id && (
-                          <TimeDropdownPopover
-                            triggerRef={{ current: timeTriggerRefs.current[group.id] }}
-                            current={group.time}
-                            onSelect={(newTime) => updateGroupTime(group.id, newTime)}
-                            onClose={() => setTimePickerGroupId(null)}
-                          />
-                        )}
-                      </>
-                    ) : (
-                      group.time
-                    )}
+                    {group.time}
                   </span>
                 </div>
               </div>
             );
           })}
 
-          {/* Add New Main Task Row */}
-          <div
-            className={`flex items-center gap-2.5 pl-1.5 py-1.5 transition-opacity duration-200 ${
-              atBottom
-                ? "opacity-0 group-hover/widget:opacity-100 focus-within:opacity-100"
-                : "opacity-0"
-            }`}
-          >
-            <i className="ri-add-circle-line text-[15px] shrink-0 text-white/35"></i>
-            <input
-              ref={newMainTaskRef}
-              value={newMainTaskText}
-              onChange={(e) => setNewMainTaskText(e.target.value)}
-              onDragStart={(e) => e.preventDefault()}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addGroup();
-                }
-              }}
-              placeholder="Add new routine..."
-              className="flex-1 min-w-0 bg-transparent outline-none select-text text-xs font-gilroy-medium text-white/90 placeholder:text-white/50 focus:placeholder:text-white/35"
-            />
-          </div>
+          {/* ── Draft New Main Task (Editing Phase) ── */}
+          {draftNewTask && (
+            <div className="flex items-stretch mt-1 pb-2">
+              <div className="flex-1 min-w-0">
+                <div
+                  className="timebox-task-card relative rounded-[18px] border border-white/30 px-4 pt-3.5 pb-4 shadow-2xl overflow-visible transition-all duration-300"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--theme-4, #0F172A) 88%, #181824)",
+                    color: "#FFFFFF",
+                  }}
+                >
+                  {/* Header: Icon Picker + Title Input */}
+                  <div className="flex items-center gap-2.5">
+                    <div className="relative shrink-0">
+                      <button
+                        ref={draftIconTriggerRef}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDraftIconPickerOpen((prev) => !prev);
+                        }}
+                        title="Change icon"
+                        className="h-8 w-8 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white/90 transition-all cursor-pointer border border-white/15"
+                      >
+                        {draftNewTask.iconClass &&
+                        (draftNewTask.iconClass.startsWith("img:") ||
+                          draftNewTask.iconClass.startsWith("http") ||
+                          draftNewTask.iconClass.startsWith("data:")) ? (
+                          <img
+                            src={draftNewTask.iconClass.replace(/^img:/, "")}
+                            alt=""
+                            className="w-[18px] h-[18px] object-contain"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <i
+                            className={`${
+                              draftNewTask.iconClass || "ri-briefcase-line"
+                            } text-base text-white/90`}
+                          />
+                        )}
+                      </button>
+                      {draftIconPickerOpen && (
+                        <IconDropdownPopover
+                          triggerRef={draftIconTriggerRef}
+                          current={
+                            draftNewTask.iconClass || "ri-briefcase-line"
+                          }
+                          onSelect={(newIcon) => {
+                            setDraftNewTask((prev) => ({
+                              ...prev,
+                              iconClass: newIcon,
+                            }));
+                            setDraftIconPickerOpen(false);
+                          }}
+                          onClose={() => setDraftIconPickerOpen(false)}
+                        />
+                      )}
+                    </div>
+
+                    <input
+                      ref={draftTitleInputRef}
+                      autoFocus
+                      value={draftNewTask.title}
+                      onChange={(e) =>
+                        setDraftNewTask((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          draftSubtaskInputRef.current?.focus();
+                        }
+                        if (e.key === "Escape") {
+                          handleCancelDraftTask();
+                        }
+                      }}
+                      placeholder="Routine / Task Title..."
+                      className="flex-1 min-w-0 bg-black/30 border border-white/15 focus:border-white/40 rounded-xl px-3 py-1.5 font-gilroy-bold text-[14px] text-white placeholder:text-white/40 outline-none transition-all"
+                    />
+                  </div>
+
+                  {/* Subtasks in Draft Mode */}
+                  <div className="relative mt-3 pl-1 flex flex-col gap-1.5">
+                    {draftNewTask.subtasks && draftNewTask.subtasks.length > 0 && (
+                      <div className="flex flex-col gap-1.5 mb-1">
+                        {draftNewTask.subtasks.map((subtask) => (
+                          <div
+                            key={subtask.id}
+                            className="flex items-center justify-between gap-2 py-1 px-2.5 rounded-lg bg-white/5 border border-white/10 text-xs font-gilroy-medium text-white/90"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <i className="ri-checkbox-blank-circle-line text-white/40 text-xs shrink-0" />
+                              <span className="truncate">{subtask.text}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeDraftSubtask(subtask.id)}
+                              className="text-white/40 hover:text-white cursor-pointer p-0.5"
+                              title="Remove subtask"
+                            >
+                              <i className="ri-close-line text-sm" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add Subtask Row in Draft */}
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <input
+                        ref={draftSubtaskInputRef}
+                        value={draftSubtaskText}
+                        onChange={(e) => setDraftSubtaskText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addDraftSubtask();
+                          }
+                        }}
+                        placeholder="Add a subtask..."
+                        className="flex-1 min-w-0 bg-black/20 border border-white/10 focus:border-white/30 rounded-lg px-2.5 py-1 text-xs font-gilroy-medium text-white placeholder:text-white/35 outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={addDraftSubtask}
+                        className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-xs font-gilroy-medium text-white transition-all cursor-pointer shrink-0 flex items-center gap-0.5"
+                      >
+                        <i className="ri-add-line text-xs" />
+                        <span>Add</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Footer Actions: Save & Cancel */}
+                  <div className="flex items-center justify-end gap-2 mt-3 pt-2.5 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={handleCancelDraftTask}
+                      className="px-3 py-1.5 rounded-xl text-xs font-gilroy-medium text-white/60 hover:text-white bg-white/5 hover:bg-white/10 active:scale-95 transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveDraftTask}
+                      className="px-4 py-1.5 rounded-xl text-xs font-gilroy-bold text-black bg-[color:var(--theme-1,#CBD5E1)] hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                    >
+                      <i className="ri-check-line text-sm" />
+                      <span>Save Task</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline Marker for Draft Task */}
+              <div className="relative w-[70px] shrink-0 ml-3.5">
+                <div className="absolute left-[5px] w-px bg-white/15 top-0 h-[9px]" />
+                <span
+                  className="absolute left-0 top-[4px] h-[10px] w-[10px] rounded-full scale-125 shadow-[0_0_10px_var(--theme-1,#CBD5E1)]"
+                  style={{ backgroundColor: "var(--theme-1, #CBD5E1)" }}
+                />
+                <div className="absolute left-[16px] top-[2px] z-20">
+                  <button
+                    ref={draftTimeTriggerRef}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDraftTimePickerOpen((prev) => !prev);
+                    }}
+                    title="Change start time"
+                    className="text-[10px] leading-[14px] font-gilroy-bold text-white hover:underline underline-offset-2 cursor-pointer bg-transparent border-0 p-0 shadow-none"
+                  >
+                    {draftNewTask.time}
+                  </button>
+                  {draftTimePickerOpen && (
+                    <TimeDropdownPopover
+                      triggerRef={draftTimeTriggerRef}
+                      current={draftNewTask.time}
+                      onSelect={(newTime) => {
+                        setDraftNewTask((prev) => ({
+                          ...prev,
+                          time: newTime,
+                        }));
+                        setDraftTimePickerOpen(false);
+                      }}
+                      onClose={() => setDraftTimePickerOpen(false)}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_LOFI_STATIONS } from "../App";
+import { DEFAULT_LOFI_STATIONS, DEFAULT_SONG_CUSTOM_VIDEO } from "../App";
 import { UI_THEMES } from "../themes/index.js";
 import {
   exportAllStorageData,
@@ -205,6 +205,18 @@ const IconPickerModal = ({ current, onSelect, onClose }) => {
       return matchesCategory && matchesSearch;
     });
   }, [activeCategory, search]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [onClose]);
 
   return (
     <div
@@ -1262,15 +1274,24 @@ const SongPlayerTab = ({
                 <i className="ri-vidicon-line text-sm text-[color:var(--theme)]" />
                 <span className="text-white/90 text-xs font-gilroy-bold">Custom Video / GIF Background</span>
               </div>
-              {songCustomVideo && (
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => onSongCustomVideoChange(null)}
-                  className="text-[11px] text-white/60 hover:text-white underline cursor-pointer transition-colors"
+                  onClick={() => onSongCustomVideoChange(DEFAULT_SONG_CUSTOM_VIDEO)}
+                  className="text-[11px] text-[color:var(--theme)] hover:brightness-125 underline cursor-pointer transition-colors font-gilroy-medium"
                 >
-                  Remove Background
+                  Reset to Default GIF
                 </button>
-              )}
+                {songCustomVideo && (
+                  <button
+                    type="button"
+                    onClick={() => onSongCustomVideoChange(null)}
+                    className="text-[11px] text-white/60 hover:text-white underline cursor-pointer transition-colors"
+                  >
+                    Remove Background
+                  </button>
+                )}
+              </div>
             </div>
             <p className="text-white/50 text-[11px] font-gilroy-medium leading-relaxed">
               Upload a video/GIF file (.mp4, .webm, .gif) or paste an online video / GIF link URL to display inside the Song Player container.
@@ -2581,10 +2602,13 @@ const BackupTab = ({ uiTheme }) => {
 const SettingsPage = (props) => {
   const [activeTab, setActiveTab] = useState("appearance");
 
+  // Close on Escape key (only fires when no deeper modal is open, since those use capture phase)
   useEffect(() => {
     if (!props.open) return;
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") props.onClose();
+      if (e.key === "Escape") {
+        props.onClose();
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);

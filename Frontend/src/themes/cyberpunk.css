@@ -224,12 +224,14 @@
 }
 
 /* ── Resize handle ── */
-[data-theme="cyberpunk"] .grid-widget [data-resize-handle] {
-  background: color-mix(in srgb, var(--theme-1, #FF0055) 35%, transparent) !important;
-  border-radius: 0 !important;
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle],
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle-cols] {
+  background: transparent !important;
 }
-[data-theme="cyberpunk"] .grid-widget [data-resize-handle]:hover {
-  background: color-mix(in srgb, var(--theme-1, #FF0055) 70%, transparent) !important;
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle] div,
+[data-theme="cyberpunk"] .grid-widget [data-resize-handle-cols] div {
+  background: var(--theme-1, #FF0055) !important;
+  box-shadow: 0 0 8px var(--theme-1, #FF0055) !important;
 }
 
 /* ── Button bg tint to stay consistent with theme-1 colour ── */
