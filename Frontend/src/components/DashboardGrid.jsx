@@ -704,6 +704,8 @@ const DashboardGrid = ({
   songCustomVideo,
   lofiStations,
   waterGoalMl,
+  timeBoxNotifEnabled = true,
+  timeBoxRingtone = "beep",
   streakDataSource = "local",
   githubUsername = "",
 }) => {
@@ -1262,6 +1264,8 @@ const DashboardGrid = ({
             dragHandleProps={dragHandleProps}
             externalGroups={timeBoxingGroups}
             onGroupsChange={onTimeBoxingGroupsChange}
+            notifEnabled={timeBoxNotifEnabled}
+            ringtone={timeBoxRingtone}
           />
         );
       // case "clock":

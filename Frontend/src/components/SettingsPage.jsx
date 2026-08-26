@@ -1094,6 +1094,8 @@ const FocusTab = ({
   waterGoalMl, onWaterGoalChange,
   waterNotifEnabled, onWaterNotifChange,
   waterRingtone, onWaterRingtoneChange,
+  timeBoxNotifEnabled, onTimeBoxNotifChange,
+  timeBoxRingtone, onTimeBoxRingtoneChange,
 }) => (
   <div className="flex flex-col gap-6">
     {/* Focus Timer */}
@@ -1114,6 +1116,28 @@ const FocusTab = ({
           <div className="flex flex-col gap-3.5 pl-3.5 border-l-2 border-white/20 my-1 pt-1">
             <RingtoneRow label="Focus Session Completion Ringtone" value={focusEndRingtone} onChange={onFocusEndRingtoneChange} />
             <RingtoneRow label="Rest Session Completion Ringtone" value={restEndRingtone} onChange={onRestEndRingtoneChange} />
+          </div>
+        )}
+      </div>
+    </CardContainer>
+
+    {/* Time Boxing */}
+    <CardContainer
+      title="Time Boxing Settings"
+      description="Configure audio alerts for your scheduled main tasks in the Time Boxing routine."
+    >
+      <div className="flex flex-col gap-3.5 pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-white text-xs font-gilroy-bold">Audio Sound Alerts For Main Tasks</h4>
+            <p className="text-white/50 text-[11px] font-gilroy-medium">Play a beep when a main task's assigned time arrives</p>
+          </div>
+          <Toggle checked={timeBoxNotifEnabled} onChange={onTimeBoxNotifChange} />
+        </div>
+
+        {timeBoxNotifEnabled && (
+          <div className="flex flex-col gap-3.5 pl-3.5 border-l-2 border-white/20 my-1 pt-1">
+            <RingtoneRow label="Main Task Start Alert Ringtone" value={timeBoxRingtone} onChange={onTimeBoxRingtoneChange} />
           </div>
         )}
       </div>
@@ -2701,6 +2725,10 @@ const SettingsPage = (props) => {
                 onWaterNotifChange={props.onWaterNotifChange}
                 waterRingtone={props.waterRingtone}
                 onWaterRingtoneChange={props.onWaterRingtoneChange}
+                timeBoxNotifEnabled={props.timeBoxNotifEnabled}
+                onTimeBoxNotifChange={props.onTimeBoxNotifChange}
+                timeBoxRingtone={props.timeBoxRingtone}
+                onTimeBoxRingtoneChange={props.onTimeBoxRingtoneChange}
               />
             )}
 

@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { updateTodayCompletedTasksCount } from "../utils/activityStore";
+import { storageGet, storageSet } from "../utils/storage.js";
 import { IconDropdownPopover } from "./IconPicker.jsx";
 import { TimeDropdownPopover } from "./TimePicker.jsx";
+
+const ALERTED_STORAGE_KEY = "settings_timebox_alerted_v1";
 
 const makeId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function")
@@ -93,7 +96,42 @@ const getNowMinutes = () => {
   return d.getHours() * 60 + d.getMinutes();
 };
 
-const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
+/* ─── Main Task Alert Sounds (mirrors SettingsPage ringtone helpers) ─── */
+const playAlertBeep = () => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch {
+    /* silent fail */
+  }
+};
+
+const playAlertSound = (ringtone) => {
+  if (!ringtone || ringtone === "beep") {
+    playAlertBeep();
+    return;
+  }
+  try {
+    const audio = new Audio(ringtone);
+    audio.volume = 0.7;
+    audio.play().catch(() => {});
+  } catch {
+    /* silent fail */
+  }
+};
+
+const getTodayKey = () => new Date().toDateString();
+
+const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnabled = true, ringtone = "beep" }) => {
   const [expandedId, setExpandedId] = useState(null);
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
   const [draggedSubtask, setDraggedSubtask] = useState(null);
@@ -129,6 +167,63 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange }) => {
     const id = setInterval(() => setNowMinutes(getNowMinutes()), 10000);
     return () => clearInterval(id);
   }, []);
+
+  // Play an audio alert when a main task's assigned time arrives (once per task per day).
+  // Tasks already past their start time on mount / day change are marked silently
+  // so the dashboard doesn't beep for old tasks on load.
+  // Only runs after real externalGroups are received (not on initial default fallback).
+  // Persisted to storage so beeps don't replay on page reload.
+  const alertedRef = useRef({ date: null, ids: new Set() });
+  const alertedHydratedRef = useRef(false);
+
+  // Hydrate alerted state from storage on mount
+  useEffect(() => {
+    storageGet(ALERTED_STORAGE_KEY).then((stored) => {
+      const today = getTodayKey();
+      if (stored && stored.date === today && Array.isArray(stored.ids)) {
+        alertedRef.current = { date: today, ids: new Set(stored.ids) };
+      } else {
+        alertedRef.current = { date: today, ids: new Set() };
+      }
+      alertedHydratedRef.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    // Wait for real externalGroups (from storage) to arrive before arming alerts.
+    // This prevents beeping on first mount with default fallback groups.
+    if (!Array.isArray(externalGroups) || externalGroups.length === 0) return;
+    // Wait for hydration from storage before running alert logic
+    if (!alertedHydratedRef.current) return;
+
+    const today = getTodayKey();
+
+    if (alertedRef.current.date !== today) {
+      alertedRef.current = { date: today, ids: new Set() };
+      for (const g of groups || []) {
+        const start = parseTimeToMinutes(g.time);
+        if (start !== null && start <= getNowMinutes()) alertedRef.current.ids.add(g.id);
+      }
+      storageSet(ALERTED_STORAGE_KEY, { date: today, ids: [...alertedRef.current.ids] });
+      return;
+    }
+
+    if (!notifEnabled) return;
+
+    let changed = false;
+    for (const g of groups || []) {
+      const start = parseTimeToMinutes(g.time);
+      if (start === null || alertedRef.current.ids.has(g.id)) continue;
+      if (start <= nowMinutes) {
+        alertedRef.current.ids.add(g.id);
+        changed = true;
+        playAlertSound(ringtone);
+      }
+    }
+    if (changed) {
+      storageSet(ALERTED_STORAGE_KEY, { date: today, ids: [...alertedRef.current.ids] });
+    }
+  }, [nowMinutes, groups, notifEnabled, ringtone, externalGroups]);
 
   const activeId = useMemo(() => {
     if (!groups || groups.length === 0) return null;
