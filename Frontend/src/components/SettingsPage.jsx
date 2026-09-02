@@ -1106,6 +1106,8 @@ const FocusTab = ({
   waterGoalMl, onWaterGoalChange,
   waterNotifEnabled, onWaterNotifChange,
   waterRingtone, onWaterRingtoneChange,
+  timeBoxNotifEnabled, onTimeBoxNotifChange,
+  timeBoxRingtone, onTimeBoxRingtoneChange,
 }) => (
   <div className="flex flex-col gap-6">
     {/* Focus Timer */}
@@ -1126,6 +1128,28 @@ const FocusTab = ({
           <div className="flex flex-col gap-3.5 pl-3.5 border-l-2 border-white/20 my-1 pt-1">
             <RingtoneRow label="Focus Session Completion Ringtone" value={focusEndRingtone} onChange={onFocusEndRingtoneChange} />
             <RingtoneRow label="Rest Session Completion Ringtone" value={restEndRingtone} onChange={onRestEndRingtoneChange} />
+          </div>
+        )}
+      </div>
+    </CardContainer>
+
+    {/* Time Boxing */}
+    <CardContainer
+      title="Time Boxing Settings"
+      description="Configure audio alerts for your scheduled main tasks in the Time Boxing routine."
+    >
+      <div className="flex flex-col gap-3.5 pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-white text-xs font-gilroy-bold">Audio Sound Alerts For Main Tasks</h4>
+            <p className="text-white/50 text-[11px] font-gilroy-medium">Play a beep when a main task's assigned time arrives</p>
+          </div>
+          <Toggle checked={timeBoxNotifEnabled} onChange={onTimeBoxNotifChange} />
+        </div>
+
+        {timeBoxNotifEnabled && (
+          <div className="flex flex-col gap-3.5 pl-3.5 border-l-2 border-white/20 my-1 pt-1">
+            <RingtoneRow label="Main Task Start Alert Ringtone" value={timeBoxRingtone} onChange={onTimeBoxRingtoneChange} />
           </div>
         )}
       </div>
@@ -2544,9 +2568,9 @@ const BackupTab = ({ uiTheme }) => {
             <button
               type="button"
               onClick={() => setShowConfirmReset(true)}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-gilroy-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-md"
             >
-              <i className="ri-refresh-line text-xs" />
+              <i className="ri-refresh-line text-sm" />
               <span>Reset to Defaults</span>
             </button>
           ) : (
@@ -2555,14 +2579,14 @@ const BackupTab = ({ uiTheme }) => {
                 type="button"
                 onClick={handleResetData}
                 disabled={isResetting}
-                className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-gilroy-bold text-white bg-rose-600 hover:bg-rose-700 transition-all cursor-pointer active:scale-95 shadow-md disabled:opacity-50"
+                className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl text-xs font-gilroy-bold text-white bg-rose-600 hover:bg-rose-700 transition-all cursor-pointer active:scale-95 shadow-md disabled:opacity-50"
               >
                 {isResetting ? "Resetting..." : "Confirm Reset"}
               </button>
               <button
                 type="button"
                 onClick={() => setShowConfirmReset(false)}
-                className="px-3 py-2 rounded-xl text-xs font-gilroy-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/15 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl text-xs font-gilroy-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/15 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -2725,6 +2749,10 @@ const SettingsPage = (props) => {
                 onWaterNotifChange={props.onWaterNotifChange}
                 waterRingtone={props.waterRingtone}
                 onWaterRingtoneChange={props.onWaterRingtoneChange}
+                timeBoxNotifEnabled={props.timeBoxNotifEnabled}
+                onTimeBoxNotifChange={props.onTimeBoxNotifChange}
+                timeBoxRingtone={props.timeBoxRingtone}
+                onTimeBoxRingtoneChange={props.onTimeBoxRingtoneChange}
               />
             )}
 
