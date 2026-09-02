@@ -141,6 +141,18 @@ const getTodayKey = () => new Date().toDateString();
 
 const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnabled = true, ringtone = "beep" }) => {
   const [expandedId, setExpandedId] = useState(null);
+  const [draggedSubtask, setDraggedSubtask] = useState(null);
+  const [dragOverSubtask, setDragOverSubtask] = useState(null);
+  const [draggedGroup, setDraggedGroup] = useState(null);
+  const [dragOverGroup, setDragOverGroup] = useState(null);
+  const [editingSubtask, setEditingSubtask] = useState(null);
+  const [editSubtaskText, setEditSubtaskText] = useState("");
+  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [editingGroup, setEditingGroup] = useState(null);
+  const [editGroupTitle, setEditGroupTitle] = useState("");
+  const [iconPickerGroupId, setIconPickerGroupId] = useState(null);
+  const [timePickerGroupId, setTimePickerGroupId] = useState(null);
+  const [atBottom, setAtBottom] = useState(true);
   const [nowMinutes, setNowMinutes] = useState(getNowMinutes);
 
   // New main task draft (editing phase)
@@ -155,6 +167,24 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
   const draftSubtaskInputRef = useRef(null);
   const draftIconTriggerRef = useRef(null);
   const draftTimeTriggerRef = useRef(null);
+
+  const updateAtBottom = () => {
+    const element = containerRef.current;
+    if (!element) return;
+    setAtBottom(
+      element.scrollHeight - element.scrollTop - element.clientHeight < 12,
+    );
+  };
+
+  useEffect(() => {
+    const frameId = requestAnimationFrame(updateAtBottom);
+    const handleResize = () => updateAtBottom();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // Use externalGroups when provided (always the case from DashboardGrid)
   const groups = useMemo(() => {
@@ -335,68 +365,49 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     updateTodayCompletedTasksCount(completedMainCount);
   };
 
-
   const reorderSubtask = (groupId, fromId, toId) => {
     const nextGroups = groups.map((g) => {
       if (g.id !== groupId) return g;
-      const subtasks = g.subtasks || [];
-      const fromIdx = subtasks.findIndex((s) => s.id === fromId);
-      const toIdx = subtasks.findIndex((s) => s.id === toId);
-      if (fromIdx === -1 || toIdx === -1) return g;
-      const next = [...subtasks];
-      const [moved] = next.splice(fromIdx, 1);
-      next.splice(toIdx, 0, moved);
-      return { ...g, subtasks: next };
+      const subtasks = [...(g.subtasks || [])];
+      const fromIndex = subtasks.findIndex((s) => s.id === fromId);
+      const toIndex = subtasks.findIndex((s) => s.id === toId);
+      if (fromIndex === -1 || toIndex === -1) return g;
+      const [moved] = subtasks.splice(fromIndex, 1);
+      subtasks.splice(toIndex, 0, moved);
+      return { ...g, subtasks };
     });
-
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(nextGroups);
-    }
+    onGroupsChange?.(nextGroups);
   };
 
   const addSubtask = (groupId) => {
     const text = newSubtaskText.trim();
     if (!text) return;
     const nextGroups = groups.map((g) =>
-      g.id !== groupId
-        ? g
-        : {
-            ...g,
-            subtasks: [
-              ...(g.subtasks || []),
-              { id: makeId(), text, done: false },
-            ],
-          },
+      g.id === groupId
+        ? { ...g, subtasks: [...(g.subtasks || []), { id: makeId(), text, done: false }] }
+        : g,
     );
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(nextGroups);
-    }
+    onGroupsChange?.(nextGroups);
     setNewSubtaskText("");
   };
 
   const startEditSubtask = (groupId, subtask) => {
     setEditingSubtask({ groupId, subtaskId: subtask.id });
-    setEditSubtaskText(subtask.text);
+    setEditSubtaskText(subtask.text || "");
   };
 
   const saveEditSubtask = (groupId, subtaskId) => {
     const text = editSubtaskText.trim();
-    if (text) {
-      const nextGroups = groups.map((g) =>
-        g.id !== groupId
-          ? g
-          : {
-              ...g,
-              subtasks: (g.subtasks || []).map((s) =>
-                s.id === subtaskId ? { ...s, text } : s,
-              ),
-            },
-      );
-      if (typeof onGroupsChange === "function") {
-        onGroupsChange(nextGroups);
-      }
-    } else {
+    if (!text) {
       removeSubtask(groupId, subtaskId);
+    } else {
+      onGroupsChange?.(
+        groups.map((g) =>
+          g.id === groupId
+            ? { ...g, subtasks: (g.subtasks || []).map((s) => s.id === subtaskId ? { ...s, text } : s) }
+            : g,
+        ),
+      );
     }
     setEditingSubtask(null);
     setEditSubtaskText("");
@@ -412,34 +423,10 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     setEditGroupTitle(group.title || "");
   };
 
-  const removeGroup = (groupId) => {
-    const nextGroups = groups.filter((g) => g.id !== groupId);
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(nextGroups);
-    }
-
-    if (expandedId === groupId) setExpandedId(null);
-    if (iconPickerGroupId === groupId) setIconPickerGroupId(null);
-    if (timePickerGroupId === groupId) setTimePickerGroupId(null);
-
-    const completedMainCount = nextGroups.filter(
-      (g) => g.subtasks && g.subtasks.length > 0 && g.subtasks.every((s) => s.done),
-    ).length;
-
-    updateTodayCompletedTasksCount(completedMainCount);
-  };
-
   const saveEditGroup = (groupId) => {
-    const text = editGroupTitle.trim();
-    if (text) {
-      const nextGroups = groups.map((g) =>
-        g.id === groupId ? { ...g, title: text } : g,
-      );
-      if (typeof onGroupsChange === "function") {
-        onGroupsChange(nextGroups);
-      }
-    } else {
-      removeGroup(groupId);
+    const title = editGroupTitle.trim();
+    if (title) {
+      onGroupsChange?.(groups.map((g) => g.id === groupId ? { ...g, title } : g));
     }
     setEditingGroup(null);
     setEditGroupTitle("");
@@ -450,24 +437,65 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
     setEditGroupTitle("");
   };
 
-  const updateGroupIcon = (groupId, iconClass) => {
-    const nextGroups = groups.map((g) =>
-      g.id === groupId ? { ...g, iconClass: iconClass } : g,
-    );
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(nextGroups);
-    }
-    setIconPickerGroupId(null);
+  const handleSubtaskDragStart = (event, groupId, subtaskId) => {
+    event.stopPropagation();
+    setDraggedSubtask({ groupId, subtaskId });
+    event.dataTransfer.effectAllowed = "move";
   };
 
-  const updateGroupTime = (groupId, time) => {
-    const nextGroups = groups.map((g) =>
-      g.id === groupId ? { ...g, time } : g,
-    );
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(nextGroups);
+  const handleSubtaskDragOver = (event, groupId, subtaskId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (draggedGroup === null) setDragOverSubtask({ groupId, subtaskId });
+  };
+
+  const handleSubtaskDrop = (event, groupId, subtaskId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (draggedSubtask && draggedSubtask.groupId === groupId && draggedSubtask.subtaskId !== subtaskId) {
+      reorderSubtask(groupId, draggedSubtask.subtaskId, subtaskId);
     }
-    setTimePickerGroupId(null);
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
+  const handleSubtaskDragEnd = () => {
+    setDraggedSubtask(null);
+    setDragOverSubtask(null);
+  };
+
+  const reorderGroups = (fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return;
+    const next = [...groups];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    onGroupsChange?.(next);
+  };
+
+  const handleGroupDragStart = (event, index) => {
+    if (editingGroup === groups[index]?.id) {
+      event.preventDefault();
+      return;
+    }
+    setDraggedGroup(index);
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleGroupDragOver = (event, index) => {
+    event.preventDefault();
+    if (draggedGroup !== null) setDragOverGroup(index);
+  };
+
+  const handleGroupDrop = (event, index) => {
+    event.preventDefault();
+    if (draggedGroup !== null) reorderGroups(draggedGroup, index);
+    setDraggedGroup(null);
+    setDragOverGroup(null);
+  };
+
+  const handleGroupDragEnd = () => {
+    setDraggedGroup(null);
+    setDragOverGroup(null);
   };
 
   /* ── Draft Main Task Creation Handlers ── */
@@ -514,105 +542,6 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
       ...prev,
       subtasks: (prev.subtasks || []).filter((s) => s.id !== subtaskId),
     }));
-  };
-
-  const moveSubtask = (fromGroupId, toGroupId, subtaskId, beforeId) => {
-    const nextGroups = groups.map((g) => {
-      if (g.id === fromGroupId) {
-        return { ...g, subtasks: (g.subtasks || []).filter((s) => s.id !== subtaskId) };
-      }
-      return g;
-    });
-    const subtask = groups.find((g) => g.id === fromGroupId)?.subtasks?.find((s) => s.id === subtaskId);
-    if (!subtask) return;
-    const finalGroups = nextGroups.map((g) => {
-      if (g.id !== toGroupId) return g;
-      const subtasks = [...(g.subtasks || [])];
-      if (beforeId) {
-        const idx = subtasks.findIndex((s) => s.id === beforeId);
-        if (idx !== -1) { subtasks.splice(idx, 0, subtask); return { ...g, subtasks }; }
-      }
-      subtasks.push(subtask);
-      return { ...g, subtasks };
-    });
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(finalGroups);
-    }
-  };
-
-  const handleSubtaskDrop = (e, groupId, subtaskId) => {
-    e.preventDefault();
-    if (draggedGroup !== null) return;
-    if (draggedSubtask && draggedSubtask.subtaskId !== subtaskId) {
-      if (draggedSubtask.groupId === groupId) {
-        reorderSubtask(groupId, draggedSubtask.subtaskId, subtaskId);
-      } else {
-        moveSubtask(draggedSubtask.groupId, groupId, draggedSubtask.subtaskId, subtaskId);
-      }
-    }
-    setDraggedSubtask(null);
-    setDragOverSubtask(null);
-  };
-
-  const handleSubtaskDragEnd = () => {
-    setDraggedSubtask(null);
-    setDragOverSubtask(null);
-  };
-
-  const reorderGroups = (fromIndex, toIndex) => {
-    if (fromIndex === toIndex) return;
-    const next = [...groups];
-    const slotTimes = next.map((g) => g?.time);
-    const [moved] = next.splice(fromIndex, 1);
-    next.splice(toIndex, 0, moved);
-    for (let i = 0; i < next.length; i++) {
-      if (i < slotTimes.length && slotTimes[i] !== undefined) {
-        next[i] = { ...next[i], time: slotTimes[i] };
-      }
-    }
-    if (typeof onGroupsChange === "function") {
-      onGroupsChange(next);
-    }
-  };
-
-  const handleGroupDragStart = (e, index) => {
-    if (editingGroup === groups[index]?.id) {
-      e.preventDefault();
-      return;
-    }
-    setDraggedGroup(index);
-    e.dataTransfer.effectAllowed = "move";
-  };
-
-  const handleGroupDragOver = (e, index) => {
-    e.preventDefault();
-    if (draggedGroup !== null) {
-      if (dragOverGroup !== index) setDragOverGroup(index);
-    } else if (draggedSubtask !== null) {
-      if (dragOverGroup !== index) setDragOverGroup(index);
-    }
-  };
-
-  const handleGroupDrop = (e, index) => {
-    e.preventDefault();
-    if (draggedGroup !== null) {
-      if (draggedGroup !== index) {
-        reorderGroups(draggedGroup, index);
-      }
-      setDraggedGroup(null);
-    } else if (draggedSubtask !== null) {
-      const targetGroup = groups[index];
-      if (targetGroup && draggedSubtask.groupId !== targetGroup.id) {
-        moveSubtask(draggedSubtask.groupId, targetGroup.id, draggedSubtask.subtaskId, null);
-      }
-      setDraggedSubtask(null);
-    }
-    setDragOverGroup(null);
-  };
-
-  const handleGroupDragEnd = () => {
-    setDraggedGroup(null);
-    setDragOverGroup(null);
   };
 
   const handleCancelDraftTask = () => {
@@ -705,7 +634,18 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
               <div
                 key={group.id}
                 ref={active ? activeTaskRef : null}
-                className="flex items-stretch"
+                draggable
+                onDragStart={(event) => handleGroupDragStart(event, index)}
+                onDragOver={(event) => handleGroupDragOver(event, index)}
+                onDrop={(event) => handleGroupDrop(event, index)}
+                onDragEnd={handleGroupDragEnd}
+                className={`flex items-stretch ${
+                  draggedGroup === index ? "opacity-40" : ""
+                } ${
+                  dragOverGroup === index && draggedGroup !== index
+                    ? "ring-2 ring-white/50 rounded-xl"
+                    : ""
+                }`}
               >
                 {/* Task Group Card */}
                 <div className={`flex-1 min-w-0 ${isLast && !draftNewTask ? "" : "pb-5"}`}>
@@ -752,15 +692,35 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                           )}
                         </div>
 
-                        <h3
-                          className={`font-gilroy-bold text-[15px] truncate cursor-pointer ${
-                            active
-                              ? "text-[color:var(--theme-4,#0F172A)]"
-                              : "text-white"
-                          }`}
-                        >
-                          {group.title}
-                        </h3>
+                        {editingGroup === group.id ? (
+                          <input
+                            autoFocus
+                            value={editGroupTitle}
+                            onChange={(event) => setEditGroupTitle(event.target.value)}
+                            onClick={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") saveEditGroup(group.id);
+                              if (event.key === "Escape") cancelEditGroup();
+                            }}
+                            onBlur={() => saveEditGroup(group.id)}
+                            className="flex-1 min-w-0 bg-transparent border-0 rounded-lg px-0 py-0.5 text-[15px] font-gilroy-bold text-inherit outline-none focus:outline-none focus:ring-0"
+                          />
+                        ) : (
+                          <h3
+                            onDoubleClick={(event) => {
+                              event.stopPropagation();
+                              if (expanded) startEditGroup(group);
+                            }}
+                            className={`font-gilroy-bold text-[15px] truncate cursor-text ${
+                              active
+                                ? "text-[color:var(--theme-4,#0F172A)]"
+                                : "text-white"
+                            }`}
+                            title="Double-click to edit"
+                          >
+                            {group.title}
+                          </h3>
+                        )}
                       </div>
 
                       <div className="mt-2.5 flex items-center gap-2">
@@ -839,7 +799,23 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                             return (
                               <div
                                 key={subtask.id}
-                                className="group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all"
+                                draggable={editingSubtask?.subtaskId !== subtask.id}
+                                onDragStart={(event) =>
+                                  handleSubtaskDragStart(event, group.id, subtask.id)
+                                }
+                                onDragOver={(event) =>
+                                  handleSubtaskDragOver(event, group.id, subtask.id)
+                                }
+                                onDrop={(event) =>
+                                  handleSubtaskDrop(event, group.id, subtask.id)
+                                }
+                                onDragEnd={handleSubtaskDragEnd}
+                                className={`group/subtask relative flex items-center gap-2.5 py-[5px] pl-7 rounded-lg transition-all ${
+                                  dragOverSubtask?.groupId === group.id &&
+                                  dragOverSubtask?.subtaskId === subtask.id
+                                    ? "bg-white/10"
+                                    : ""
+                                }`}
                               >
                                 <span
                                   className={`absolute left-[9px] top-0 w-px ${
@@ -876,22 +852,52 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                                     ></i>
                                   )}
                                 </button>
-                                <span
-                                  onClick={() =>
-                                    toggleSubtask(group.id, subtask.id)
-                                  }
-                                  className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-pointer select-none ${
-                                    subtask.done
-                                      ? active
-                                        ? "line-through opacity-50 text-[color:var(--theme-4,#0F172A)]"
-                                        : "line-through text-white/35"
-                                      : active
-                                        ? "text-[color:var(--theme-4,#0F172A)] font-gilroy-bold"
-                                        : "text-white/85"
-                                  }`}
+                                {editingSubtask?.groupId === group.id &&
+                                editingSubtask?.subtaskId === subtask.id ? (
+                                  <input
+                                    autoFocus
+                                    value={editSubtaskText}
+                                    onChange={(event) => setEditSubtaskText(event.target.value)}
+                                    onClick={(event) => event.stopPropagation()}
+                                    onKeyDown={(event) => {
+                                      if (event.key === "Enter") saveEditSubtask(group.id, subtask.id);
+                                      if (event.key === "Escape") cancelEditSubtask();
+                                    }}
+                                    onBlur={() => saveEditSubtask(group.id, subtask.id)}
+                                    className="flex-1 min-w-0 bg-transparent border-0 rounded px-0 py-0.5 text-xs text-inherit outline-none focus:outline-none focus:ring-0"
+                                  />
+                                ) : (
+                                  <span
+                                    onClick={() => toggleSubtask(group.id, subtask.id)}
+                                    onDoubleClick={(event) => {
+                                      event.stopPropagation();
+                                      startEditSubtask(group.id, subtask);
+                                    }}
+                                    className={`flex-1 min-w-0 truncate text-xs font-gilroy-medium cursor-text select-none ${
+                                      subtask.done
+                                        ? active
+                                          ? "line-through opacity-50 text-[color:var(--theme-4,#0F172A)]"
+                                          : "line-through text-white/35"
+                                        : active
+                                          ? "text-[color:var(--theme-4,#0F172A)] font-gilroy-bold"
+                                          : "text-white/85"
+                                    }`}
+                                    title="Double-click to edit"
+                                  >
+                                    {subtask.text}
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    removeSubtask(group.id, subtask.id);
+                                  }}
+                                  className="opacity-0 group-hover/subtask:opacity-100 text-white/40 hover:text-red-300 cursor-pointer"
+                                  title="Remove subtask"
                                 >
-                                  {subtask.text}
-                                </span>
+                                  <i className="ri-close-line text-sm" />
+                                </button>
                               </div>
                             );
                           })
@@ -900,6 +906,28 @@ const TimeBoxing = ({ dragHandleProps, externalGroups, onGroupsChange, notifEnab
                             No subtasks added yet
                           </div>
                         )}
+                        <form
+                          className="flex items-center gap-2 mt-1 pl-7"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            addSubtask(group.id);
+                          }}
+                        >
+                          <input
+                            value={newSubtaskText}
+                            onChange={(event) => setNewSubtaskText(event.target.value)}
+                            onClick={(event) => event.stopPropagation()}
+                            placeholder="Add subtask..."
+                            className="flex-1 min-w-0 bg-black/15 border border-white/10 rounded-lg px-2 py-1 text-xs text-inherit placeholder:text-white/35 outline-none focus:border-white/25"
+                          />
+                          <button
+                            type="submit"
+                            className="text-white/55 hover:text-white cursor-pointer"
+                            title="Add subtask"
+                          >
+                            <i className="ri-add-line" />
+                          </button>
+                        </form>
                       </div>
                     )}
                   </div>
